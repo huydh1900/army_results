@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="army_results_manager.TrainingPlanTemplate" owl="1">
+        <div class="o_training_plan p-4">
+
+            <!-- Tiêu đề -->
+            <h2 class="mb-4">KẾ HOẠCH HUẤN LUYỆN</h2>
+
+            <!-- Các thẻ thống kê -->
+            <div class="d-flex gap-3 mb-4">
+                <div class="card shadow-sm p-3 flex-fill text-center border-primary">
+                    <h3 class="text-primary">203</h3>
+                    <span>Tổng kế hoạch</span>
+                </div>
+                <div class="card shadow-sm p-3 flex-fill text-center border-warning">
+                    <h3 class="text-warning">45</h3>
+                    <span>Đang thực hiện</span>
+                </div>
+                <div class="card shadow-sm p-3 flex-fill text-center border-success">
+                    <h3 class="text-success">98</h3>
+                    <span>Hoàn thành</span>
+                </div>
+                <div class="card shadow-sm p-3 flex-fill text-center border-danger">
+                    <h3 class="text-danger">60</h3>
+                    <span>Chờ phê duyệt</span>
+                </div>
+            </div>
+
+
+            <View type="'list'"
+                  viewId="view_training_plan_tree"
+                  resId="resId"
+                  display="{ controlPanel: {search: true, create: true} }"
+                  resModel="'training.plan'"/>
+
+        </div>
+    </t>
+</templates>

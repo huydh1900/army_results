@@ -1,0 +1,43 @@
+<odoo>
+    <record id="view_training_phase_tree" model="ir.ui.view">
+        <field name="name">training.phase.tree</field>
+        <field name="model">training.phase</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_training_phase_form" model="ir.ui.view">
+        <field name="name">training.phase.form</field>
+        <field name="model">training.phase</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="total_hours"/>
+                        </group>
+                        <group>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Danh sách nội dung huấn luyện">
+                            <field name="course_ids">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="total_hours"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

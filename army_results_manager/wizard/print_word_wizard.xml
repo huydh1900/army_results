@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_print_word_wizard_form" model="ir.ui.view">
+        <field name="name">print.word.wizard.form</field>
+        <field name="model">print.word.wizard</field>
+        <field name="arch" type="xml">
+            <form string="In Word">
+                <group>
+                    <field name="mau_in"/>
+                </group>
+                <footer>
+                    <button string="In" type="object" name="action_print_word" class="btn-primary"/>
+                    <button string="Hủy" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_print_word_wizard" model="ir.actions.act_window">
+        <field name="name">In Word</field>
+        <field name="res_model">print.word.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

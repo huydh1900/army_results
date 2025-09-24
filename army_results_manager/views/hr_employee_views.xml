@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_employee_tree_inherit" model="ir.ui.view">
+        <field name="name">hr.employee.tree</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+            <field name="work_phone" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="department_id" position="after">
+                <field name="appointment_date" invisible="context.get('menu', False)"/>
+            </field>
+            <field name="job_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="activity_ids" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="category_ids" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="country_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="activity_user_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="work_location_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="parent_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="activity_date_deadline" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="name" position="after">
+                <field name="role" invisible="context.get('menu', False)"/>
+            </field>
+            <field name="work_email" position="attributes">
+                <attribute name="string">Email</attribute>
+            </field>
+            <field name="work_phone" position="replace">
+                <field name="mobile_phone" invisible="context.get('menu', False)"/>
+            </field>
+            <field name="department_id" position="replace">
+                <field name="department_id" string="Đơn vị công tác" invisible="context.get('menu', False)"/>
+                <field name="identification_id" string="Số hiệu sĩ quan"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_employee_form_inherit" model="ir.ui.view">
+        <field name="name">hr.employee.form</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <field name="work_email" position="after">
+                <field name="training_expertise" attrs="{'invisible': [('role', '!=', 'training_officer')]}"/>
+                <field name="coaching_experience" attrs="{'invisible': [('role', '!=', 'training_officer')]}"/>
+                <field name="training_course_id" attrs="{'invisible': [('role', '!=', 'student')]}"/>
+                <field name="role"/>
+            </field>
+            <field name="work_phone" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="coach_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="km_home_work" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="lang" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="country_of_birth" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="place_of_birth" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="country_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="passport_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="bank_account_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="work_email" position="attributes">
+                <attribute name="string">Email</attribute>
+            </field>
+            <field name="department_id" position="attributes">
+                <attribute name="string">Đơn vị công tác</attribute>
+            </field>
+            <xpath expr="//form/sheet/notebook/page[@name='personal_information']/group/group[2]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//form/sheet/notebook/page[@name='personal_information']/group/group[3]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//form/sheet/notebook/page[@name='personal_information']/group/group[1]/div"
+                   position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//form/sheet/notebook/page[@name='public']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//form/sheet/notebook/page[@name='hr_settings']/group/group[@name='identification_group']"
+                   position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//form/sheet/notebook/page[@name='personal_information']/group/group[1]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <field name="identification_id" position="attributes">
+                <attribute name="string">Số hiệu sĩ quan</attribute>
+            </field>
+            <xpath expr="//form/sheet/notebook/page[@name='personal_information']" position="attributes">
+                <attribute name="string">Thông tin cá nhân</attribute>
+            </xpath>
+            <xpath expr="//form/sheet/notebook/page[@name='personal_information']" position="after">
+                <page name="training_results" string="Kết quả huấn luyện">
+<!--                    <field name="training_result_ids">-->
+<!--                        <tree>-->
+<!--                            <field name="training_course_id"/>-->
+<!--                            <field name="score"/>-->
+<!--                            <field name="result"/>-->
+<!--                        </tree>-->
+<!--                    </field>-->
+                </page>
+            </xpath>
+            <xpath expr="//form/sheet/notebook/page[@name='hr_settings']" position="attributes">
+                <attribute name="string">Thiết lập tài khoản</attribute>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

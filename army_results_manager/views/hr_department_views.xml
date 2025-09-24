@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_department_tree_inherit" model="ir.ui.view">
+            <field name="name">hr.department.tree</field>
+            <field name="model">hr.department</field>
+            <field name="inherit_id" ref="hr.view_department_tree"/>
+            <field name="arch" type="xml">
+                <field name="total_employee" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>
+                <field name="parent_id" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>
+            </field>
+        </record>
+
+<!--        <record id="view_department_kanban_inherit" model="ir.ui.view">-->
+<!--            <field name="name">hr.department.kanban</field>-->
+<!--            <field name="model">hr.department</field>-->
+<!--            <field name="inherit_id" ref="hr.hr_department_view_kanban"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <xpath expr="//kanban/templates/t/div/div[2]/div[1]/div[1]" position="replace">-->
+<!--                    <button class="btn btn-primary" name="%(act_employee_from_department)d" type="action">-->
+<!--                        <t t-out="record.total_employee.raw_value"/>-->
+<!--                        Employees-->
+<!--                    </button>-->
+<!--                </xpath>-->
+<!--            </field>-->
+<!--        </record>-->
+
+        <record id="view_department_form_inherit" model="ir.ui.view">
+            <field name="name">hr.department.form</field>
+            <field name="model">hr.department</field>
+            <field name="inherit_id" ref="hr.view_department_form"/>
+            <field name="arch" type="xml">
+                <button name="action_plan_from_department" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </button>
+                <xpath expr="//form/sheet/div/button[@name='%(hr.act_employee_from_department)d']" position="replace">
+                    <button class="oe_stat_button" type="object" name="action_view_commanding_officer"
+                            icon="fa-users"
+                            invisible="context.get('menu', False)">
+                        <field string="CB chỉ huy" name="commanding_officer_count" widget="statinfo"/>
+                    </button>
+
+                    <button class="oe_stat_button" type="object" name="action_view_training_officer"
+                            icon="fa-users"
+                            invisible="context.get('menu', False)">
+                        <field string="CB phụ trách huấn luyện" name="training_officer_count" widget="statinfo"/>
+                    </button>
+
+                    <button class="oe_stat_button" type="object" name="action_view_student"
+                            icon="fa-users">
+                        <field string="Học viên" name="student_count" widget="statinfo"/>
+                    </button>
+
+                    <button class="oe_stat_button" type="object" name="action_view_documents"
+                            icon="fa-files-o"
+                            invisible="context.get('menu', False)">
+                        <field string="Tài liệu" name="document_count" widget="statinfo"/>
+                    </button>
+
+                </xpath>
+                <field name="parent_id" position="after">
+                    <field name="training_course_ids" widget="many2many_tags"
+                           options="{'no_create': True, 'no_create_edit': True, 'no_open':True}"/>
+<!--                    <field name="subject_ids">-->
+<!--                        <tree>-->
+<!--                            <field name="name"/>-->
+<!--                            <field name="hours"/>-->
+<!--                        </tree>-->
+<!--                    </field>-->
+                </field>
+            </field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,33 @@
+<odoo>
+    <!-- Nhóm Học viên -->
+    <record id="group_training_student" model="res.groups">
+        <field name="name">Học viên</field>
+        <field name="category_id" ref="base.module_category_human_resources"/>
+    </record>
+
+    <!-- Nhóm CB Chỉ huy -->
+    <record id="group_training_commander" model="res.groups">
+        <field name="name">CB Chỉ huy</field>
+        <field name="category_id" ref="base.module_category_human_resources"/>
+    </record>
+
+    <!-- Rule cho Học viên: chỉ xem kết quả của chính mình -->
+<!--    <record id="training_result_rule_student" model="ir.rule">-->
+<!--        <field name="name">Training Result: Student can only see own</field>-->
+<!--        <field name="model_id" ref="army_results_manager.model_training_result"/>-->
+<!--        <field name="groups" eval="[(4, ref('army_results_manager.group_training_student'))]"/>-->
+<!--        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>-->
+<!--        <field name="perm_read">1</field>-->
+<!--        <field name="perm_write">0</field>-->
+<!--        <field name="perm_create">0</field>-->
+<!--        <field name="perm_unlink">0</field>-->
+<!--    </record>-->
+
+<!--    &lt;!&ndash; Rule cho CB chỉ huy: xem được tất cả &ndash;&gt;-->
+<!--    <record id="training_result_rule_commander" model="ir.rule">-->
+<!--        <field name="name">Training Result: Commander can see all</field>-->
+<!--        <field name="model_id" ref="army_results_manager.model_training_result"/>-->
+<!--        <field name="groups" eval="[(4, ref('army_results_manager.group_training_commander'))]"/>-->
+<!--        <field name="domain_force">[(1, '=', 1)]</field>-->
+<!--    </record>-->
+</odoo>

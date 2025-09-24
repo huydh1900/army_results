@@ -1,0 +1,37 @@
+<odoo>
+    <data noupdate="1">
+
+        <record id="training_category_hlv" model="training.category">
+            <field name="name">HLV</field>
+        </record>
+
+        <record id="training_category_vdv" model="training.category">
+            <field name="name">VĐV</field>
+        </record>
+
+        <record id="training_category_chi_huy_doan" model="training.category">
+            <field name="name">Chỉ huy Đoàn</field>
+        </record>
+
+        <record id="training_category_gv_ta" model="training.category">
+            <field name="name">Giáo viên tiếng Anh</field>
+        </record>
+
+        <record id="training_category_ctv" model="training.category">
+            <field name="name">Chính trị viên</field>
+        </record>
+
+        <record id="training_category_toan_doan" model="training.category">
+            <field name="name">Toàn Đoàn</field>
+        </record>
+
+        <record id="training_category_ban_tham_muu" model="training.category">
+            <field name="name">Ban Tham mưu</field>
+        </record>
+
+        <record id="training_category_ban_hckt" model="training.category">
+            <field name="name">Ban HC-KT</field>
+        </record>
+
+    </data>
+</odoo>

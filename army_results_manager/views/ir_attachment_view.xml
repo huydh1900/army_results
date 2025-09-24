@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ir_attachment_custom_tree" model="ir.ui.view">
+        <field name="name">ir.attachment.custom.tree</field>
+        <field name="model">ir.attachment</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name" string="Tên tài liệu"/>
+                <field name="mimetype" string="Loại tài liệu"/>
+                <field name="file_size" string="Dung lượng"/>
+                <field name="create_uid" string="Người tải lên"/>
+                <field name="create_date"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

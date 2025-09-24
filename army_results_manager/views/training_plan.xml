@@ -1,0 +1,148 @@
+<odoo>
+    <record id="view_training_plan_tree" model="ir.ui.view">
+        <field name="name">training.plan.tree</field>
+        <field name="model">training.plan</field>
+        <field name="arch" type="xml">
+            <tree string="Kế hoạch huấn luyện">
+                <field name="plan_code"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="location"/>
+                <field name="state" widget="badge"
+                       decoration-muted="state == 'draft'"
+                       decoration-info="state == 'posted'"
+                       decoration-warning="state == 'to_modify'"
+                       decoration-success="state == 'approved'"
+                       decoration-danger="state == 'cancel'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_training_plan_form" model="ir.ui.view">
+        <field name="name">training.plan.form</field>
+        <field name="model">training.plan</field>
+        <field name="arch" type="xml">
+            <form string="Kế hoạch huấn luyện">
+                <header>
+                    <field name="state" widget="statusbar"/>
+
+                    <button name="action_post"
+                            string="Gửi duyệt"
+                            type="object"
+                            states="draft,to_modify"
+                            class="btn-primary"/>
+
+                    <button name="action_approve"
+                            string="Phê duyệt"
+                            type="object"
+                            states="posted,to_modify"
+                            class="btn-success"/>
+
+                    <button name="action_open_modify_wizard"
+                            string="Yêu cầu chỉnh sửa"
+                            type="object"
+                            states="posted"
+                            class="btn-warning"/>
+
+                    <button name="action_cancel"
+                            string="Hủy"
+                            type="object"
+                            states="draft,posted,to_modify"
+                            class="btn-danger"/>
+
+                </header>
+                <group>
+                    <group>
+                        <field name="plan_code"/>
+                        <field name="name"/>
+                        <field name="location"/>
+                        <field name="description"/>
+                        <field name="training_content"/>
+                    </group>
+                    <group>
+                        <field name="start_date"/>
+                        <field name="end_date"/>
+                        <field name="participants_ids" widget="many2many_tags"/>
+                    </group>
+                </group>
+                <notebook>
+                    <page string="Danh sách khóa huấn luyện">
+                        <field name="course_line_ids">
+                            <tree editable="bottom">
+                                <field name="course_id"/>
+                                <field name="total_hours"/>
+                                <field name="year"/>
+                            </tree>
+                        </field>
+                    </page>
+                    <page string="Lý do chỉnh sửa">
+                        <field name="reason_modify"/>
+                    </page>
+                </notebook>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_training_plan_gantt" model="ir.ui.view">
+        <field name="name">training.plan.gantt</field>
+        <field name="model">training.plan</field>
+        <field name="arch" type="xml">
+            <gantt date_start="start_date" date_stop="end_date" default_group_by="create_date" create="0">
+                <field name="create_date"/>
+                <field name="description"/>
+                <field name="state"/>
+            </gantt>
+        </field>
+    </record>
+
+    <record id="view_training_plan_kanban" model="ir.ui.view">
+        <field name="name">training.plan.kanban</field>
+        <field name="model">training.plan</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="plan_code"/>
+                <field name="description"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="state"/>
+                <field name="location"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click o_kanban_record">
+                            <div class="o_kanban_header">
+                                <strong>
+                                    <field name="plan_code"/>
+                                    -
+                                </strong>
+                            </div>
+                            <div class="o_kanban_body">
+                                <div>
+                                    <span>📍
+                                        <field name="location"/>
+                                    </span>
+                                </div>
+                                <div>
+                                    <span>👤
+                                    </span>
+                                </div>
+                                <div>
+                                    <span>🕒
+                                        <field name="start_date"/>
+                                        →
+                                        <field name="end_date"/>
+                                    </span>
+                                </div>
+                                <div>
+                                    <span>Trạng thái:
+                                        <field name="state" widget="badge"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,9 @@
+.o_navbar, .o_menu_sections,
+.o_navbar * {
+    background-color: #BF1F21 !important;
+    color: #EED072 !important;
+}
+.page {
+    font-family: 'Times New Roman', Times, serif;
+}
+
