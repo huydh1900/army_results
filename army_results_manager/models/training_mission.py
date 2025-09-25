@@ -10,7 +10,7 @@ class TrainingMission(models.Model):
     total_hours = fields.Float(string='Số giờ')
     start_date = fields.Date(string="Thời gian bắt đầu")
     end_date = fields.Date(string="Thời gian kết thúc")
-    plan_id = fields.Many2one('training.plan', string='Kế hoạch huấn luyện', readonly=True)
     participants_ids = fields.Many2many('hr.department', string="Đối tượng tham gia")
     material_ids = fields.One2many('training.material', 'mission_id', string="Tài liệu / Video")
+    course_id = fields.Many2one('training.course')
 

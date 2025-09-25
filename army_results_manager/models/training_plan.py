@@ -23,8 +23,7 @@ class TrainingPlan(models.Model):
     location = fields.Char(string='Địa điểm')
     training_content = fields.Char(string='Nội dung huấn luyện')
     reason_modify = fields.Char(string='Lý do chỉnh sửa')
-    course_line_ids = fields.One2many('training.plan.course.line', 'plan_id', string="Các khóa huấn luyện")
-    mission_ids = fields.One2many('training.mission', 'plan_id', string='Danh sách nhiệm vụ huấn luyện')
+    course_ids = fields.One2many('training.course', 'plan_id')
 
     @api.constrains('start_date', 'end_date')
     def _check_start_date(self):
