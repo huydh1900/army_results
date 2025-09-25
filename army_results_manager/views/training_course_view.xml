@@ -27,6 +27,7 @@
                         <group>
                             <field name="name"/>
                             <field name="year"/>
+                            <field name="student_ids" widget="many2many_tags"/>
                         </group>
                         <group>
                             <field name="start_date"/>

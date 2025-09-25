@@ -16,7 +16,7 @@ class TrainingCourse(models.Model):
     lesson_ids = fields.One2many('training.lesson', 'course_id')
     plan_id = fields.Many2one('training.plan')
     mission_ids = fields.One2many('training.mission', 'course_id', string='Danh sách nhiệm vụ huấn luyện')
-
+    student_ids = fields.Many2many('hr.employee', string='Học viên', domain="[('role', '=', 'student')]")
 
     @api.constrains('phase_ids')
     @api.onchange('phase_ids')

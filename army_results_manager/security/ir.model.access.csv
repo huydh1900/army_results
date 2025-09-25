@@ -14,5 +14,6 @@ access_training_plan_course_line,access_training_plan_course_line,model_training
 access_training_time,access_training_time,model_training_time,,1,1,1,1
 access_training_content_template,access_training_content_template,model_training_content_template,,1,1,1,1
 access_training_mission,access_training_mission,model_training_mission,,1,1,1,1
+access_training_mission_result,access_training_mission_result,model_training_mission_result,,1,1,1,1
 access_training_material,access_training_material,model_training_material,,1,1,1,1
 access_training_content_template_line,access_training_content_template_line,model_training_content_template_line,,1,1,1,1

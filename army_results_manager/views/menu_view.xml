@@ -11,6 +11,13 @@
             <field name="view_mode">tree,form</field>
         </record>
 
+        <record id="action_training_mission_result" model="ir.actions.act_window">
+            <field name="name">Kết quả huấn luyện</field>
+            <field name="res_model">training.mission.result</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'group_by': ['course_id', 'mission_id']}</field>
+        </record>
+
         <record id="action_training_mission" model="ir.actions.act_window">
             <field name="name">Nhiệm vụ huấn luyện</field>
             <field name="res_model">training.mission</field>
@@ -36,18 +43,6 @@
             <field name="res_model">hr.employee</field>
             <field name="view_mode">tree,form</field>
             <field name="domain">[('role', '=', 'student')]</field>
-        </record>
-
-        <record id="action_training_content_template" model="ir.actions.act_window">
-            <field name="name">Khung nội dung huấn luyện</field>
-            <field name="res_model">training.content.template</field>
-            <field name="view_mode">tree,form</field>
-        </record>
-
-        <record id="action_training_section" model="ir.actions.act_window">
-            <field name="name">Chương học phần</field>
-            <field name="res_model">training.section</field>
-            <field name="view_mode">tree,form</field>
         </record>
 
         <record id="action_training_plan" model="ir.actions.act_window">
@@ -86,7 +81,7 @@
                   name="Cán bộ phụ trách huấn luyện"
                   parent="menu_unit_management_units"
                   action="action_training_officer"/>
-        
+
         <menuitem id="menu_student"
                   name="Học viên"
                   parent="menu_unit_management_units"
@@ -101,6 +96,11 @@
                   name="Nhiệm vụ huấn luyện"
                   parent="menu_military_root"
                   action="action_training_mission"/>
+
+        <menuitem id="menu_training_mission_result"
+                  name="Kết quả huấn luyện"
+                  parent="menu_military_root"
+                  action="action_training_mission_result"/>
 
         <record id="action_training_plan_tree" model="ir.actions.act_window">
             <field name="name">Kế hoạch huấn luyện</field>
