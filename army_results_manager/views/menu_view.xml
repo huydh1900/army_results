@@ -17,10 +17,25 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <record id="action_training_competition" model="ir.actions.act_window">
-            <field name="name">Hội thi</field>
-            <field name="res_model">training.competition</field>
+        <record id="action_commanding_officer" model="ir.actions.act_window">
+            <field name="name">Cán bộ chỉ huy</field>
+            <field name="res_model">hr.employee</field>
             <field name="view_mode">tree,form</field>
+            <field name="domain">[('role', '=', 'commanding_officer')]</field>
+        </record>
+
+        <record id="action_training_officer" model="ir.actions.act_window">
+            <field name="name">Cán bộ phụ trách huấn luyện</field>
+            <field name="res_model">hr.employee</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('role', '=', 'training_officer')]</field>
+        </record>
+
+        <record id="action_student" model="ir.actions.act_window">
+            <field name="name">Học viên</field>
+            <field name="res_model">hr.employee</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('role', '=', 'student')]</field>
         </record>
 
         <record id="action_training_content_template" model="ir.actions.act_window">
@@ -50,28 +65,37 @@
 
         <!-- Menu structure -->
         <menuitem id="menu_unit_management"
-                  name="Quản lý Đơn vị"
+                  name="Quản lý Lực Lượng và Huấn luyện"
                   parent="menu_military_root"/>
+
+        <menuitem id="menu_unit_management_units"
+                  name="Lực Lượng"
+                  parent="menu_unit_management"/>
 
         <menuitem id="menu_list_of_units"
                   name="Danh sách Đơn vị"
-                  parent="menu_unit_management"
+                  parent="menu_unit_management_units"
                   action="hr_department_kanban_action_inherit"/>
 
-        <menuitem id="menu_training_content_template"
-                  name="Khung nội dung huấn luyện"
-                  parent="menu_unit_management"
-                  action="action_training_content_template"/>
+        <menuitem id="menu_commanding_officer"
+                  name="Cán bộ chỉ huy"
+                  parent="menu_unit_management_units"
+                  action="action_commanding_officer"/>
+
+        <menuitem id="menu_training_officer"
+                  name="Cán bộ phụ trách huấn luyện"
+                  parent="menu_unit_management_units"
+                  action="action_training_officer"/>
+        
+        <menuitem id="menu_student"
+                  name="Học viên"
+                  parent="menu_unit_management_units"
+                  action="action_student"/>
 
         <menuitem id="menu_training_course"
                   name="Khóa huấn luyện"
                   parent="menu_unit_management"
                   action="action_training_course"/>
-
-        <menuitem id="menu_training_competition"
-                  name="Hội thi"
-                  parent="menu_unit_management"
-                  action="action_training_competition"/>
 
         <menuitem id="menu_training_mission"
                   name="Nhiệm vụ huấn luyện"
