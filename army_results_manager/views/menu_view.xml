@@ -11,6 +11,12 @@
             <field name="view_mode">tree,form</field>
         </record>
 
+        <record id="action_training_mission" model="ir.actions.act_window">
+            <field name="name">Nhiệm vụ huấn luyện</field>
+            <field name="res_model">training.mission</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
         <record id="action_training_competition" model="ir.actions.act_window">
             <field name="name">Hội thi</field>
             <field name="res_model">training.competition</field>
@@ -62,11 +68,6 @@
                   parent="menu_unit_management"
                   action="action_training_course"/>
 
-        <menuitem id="menu_training_section"
-                  name="Danh sách các chương học phần"
-                  parent="menu_unit_management"
-                  action="action_training_section"/>
-
         <menuitem id="menu_training_competition"
                   name="Hội thi"
                   parent="menu_unit_management"
@@ -74,7 +75,8 @@
 
         <menuitem id="menu_training_mission"
                   name="Nhiệm vụ huấn luyện"
-                  parent="menu_military_root"/>
+                  parent="menu_military_root"
+                  action="action_training_mission"/>
 
         <record id="action_training_plan_tree" model="ir.actions.act_window">
             <field name="name">Kế hoạch huấn luyện</field>

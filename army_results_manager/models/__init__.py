@@ -6,6 +6,8 @@ from . import training_content_template
 from . import training_category
 from . import training_section
 from . import training_lesson
+from . import training_mission
+from . import training_material
 from . import training_plan_course_line
 from . import training_time
 from . import training_competition

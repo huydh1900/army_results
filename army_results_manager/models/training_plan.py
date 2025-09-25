@@ -24,17 +24,13 @@ class TrainingPlan(models.Model):
     training_content = fields.Char(string='Nội dung huấn luyện')
     reason_modify = fields.Char(string='Lý do chỉnh sửa')
     course_line_ids = fields.One2many('training.plan.course.line', 'plan_id', string="Các khóa huấn luyện")
-
+    mission_ids = fields.One2many('training.mission', 'plan_id', string='Danh sách nhiệm vụ huấn luyện')
 
     @api.constrains('start_date', 'end_date')
     def _check_start_date(self):
         for rec in self:
             if rec.start_date > rec.end_date:
                 raise UserError('Ngày bắt đầu phải nhỏ hơn ngay kết thúc.')
-
-    @api.onchange('training_course_id')
-    def _onchange_training_course_id(self):
-        self.phase_id = None
 
     def action_post(self):
         for rec in self:

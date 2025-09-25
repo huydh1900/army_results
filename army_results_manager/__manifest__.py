@@ -25,6 +25,7 @@
         'data/training_category_data.xml',
         'wizard/print_word_wizard.xml',
         'views/hr_department_views.xml',
+        'views/training_mission.xml',
         'views/training_content_template.xml',
         'views/training_lesson.xml',
         'views/training_section_view.xml',
