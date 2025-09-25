@@ -53,14 +53,14 @@
 
                     <button class="oe_stat_button" type="object" name="action_view_student"
                             icon="fa-users">
-                        <field string="Học viên" name="student_count" widget="statinfo"/>
+                        <field string="Khóa huấn luyện" name="student_count" widget="statinfo"/>
                     </button>
 
-                    <button class="oe_stat_button" type="object" name="action_view_documents"
+                    <!-- <button class="oe_stat_button" type="object" name="action_view_documents"
                             icon="fa-files-o"
                             invisible="context.get('menu', False)">
                         <field string="Tài liệu" name="document_count" widget="statinfo"/>
-                    </button>
+                    </button> -->
 
                 </xpath>
                 <field name="parent_id" position="after">

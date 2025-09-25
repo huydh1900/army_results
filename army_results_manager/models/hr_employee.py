@@ -32,3 +32,10 @@ class HrEmployeePrivate(models.Model):
         else:
             res['role'] = 'student'
         return res
+class Employee(models.Model):
+    _inherit = "hr.employee"
+
+    is_training_officer = fields.Boolean(
+        string="Cán bộ chỉ huy",
+        default=False,
+    )

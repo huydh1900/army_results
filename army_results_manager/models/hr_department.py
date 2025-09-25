@@ -60,17 +60,14 @@ class Department(models.Model):
         for rec in self:
             rec.commanding_officer_count = self.env['hr.employee'].search_count([
                 ('role', '=', 'commanding_officer'),
-                ('training_result_ids.training_course_id', 'in', self.training_course_ids.ids),
                 ('department_id', '=', self.id)
             ])
             rec.training_officer_count = self.env['hr.employee'].search_count([
                 ('role', '=', 'training_officer'),
-                ('training_result_ids.training_course_id', 'in', self.training_course_ids.ids),
                 ('department_id', '=', self.id)
             ])
             rec.student_count = self.env['hr.employee'].search_count([
                 ('role', '=', 'student'),
-                ('training_result_ids.training_course_id', 'in', self.training_course_ids.ids),
                 ('department_id', '=', self.id)
             ])
 
@@ -82,8 +79,7 @@ class Department(models.Model):
             'view_mode': 'tree,form',
             'views': [(self.env.ref('hr.view_employee_tree').id, 'tree'),
                       (self.env.ref('hr.view_employee_form').id, 'form')],
-            'domain': [('role', '=', 'commanding_officer'), ('department_id', '=', self.id),
-                       ('training_result_ids.training_course_id', 'in', self.training_course_ids.ids)],
+            'domain': [('role', '=', 'commanding_officer'), ('department_id', '=', self.id)],
         }
 
     def action_view_training_officer(self):
@@ -94,8 +90,7 @@ class Department(models.Model):
             'view_mode': 'tree,form',
             'views': [(self.env.ref('hr.view_employee_tree').id, 'tree'),
                       (self.env.ref('hr.view_employee_form').id, 'form')],
-            'domain': [('role', '=', 'training_officer'), ('department_id', '=', self.id),
-                       ('training_result_ids.training_course_id', 'in', self.training_course_ids.ids)],
+            'domain': [('role', '=', 'training_officer'), ('department_id', '=', self.id)],
         }
 
     def action_view_student(self):
@@ -106,7 +101,5 @@ class Department(models.Model):
             'view_mode': 'tree,form',
             'views': [(self.env.ref('hr.view_employee_tree').id, 'tree'),
                       (self.env.ref('hr.view_employee_form').id, 'form')],
-            'domain': [('role', '=', 'student'),
-                       ('training_result_ids.training_course_id', 'in', self.training_course_ids.ids),
-                       ('department_id', '=', self.id), ]
+            'domain': [('role', '=', 'student'),('department_id', '=', self.id), ]
         }
