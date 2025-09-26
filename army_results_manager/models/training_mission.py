@@ -13,7 +13,8 @@ class TrainingMission(models.Model):
     participants_ids = fields.Many2many('hr.department', string="Đối tượng tham gia")
     material_ids = fields.One2many('training.material', 'mission_id', string="Tài liệu / Video")
     course_id = fields.Many2one('training.course')
-    student_ids = fields.Many2many('hr.employee', string='Học viên', related='course_id.student_ids', store=False, readonly=True)
+    student_ids = fields.Many2many('hr.employee', string='Học viên', related='course_id.student_ids', store=False,
+                                   readonly=True)
     state = fields.Selection([
         ('draft', 'Dự thảo'),
         ('in_progress', 'Đang thực hiện'),
@@ -41,7 +42,6 @@ class TrainingMission(models.Model):
                     })
         self.write({'state': 'done'})
 
-
     def action_cancel(self):
         self.write({'state': 'cancel'})
 
@@ -57,4 +57,13 @@ class TrainingMissionResult(models.Model):
     course_id = fields.Many2one('training.course', string='Khóa huấn luyện', readonly=True)
     student_id = fields.Many2one('hr.employee', string='Học viên')
     score = fields.Float(string='Điểm')
+    evaluation_level = fields.Selection(
+        [
+            ('excellent', 'Xuất sắc'),
+            ('good', 'Khá'),
+            ('pass', 'Đạt yêu cầu'),
+            ('fail', 'Không đạt yêu cầu'),
+        ],
+        string='Đánh giá mức độ hoàn thành huấn luyện'
+    )
     note = fields.Text(string='Nhận xét')

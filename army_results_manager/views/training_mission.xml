@@ -1,4 +1,15 @@
 <odoo>
+    <record id="view_training_mission_gantt" model="ir.ui.view">
+        <field name="name">training.mission.gantt</field>
+        <field name="model">training.mission</field>
+        <field name="arch" type="xml">
+            <gantt date_start="start_date" date_stop="end_date" default_group_by="name" create="0">
+                <field name="name"/>
+                <field name="student_ids"/>
+                <field name="state"/>
+            </gantt>
+        </field>
+    </record>
 
     <record id="view_training_mission_tree" model="ir.ui.view">
         <field name="name">training.mission.tree</field>
@@ -57,7 +68,7 @@
                                 <tree editable="bottom">
                                     <field name="name"/>
                                     <field name="type"/>
-                                    <field name="file"/>
+                                    <field name="file" filename="name" widget="binary"/>
                                 </tree>
                             </field>
                         </page>

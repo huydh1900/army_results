@@ -17,9 +17,30 @@ class TrainingCourse(models.Model):
     plan_id = fields.Many2one('training.plan')
     mission_ids = fields.One2many('training.mission', 'course_id', string='Danh sách nhiệm vụ huấn luyện')
     student_ids = fields.Many2many('hr.employee', string='Học viên', domain="[('role', '=', 'student')]")
+    student_count = fields.Integer(
+        string='Số học viên',
+        compute='_compute_student_count'
+    )
+
+    def _compute_student_count(self):
+        for rec in self:
+            rec.student_count = len(rec.student_ids)
+
 
     @api.constrains('phase_ids')
     @api.onchange('phase_ids')
     def _constrain_phase_ids(self):
         for rec in self:
             rec.total_hours = sum(line.total_hours for line in rec.phase_ids)
+
+    def action_open_students(self):
+        """Mở danh sách học viên của khóa huấn luyện"""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Học viên',
+            'res_model': 'hr.employee',  # hoặc model học viên của bạn
+            'view_mode': 'tree,form',
+            'domain': [('id', 'in', self.student_ids.ids)],
+            'target': 'current',
+        }

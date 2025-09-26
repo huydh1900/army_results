@@ -21,7 +21,7 @@
         <record id="action_training_mission" model="ir.actions.act_window">
             <field name="name">Nhiệm vụ huấn luyện</field>
             <field name="res_model">training.mission</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">tree,form,gantt</field>
         </record>
 
         <record id="action_commanding_officer" model="ir.actions.act_window">
@@ -48,7 +48,7 @@
         <record id="action_training_plan" model="ir.actions.act_window">
             <field name="name">Kế hoạch huấn luyện</field>
             <field name="res_model">training.plan</field>
-            <field name="view_mode">tree,form,kanban,gantt</field>
+            <field name="view_mode">tree,form,gantt</field>
         </record>
 
         <record id="hr_department_kanban_action_inherit" model="ir.actions.act_window">

@@ -5,6 +5,6 @@ class TrainingMaterial(models.Model):
     _description = 'Tài liệu / Video huấn luyện'
 
     name = fields.Char(string="Tên tài liệu", required=True)
-    file = fields.Binary(string="File đính kèm")
+    file = fields.Binary(string="File đính kèm", attachment=True)
     mission_id = fields.Many2one('training.mission', string="Nhiệm vụ huấn luyện", readonly=True)
     type = fields.Selection([('doc', 'Tài liệu'), ('video', 'Video')], string="Loại")

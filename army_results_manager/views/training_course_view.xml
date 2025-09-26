@@ -8,12 +8,12 @@
                 <field name="start_date"/>
                 <field name="end_date"/>
             </tree>
-<!--            <header>-->
-<!--                <button name="%(action_print_word_wizard)d"-->
-<!--                        string="In Phụ lục"-->
-<!--                        type="action"-->
-<!--                        class="btn-primary"/>-->
-<!--            </header>-->
+            <!--            <header>-->
+            <!--                <button name="%(action_print_word_wizard)d"-->
+            <!--                        string="In Phụ lục"-->
+            <!--                        type="action"-->
+            <!--                        class="btn-primary"/>-->
+            <!--            </header>-->
         </field>
     </record>
 
@@ -23,6 +23,15 @@
         <field name="arch" type="xml">
             <form string="Kế hoạch huấn luyện">
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_students"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-users">
+                            <field name="student_count" widget="statinfo" string="Học viên"/>
+                        </button>
+                    </div>
+
                     <group>
                         <group>
                             <field name="name"/>
