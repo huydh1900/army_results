@@ -1,22 +1,27 @@
 <odoo>
-    <record id="view_training_phase_tree" model="ir.ui.view">
-        <field name="name">training.phase.tree</field>
-        <field name="model">training.phase</field>
+
+    <record id="view_training_mission_line_tree" model="ir.ui.view">
+        <field name="name">training.mission.line.tree</field>
+        <field name="model">training.mission.line</field>
         <field name="arch" type="xml">
             <tree>
                 <field name="name"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="total_hours"/>
             </tree>
         </field>
     </record>
 
-    <record id="view_training_phase_form" model="ir.ui.view">
-        <field name="name">training.phase.form</field>
-        <field name="model">training.phase</field>
+    <record id="view_training_mission_line_form" model="ir.ui.view">
+        <field name="name">training.mission.line.form</field>
+        <field name="model">training.mission.line</field>
         <field name="arch" type="xml">
             <form>
                 <sheet>
                     <group>
                         <group>
+                            <field name="mission_id"/>
                             <field name="name"/>
                             <field name="total_hours"/>
                         </group>
@@ -26,10 +31,10 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Danh sách nội dung huấn luyện">
-                            <field name="course_ids">
+                        <page string="Thời gian huấn luyện">
+                            <field name="month_ids">
                                 <tree>
-                                    <field name="name"/>
+                                    <field name="month"/>
                                     <field name="total_hours"/>
                                 </tree>
                             </field>
@@ -39,5 +44,4 @@
             </form>
         </field>
     </record>
-
 </odoo>

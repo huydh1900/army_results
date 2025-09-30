@@ -21,10 +21,6 @@ class Department(models.Model):
         string="Kế hoạch huấn luyện"
     )
     document_count = fields.Integer(string="Số tài liệu", compute="_compute_document_count")
-    subject_ids = fields.Many2many(
-        "training.subject",
-        string="Môn học"
-    )
 
     @api.onchange('training_course_ids')
     @api.constrains('training_course_ids')

@@ -27,7 +27,7 @@ class PrintWordWizard(models.TransientModel):
 
     def action_print_word(self):
         active_ids = self.env.context.get("active_ids", [])
-        records = self.env['training.course'].browse(active_ids)
+        records = self.env['training.plan'].browse(active_ids)
         record_names = [rec.name for rec in records]
 
         rows_data_table_1 = [
@@ -170,105 +170,9 @@ class PrintWordWizard(models.TransientModel):
                 parent.insert(idx, table._element)
                 break
 
-        from docx.shared import Pt
-        from docx.enum.text import WD_ALIGN_PARAGRAPH
-
-        def create_sample_table(doc):
-            cols = 15
-            rows = 3  # 2 hàng header + ít nhất 1 hàng dữ liệu
-
-            table = doc.add_table(rows=rows, cols=cols)
-            table.style = "Table Grid"
-
-            # === Header ===
-            # gộp 2 hàng đầu cho TT, Đối tượng, Tổng số
-            table.cell(0, 0).merge(table.cell(1, 0)).text = "TT"
-            table.cell(0, 1).merge(table.cell(1, 1)).text = "Đối tượng"
-            table.cell(0, 2).merge(table.cell(1, 2)).text = "Tổng số\n(giờ)"
-
-            # nhóm huấn luyện chung (colspan 7 cột: từ 3..9)
-            table.cell(0, 3).merge(table.cell(0, 9)).text = "Huấn luyện chung"
-            headers_hlc = ["+ (%)", "Chính trị", "GD pháp luật", "Hậu cần",
-                           "Kỹ thuật", "Điều lệnh", "Kỹ thuật CĐBB"]
-            for j, text in enumerate(headers_hlc, start=3):
-                table.cell(1, j).text = text
-
-            # nhóm huấn luyện riêng (colspan 4 cột: từ 10..13)
-            table.cell(0, 10).merge(table.cell(0, 13)).text = "Huấn luyện riêng"
-            headers_hlr = ["+ (%)", "Bắn súng", "Thể lực", "Tiếng Anh"]
-            for j, text in enumerate(headers_hlr, start=10):
-                table.cell(1, j).text = text
-
-            # ghi chú
-            table.cell(0, 14).merge(table.cell(1, 14)).text = "Ghi chú"
-
-            # căn giữa + bold cho header
-            for i in range(2):
-                for j in range(cols):
-                    p = table.cell(i, j).paragraphs[0]
-                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                    if p.runs:
-                        p.runs[0].font.bold = True
-                        p.runs[0].font.size = Pt(10)
-
-            # === Hàng dữ liệu ví dụ ===
-            i = 2
-            table.cell(i, 0).text = "4.1"
-            table.cell(i, 1).text = "Hội thi AASAM-2025"
-            table.cell(i, 2).text = "1.530\n100%"
-
-            # Huấn luyện chung: mỗi ô 2 dòng (số + %)
-            hlc_values = ["100\n6,5%", "41\n3,8%", "18\n", "06\n", "04\n2,7%", "25\n", "06\n"]
-            for j, val in enumerate(hlc_values, start=3):
-                cell = table.cell(i, j)
-                cell.text = val
-                p = cell.paragraphs[0]
-                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                if p.runs:
-                    p.runs[0].font.size = Pt(10)
-
-            # Huấn luyện riêng
-            hlr_values = ["1.430\n93,5%", "1024\n66,9%", "406\n26,6%", "51\n"]
-            for j, val in enumerate(hlr_values, start=10):
-                cell = table.cell(i, j)
-                cell.text = val
-                p = cell.paragraphs[0]
-                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                if p.runs:
-                    p.runs[0].font.size = Pt(10)
-
-            # ghi chú
-            table.cell(i, 14).text = ""
-
-            # căn trái cột Đối tượng
-            table.cell(i, 1).paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
-
-            return table
-
-        def replace_placeholder_with_table_3(doc, placeholder, records, note_text=None):
-            """Tìm {{table_3}} và thay bằng bảng Table_3 tạo từ records"""
-            for para in doc.paragraphs:
-                if placeholder in para.text:
-                    # lấy element cha của paragraph
-                    p = para._element
-                    parent = p.getparent()
-                    idx = parent.index(p)
-
-                    # xoá paragraph chứa placeholder
-                    parent.remove(p)
-
-                    # tạo bảng mới
-                    table = create_sample_table(doc)
-
-                    # chèn bảng mới vào đúng vị trí paragraph vừa xoá
-                    parent.insert(idx, table._element)
-
-                    break
-
         replace_placeholder_with_table(doc, "{{table_1}}", records, rows_data=rows_data_table_1)
-        replace_placeholder_with_table_3(doc, "{{table_3}}", records)
-
         replace_placeholder_with_table(doc, "{{table_2}}", records, rows_data=rows_data_table_2, note=" ")
+
         # Xuất file Word
         file_data = BytesIO()
         doc.save(file_data)

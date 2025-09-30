@@ -24,6 +24,14 @@ class TrainingPlan(models.Model):
     training_content = fields.Char(string='Nội dung huấn luyện')
     reason_modify = fields.Char(string='Lý do chỉnh sửa')
     course_ids = fields.One2many('training.course', 'plan_id')
+    year = fields.Integer(string='Năm')
+    total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True)
+
+
+    @api.depends('course_ids.total_hours')
+    def _compute_total_hours(self):
+        for rec in self:
+            rec.total_hours = sum(line.total_hours for line in rec.course_ids)
 
     @api.constrains('start_date', 'end_date')
     def _check_start_date(self):

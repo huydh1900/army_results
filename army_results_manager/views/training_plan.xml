@@ -3,6 +3,9 @@
         <field name="name">training.plan.tree</field>
         <field name="model">training.plan</field>
         <field name="arch" type="xml">
+            <header>
+                <button name="%(action_print_word)d" type="action" string="In phụ lục"/>
+            </header>
             <tree string="Kế hoạch huấn luyện">
                 <field name="plan_code"/>
                 <field name="start_date"/>
@@ -62,7 +65,9 @@
                     <group>
                         <field name="start_date"/>
                         <field name="end_date"/>
+                        <field name="year"/>
                         <field name="participants_ids" widget="many2many_tags"/>
+                        <field name="total_hours"/>
                     </group>
                 </group>
                 <notebook>

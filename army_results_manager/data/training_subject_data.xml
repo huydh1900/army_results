@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Huấn luyện chung -->
+    <record id="subject_chinh_tri" model="training.subject">
+        <field name="name">Chính trị</field>
+        <field name="code">CT</field>
+        <field name="type_training">common_training</field>
+    </record>
+
+    <record id="subject_giao_duc" model="training.subject">
+        <field name="name">G.dục p.luật</field>
+        <field name="code">GDPL</field>
+        <field name="type_training">common_training</field>
+    </record>
+
+    <record id="subject_hau_can" model="training.subject">
+        <field name="name">Hậu cần</field>
+        <field name="code">HC</field>
+        <field name="type_training">common_training</field>
+    </record>
+
+    <record id="subject_ky_thuat" model="training.subject">
+        <field name="name">Kỹ thuật</field>
+        <field name="code">KT</field>
+        <field name="type_training">common_training</field>
+    </record>
+
+    <record id="subject_dieu_lenh" model="training.subject">
+        <field name="name">Điều lệnh</field>
+        <field name="code">DL</field>
+        <field name="type_training">common_training</field>
+    </record>
+
+    <record id="subject_ky_thuat_cdbb" model="training.subject">
+        <field name="name">Kỹ thuật CĐBB</field>
+        <field name="code">KTCD</field>
+        <field name="type_training">common_training</field>
+    </record>
+
+    <!-- Huấn luyện riêng -->
+    <record id="subject_ban_sung" model="training.subject">
+        <field name="name">Bắn súng</field>
+        <field name="code">BS</field>
+        <field name="type_training">private_training</field>
+    </record>
+
+    <record id="subject_the_luc" model="training.subject">
+        <field name="name">Thể lực</field>
+        <field name="code">TL</field>
+        <field name="type_training">private_training</field>
+    </record>
+
+    <record id="subject_tieng_anh" model="training.subject">
+        <field name="name">Tiếng Anh</field>
+        <field name="code">TA</field>
+        <field name="type_training">private_training</field>
+    </record>
+</odoo>

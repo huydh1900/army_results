@@ -8,6 +8,10 @@ class TrainingSubject(models.Model):
 
     name = fields.Char("Tên môn học", required=True)
     code = fields.Char("Mã môn học")
+    type_training = fields.Selection([
+        ('common_training', 'Huấn luyện chung'),
+        ('private_training', 'Huấn luyện riêng'),
+    ], string="Loại huấn luyện")
 
 
 

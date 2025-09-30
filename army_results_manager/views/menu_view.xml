@@ -4,10 +4,24 @@
         <!-- Root Menu -->
         <menuitem id="menu_military_root" name="Quản lý huấn luyện bộ đội"/>
 
+        <record id="action_print_word" model="ir.actions.act_window">
+            <field name="name">In kế hoạch</field>
+            <field name="res_model">print.word.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+
         <!-- Actions -->
         <record id="action_training_course" model="ir.actions.act_window">
             <field name="name">Khóa huấn luyện</field>
             <field name="res_model">training.course</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <record id="action_training_subject" model="ir.actions.act_window">
+            <field name="name">Môn học</field>
+            <field name="res_model">training.subject</field>
             <field name="view_mode">tree,form</field>
         </record>
 
@@ -58,10 +72,18 @@
             <field name="search_view_id" ref="hr.view_department_filter"/>
         </record>
 
+        <record id="action_training_plan_tree" model="ir.actions.act_window">
+            <field name="name">Kế hoạch huấn luyện</field>
+            <field name="res_model">training.plan</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_training_plan_tree"/>
+        </record>
+
         <!-- Menu structure -->
         <menuitem id="menu_unit_management"
                   name="Quản lý Lực Lượng và Huấn luyện"
-                  parent="menu_military_root"/>
+                  parent="menu_military_root"
+                  sequence="1"/>
 
         <menuitem id="menu_unit_management_units"
                   name="Lực Lượng"
@@ -95,24 +117,31 @@
         <menuitem id="menu_training_mission"
                   name="Nhiệm vụ huấn luyện"
                   parent="menu_military_root"
-                  action="action_training_mission"/>
-
-        <menuitem id="menu_training_mission_result"
-                  name="Kết quả huấn luyện"
-                  parent="menu_military_root"
-                  action="action_training_mission_result"/>
-
-        <record id="action_training_plan_tree" model="ir.actions.act_window">
-            <field name="name">Kế hoạch huấn luyện</field>
-            <field name="res_model">training.plan</field>
-            <field name="view_mode">tree,form</field>
-            <field name="view_id" ref="view_training_plan_tree"/>
-        </record>
+                  action="action_training_mission"
+                  sequence="3"/>
 
         <menuitem id="menu_training_plan"
                   name="Kế hoạch huấn luyện"
                   parent="menu_military_root"
-                  action="action_training_plan"/>
+                  action="action_training_plan"
+                  sequence="2"/>
+
+        <menuitem id="menu_training_mission_result"
+                  name="Kết quả huấn luyện"
+                  parent="menu_military_root"
+                  action="action_training_mission_result"
+                  sequence="4"/>
+
+        <menuitem id="menu_setting"
+                  name="Cấu hình"
+                  parent="menu_military_root"
+                  sequence="5"/>
+
+        <menuitem id="menu_training_subject"
+                  name="Môn học"
+                  parent="menu_setting"
+                  action="action_training_subject"
+                  sequence="1"/>
 
     </data>
 </odoo>

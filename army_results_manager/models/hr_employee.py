@@ -13,11 +13,6 @@ class HrEmployeePrivate(models.Model):
         ('training_officer', 'Cán bộ phụ trách huấn luyện'),
         ('student', 'Học viên'),
     ], string="Vai trò")
-    # training_result_ids = fields.One2many(
-    #     'training.result',
-    #     'employee_id',
-    #     string="Kết quả huấn luyện"
-    # )
 
     @api.model
     def default_get(self, fields_list):
