@@ -32,27 +32,28 @@
         <field name="name">training.mission.form</field>
         <field name="model">training.mission</field>
         <field name="arch" type="xml">
-<!--            <header>-->
-<!--                <field name="state" widget="statusbar"-->
-<!--                       statusbar_visible="draft,in_progress,done,cancel"-->
-<!--                       statusbar_colors="{'done':'green','cancel':'red'}"/>-->
-
-<!--                <button name="action_in_progress" type="object"-->
-<!--                        string="Bắt đầu" states="draft" class="btn-primary"/>-->
-<!--                <button name="action_done" type="object"-->
-<!--                        string="Hoàn thành" states="in_progress" class="btn-success"/>-->
-<!--                <button name="action_cancel" type="object"-->
-<!--                        string="Hủy" states="draft,in_progress" class="btn-secondary"/>-->
-<!--                <button name="action_reset_draft" type="object"-->
-<!--                        string="Đặt lại Dự thảo" states="cancel,done" class="btn-secondary"/>-->
-<!--            </header>-->
             <form>
+                <header>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,in_progress,done,cancel"
+                           statusbar_colors="{'done':'green','cancel':'red'}"/>
+
+                    <button name="action_in_progress" type="object"
+                            string="Bắt đầu" states="draft" class="btn-primary"/>
+                    <button name="action_done" type="object"
+                            string="Hoàn thành" states="in_progress" class="btn-success"/>
+                    <button name="action_cancel" type="object"
+                            string="Hủy" states="draft,in_progress" class="btn-secondary"/>
+                    <button name="action_reset_draft" type="object"
+                            string="Đặt lại Dự thảo" states="cancel,done" class="btn-secondary"/>
+                </header>
                 <sheet>
                     <group>
                         <group>
                             <field name="name"/>
                             <field name="type_training"/>
-                            <field name="subject_ids" widget="many2many_tags" options="{'not_delete': True}" domain="[('type_training', '=', type_training)]"/>
+                            <field name="subject_id" options="{'not_delete': True}"
+                                   domain="[('type_training', '=', type_training)]"/>
                             <field name="description"/>
                             <field name="create_uid" string="Người tạo" readonly="1"/>
                             <field name="create_date" widget="date" string="Ngày tạo" readonly="1"/>

@@ -16,12 +16,20 @@
     'category': 'Uncategorized',
     'version': '0.1',
 
-    'depends': ['base', 'hr', 'web_unsplash'],
+    'depends': ['web', 'base', 'hr', 'web_unsplash'],
 
+    "assets": {
+        "web.assets_backend": [
+            "army_results_manager/static/src/components/**/*.js",
+            "army_results_manager/static/src/components/**/*.xml",
+            "army_results_manager/static/src/components/**/*.css",
+        ],
+    },
     # always loaded
     'data': [
         "security/training_result_security.xml",
         "security/ir.model.access.csv",
+        'views/remove_odoo_title.xml',
         'data/training_category_data.xml',
         'data/training_subject_data.xml',
         'wizard/print_word_wizard.xml',
@@ -38,11 +46,4 @@
         'views/menu_view.xml',
     ],
 
-    "assets": {
-        "web.assets_backend": [
-            "army_results_manager/static/src/components/**/*.js",
-            "army_results_manager/static/src/components/**/*.xml",
-            "army_results_manager/static/src/components/**/*.css",
-        ],
-    },
 }

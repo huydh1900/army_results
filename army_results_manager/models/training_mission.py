@@ -29,13 +29,7 @@ class TrainingMission(models.Model):
         ('common_training', 'Huấn luyện chung'),
         ('private_training', 'Huấn luyện riêng'),
     ], string="Loại huấn luyện")
-    subject_ids = fields.Many2many(
-        'training.subject',
-        'training_mission_subject_rel',  # tên bảng trung gian
-        'mission_id',  # FK tới training.mission
-        'subject_id',  # FK tới training.subject
-        string="Môn học"
-    )
+    subject_id = fields.Many2one('training.subject', string="Môn học")
 
     @api.depends('mission_line_ids.total_hours')
     def _compute_total_hours(self):
@@ -79,7 +73,6 @@ class TrainingMissionLine(models.Model):
     start_date = fields.Date(string="Thời gian bắt đầu")
     end_date = fields.Date(string="Thời gian kết thúc")
     month_ids = fields.One2many('training.month', 'month_id', string='Thời gian huấn luyện theo tháng')
-
 
     @api.constrains('month_ids', 'month_ids.total_hours')
     @api.onchange('month_ids')

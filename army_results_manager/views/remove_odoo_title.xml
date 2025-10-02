@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="remove_title_layout" inherit_id="web.layout">
+        <xpath expr="//head/title[@t-esc]" position="replace">
+            <title/>
+        </xpath>
+    </template>
+</odoo>
+
+
