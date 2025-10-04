@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+  <!-- File chính -->
+  <t t-name="army_results_manager.TrainingDashboardTemplate" owl="1">
+    <div class="o_training_dashboard container-fluid mt-3">
+
+      <h2 class="mb-4 text-center text-danger">TỔNG QUAN HUẤN LUYỆN</h2>
+
+      <!-- Hàng 1 -->
+      <div class="row">
+        <t t-call="army_results_manager.DashboardOverview"/>
+        <t t-call="army_results_manager.DashboardUnits"/>
+        <t t-call="army_results_manager.DashboardPlan"/>
+      </div>
+
+      <!-- Hàng 2 -->
+      <div class="row mt-3">
+        <t t-call="army_results_manager.DashboardQuality"/>
+        <t t-call="army_results_manager.DashboardReport"/>
+      </div>
+
+    </div>
+  </t>
+</templates>
+

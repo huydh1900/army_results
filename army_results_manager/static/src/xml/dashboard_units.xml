@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="dashboard_units" xml:space="preserve">
+  <t t-name="army_results_manager.DashboardUnits" owl="1">
+    <div class="col-4">
+      <div class="card border-danger mb-3">
+        <div class="card-header bg-danger text-white">TIẾN ĐỘ HUẤN LUYỆN THEO ĐƠN VỊ</div>
+        <div class="card-body" style="max-height: 200px; overflow-y: auto;">
+          
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Đơn vị</th>
+                <th>Tiến độ</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Dữ liệu mẫu (có thể thay bằng vòng lặp t-foreach hoặc JS gắn vào) -->
+              <tr>
+                <td>Tiểu đoàn 1</td>
+                <td><span class="text-success">80%</span></td>
+                <td>
+                  <div class="progress">
+                    <div class="progress-bar bg-success" style="width:80%"></div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Tiểu đoàn 2</td>
+                <td><span class="text-danger">50%</span></td>
+                <td>
+                  <div class="progress">
+                    <div class="progress-bar bg-danger" style="width:50%"></div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Tiểu đoàn 2</td>
+                <td><span class="text-danger">50%</span></td>
+                <td>
+                  <div class="progress">
+                    <div class="progress-bar bg-danger" style="width:50%"></div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Tiểu đoàn 2</td>
+                <td><span class="text-danger">50%</span></td>
+                <td>
+                  <div class="progress">
+                    <div class="progress-bar bg-danger" style="width:50%"></div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Tiểu đoàn 2</td>
+                <td><span class="text-danger">50%</span></td>
+                <td>
+                  <div class="progress">
+                    <div class="progress-bar bg-danger" style="width:50%"></div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Tiểu đoàn 2</td>
+                <td><span class="text-danger">50%</span></td>
+                <td>
+                  <div class="progress">
+                    <div class="progress-bar bg-danger" style="width:50%"></div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Tiểu đoàn 3</td>
+                <td><span class="text-success">75%</span></td>
+                <td>
+                  <div class="progress">
+                    <div class="progress-bar bg-success" style="width:75%"></div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+        </div>
+      </div>
+    </div>
+  </t>
+</templates>

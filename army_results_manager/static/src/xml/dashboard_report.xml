@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="dashboard_report" xml:space="preserve">
+  <t t-name="army_results_manager.DashboardReport" owl="1">
+    <div class="col-6">
+      <div class="card border-danger">
+        <div class="card-header bg-danger text-white">BÁO CÁO TỔNG HỢP & CẢNH BÁO</div>
+        <div class="card-body">
+          <p><b>Báo cáo huấn luyện 5/2025</b></p>
+          <p>Số lượng hoạt động: 20</p>
+          <p>Số hoạt động hoàn thành: 15</p>
+          <p>Điểm trung bình: 78.5</p>
+          <hr/>
+          <div class="alert alert-warning">⚠️ Cảnh báo: Tiểu đoàn 4 chậm tiến độ</div>
+          <div class="alert alert-danger">❌ Cảnh báo: Tiểu đoàn 3 điểm chất lượng thấp</div>
+        </div>
+      </div>
+    </div>
+  </t>
+</templates>
