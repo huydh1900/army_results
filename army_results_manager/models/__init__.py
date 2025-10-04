@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from . import training_subject
+from . import res_company
 from . import training_category
 from . import training_mission
 from . import training_material
