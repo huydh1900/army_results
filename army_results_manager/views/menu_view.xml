@@ -11,7 +11,6 @@
             <field name="target">new</field>
         </record>
 
-
         <!-- Actions -->
         <record id="action_training_course" model="ir.actions.act_window">
             <field name="name">Khóa huấn luyện</field>
@@ -27,9 +26,9 @@
 
         <record id="action_training_mission_result" model="ir.actions.act_window">
             <field name="name">Kết quả huấn luyện</field>
-            <field name="res_model">training.mission.result</field>
+            <field name="res_model">training.result</field>
             <field name="view_mode">tree,form</field>
-            <field name="context">{'group_by': ['course_id', 'mission_id']}</field>
+            <field name="context">{'group_by': ['training_course_id']}</field>
         </record>
 
         <record id="action_training_mission" model="ir.actions.act_window">
@@ -68,7 +67,7 @@
         <record id="hr_department_kanban_action_inherit" model="ir.actions.act_window">
             <field name="name">Đơn vị</field>
             <field name="res_model">hr.department</field>
-            <field name="view_mode">kanban,tree,form</field>
+            <field name="view_mode">tree,form</field>
             <field name="search_view_id" ref="hr.view_department_filter"/>
         </record>
 
@@ -90,7 +89,7 @@
                   parent="menu_unit_management"/>
 
         <menuitem id="menu_list_of_units"
-                  name="Danh sách Đơn vị"
+                  name="Đơn vị"
                   parent="menu_unit_management_units"
                   action="hr_department_kanban_action_inherit"/>
 

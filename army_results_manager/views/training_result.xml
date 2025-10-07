@@ -6,38 +6,24 @@
         <field name="arch" type="xml">
             <tree string="Kết quả huấn luyện" create="false" editable="bottom">
                 <field name="employee_id" options='{"no_open":True}'/>
-                <field name="training_course_id" options='{"no_open":True}'/>
-                <field name="subject_id" options='{"no_open":True}'/>
-                <field name="identification_id"/>
                 <field name="score"/>
                 <field name="result"/>
+                <field name="note"/>
             </tree>
         </field>
     </record>
 
-    <record id="view_training_result_search" model="ir.ui.view">
-        <field name="name">training.result.search</field>
-        <field name="model">training.result</field>
-        <field name="arch" type="xml">
-            <search string="Kết quả huấn luyện">
-                <field name="employee_id"/>
-                <field name="training_course_id"/>
-                <field name="subject_id"/>
-                <field name="identification_id"/>
-                <group expand="0" string="Nhóm theo">
-                    <filter name="group_by_course" string="Kế hoạch huấn luyện"
-                            context="{'group_by':'training_course_id'}"/>
-                    <filter name="group_by_subject" string="Môn học"
-                            context="{'group_by':'subject_id'}"/>
-                </group>
-            </search>
-        </field>
-    </record>
+<!--    <record id="view_training_result_form" model="ir.ui.view">-->
+<!--        <field name="name">training.result.form</field>-->
+<!--        <field name="model">training.result</field>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <from string="Kết quả huấn luyện" create="false" editable="bottom">-->
+<!--                <field name="employee_id" options='{"no_open":True}'/>-->
+<!--                <field name="training_course_id" options='{"no_open":True}'/>-->
+<!--                <field name="score"/>-->
+<!--                <field name="result"/>-->
+<!--            </from>-->
+<!--        </field>-->
+<!--    </record>-->
 
-    <record id="action_training_result" model="ir.actions.act_window">
-        <field name="name">Kết quả huấn luyện</field>
-        <field name="res_model">training.result</field>
-        <field name="view_mode">tree</field>
-        <field name="search_view_id" ref="view_training_result_search"/>
-    </record>
 </odoo>

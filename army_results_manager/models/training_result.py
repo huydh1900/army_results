@@ -6,29 +6,9 @@ class TrainingResult(models.Model):
     _description = "Kết quả huấn luyện"
     _rec_name = "employee_id"  # Hiển thị tên theo cán bộ
 
-    employee_id = fields.Many2one(
-        comodel_name="hr.employee",
-        string="Cán bộ",
-        required=True,
-    )
-    training_course_id = fields.Many2one(
-        comodel_name="training.course",
-        string="Kế hoạch huấn luyện",
-        required=True,
-    )
-    subject_id = fields.Many2one(
-        comodel_name="training.subject",
-        string="Môn học",
-        required=True,
-    )
-    identification_id = fields.Char(
-        string="Mã định danh",
-        required=False,
-    )
-    score = fields.Float(
-        string="Điểm số",
-        digits=(6, 2),
-    )
+    employee_id = fields.Many2one("hr.employee", string='Học viên')
+    training_course_id = fields.Many2one("training.course", string="Khóa huấn luyện")
+    score = fields.Float(string="Điểm số", digits=(6, 2), group_operator=None)
     result = fields.Selection(
         [
             ("pass", "Đạt"),
@@ -37,19 +17,21 @@ class TrainingResult(models.Model):
             ("good", "Khá"),
             ("average", "Trung bình"),
         ],
-        string="Kết quả",
+        string="Xếp loại",
     )
+    note = fields.Char(string='Ghi chú')
 
-    # Hàm tính kết quả dựa trên điểm
     @api.onchange("score")
     def _onchange_score(self):
         for rec in self:
-            if rec.score:
-                if rec.score >= 8:
-                    rec.result = "excellent"
-                elif rec.score >= 7:
-                    rec.result = "good"
-                elif rec.score >= 5:
-                    rec.result = "pass"
-                else:
-                    rec.result = "fail"
+            score = rec.score or 0
+            if score >= 8:
+                rec.result = "excellent"
+            elif score >= 7:
+                rec.result = "good"
+            elif score >= 5:
+                rec.result = "pass"
+            elif score >= 4:
+                rec.result = "average"
+            else:
+                rec.result = "fail"

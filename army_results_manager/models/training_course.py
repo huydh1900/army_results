@@ -17,6 +17,7 @@ class TrainingCourse(models.Model):
         string='Số học viên',
         compute='_compute_student_count'
     )
+    participants_ids = fields.Many2many('hr.department', string="Đối tượng tham gia")
 
     @api.depends('mission_ids', 'mission_ids.total_hours')
     def _compute_total_hours(self):
@@ -26,10 +27,47 @@ class TrainingCourse(models.Model):
             else:
                 rec.total_hours = 0
 
-
     def _compute_student_count(self):
         for rec in self:
-            rec.student_count = len(rec.student_ids)
+            rec.student_count = self.env['hr.employee'].search_count([
+                ('role', '=', 'student'),
+                ('result_ids.training_course_id', '=', rec.id),
+            ])
+
+    def write(self, vals):
+        res = super().write(vals)
+        self._sync_students_to_results()
+        return res
+
+    def _sync_students_to_results(self):
+        """Đồng bộ học viên và kết quả huấn luyện (tối ưu cho số lượng lớn)."""
+        Result = self.env['training.result']
+
+        for rec in self:
+            # Lấy danh sách ID học viên hiện tại
+            current_ids = set(rec.student_ids.ids)
+
+            # Lấy tất cả employee_id của result hiện có cho khóa này
+            existing_results = Result.search([('training_course_id', '=', rec.id)])
+            existing_ids = set(existing_results.mapped('employee_id.id'))
+
+            # Xóa kết quả của học viên không còn trong danh sách
+            remove_ids = existing_ids - current_ids
+            if remove_ids:
+                Result.search([
+                    ('training_course_id', '=', rec.id),
+                    ('employee_id', 'in', list(remove_ids))
+                ]).unlink()
+
+            # Thêm mới cho học viên chưa có
+            add_ids = current_ids - existing_ids
+            if add_ids:
+                # Tạo danh sách dữ liệu hàng loạt
+                vals_list = [
+                    {'training_course_id': rec.id, 'employee_id': sid}
+                    for sid in add_ids
+                ]
+                Result.create(vals_list)
 
     def action_open_students(self):
         """Mở danh sách học viên của khóa huấn luyện"""
@@ -37,8 +75,17 @@ class TrainingCourse(models.Model):
         return {
             'type': 'ir.actions.act_window',
             'name': 'Học viên',
-            'res_model': 'hr.employee',  # hoặc model học viên của bạn
+            'res_model': 'hr.employee',
             'view_mode': 'tree,form',
-            'domain': [('id', 'in', self.student_ids.ids)],
+            'domain': [
+                ('role', '=', 'student'),
+                ('result_ids.training_course_id', '=', self.id),
+            ],
+            'context': {
+                'default_role': 'student',
+                'default_course': self.id,
+                'create': False,
+                'delete': False,
+            },
             'target': 'current',
         }

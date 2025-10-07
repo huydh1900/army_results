@@ -13,44 +13,36 @@ class Department(models.Model):
         string="Số CB phụ trách huấn luyện", compute="_compute_employee_counts")
     student_count = fields.Integer(
         string="Số học viên theo khóa", compute="_compute_employee_counts")
-    training_course_ids = fields.Many2many(
-        'training.course',
-        'training_course_department_rel',
-        'department_id',
-        'course_id',
-        string="Kế hoạch huấn luyện"
-    )
+    training_course_count = fields.Integer(
+        string="Số khóa huấn luyện", compute="_compute_training_course_counts")
     document_count = fields.Integer(string="Số tài liệu", compute="_compute_document_count")
+    province_id = fields.Many2one(
+        'res.country.state',
+        string="Địa điểm",
+        domain="[('country_id', '=', 241)]"
+    )
 
-    @api.onchange('training_course_ids')
-    @api.constrains('training_course_ids')
-    def _onchange_training_course_ids(self):
-        if self.training_course_ids:
-            all_subjects = self.training_course_ids.mapped('training_subject_ids')
-            self.subject_ids = [(6, 0, all_subjects.ids)]
-        else:
-            self.subject_ids = [(5, 0, 0)]
-
-    def _compute_document_count(self):
+    def _compute_training_course_counts(self):
+        course_data = self.env['training.course'].read_group(
+            domain=[('participants_ids', 'in', self.ids)],
+            fields=['participants_ids'],
+            groupby=['participants_ids']
+        )
+        count_map = {data['participants_ids'][0]: data['participants_ids_count'] for data in course_data}
         for rec in self:
-            # missions = self.env['training.mission'].search([('participants', 'in', rec.id)])
-            # attachments = missions.mapped('training_mission_by_week_ids.attachment_ids')
-            rec.document_count = 0
+            rec.training_course_count = count_map.get(rec.id, 0)
 
-    def action_view_documents(self):
+    def action_view_training_course(self):
         self.ensure_one()
-        # Lấy tất cả mission có department này tham gia
-        # missions = self.env['training.mission'].search([('participants', 'in', self.id)])
-        # attachments = missions.mapped('training_mission_by_week_ids.attachment_ids')
-        # return {
-        #     'name': 'Tài liệu',
-        #     'type': 'ir.actions.act_window',
-        #     'res_model': 'ir.attachment',
-        #     'views': [(self.env.ref('army_results_manager.view_ir_attachment_custom_tree').id, 'tree'),
-        #               (False, 'form')],
-        #     # 'domain': [('id', 'in', attachments.ids)],
-        #     'context': dict(self.env.context, default_res_model=self._name, default_res_id=self.id),
-        # }
+        return {
+            'name': 'Khóa huấn luyện',
+            'type': 'ir.actions.act_window',
+            'res_model': 'training.course',
+            'view_mode': 'tree,form',
+            'views': [(self.env.ref('army_results_manager.view_training_course_tree').id, 'tree'),
+                      (self.env.ref('army_results_manager.view_training_course_form').id, 'form')],
+            'domain': [('participants_ids', 'in', self.id)],
+        }
 
     def _compute_employee_counts(self):
         for rec in self:
@@ -73,9 +65,18 @@ class Department(models.Model):
             'type': 'ir.actions.act_window',
             'res_model': 'hr.employee',
             'view_mode': 'tree,form',
-            'views': [(self.env.ref('hr.view_employee_tree').id, 'tree'),
-                      (self.env.ref('hr.view_employee_form').id, 'form')],
-            'domain': [('role', '=', 'commanding_officer'), ('department_id', '=', self.id)],
+            'views': [
+                (self.env.ref('hr.view_employee_tree').id, 'tree'),
+                (self.env.ref('hr.view_employee_form').id, 'form')
+            ],
+            'domain': [
+                ('role', '=', 'commanding_officer'),
+                ('department_id', '=', self.id)
+            ],
+            'context': {
+                'default_role': 'commanding_officer',
+                'default_department_id': self.id
+            },
         }
 
     def action_view_training_officer(self):
@@ -84,9 +85,18 @@ class Department(models.Model):
             'type': 'ir.actions.act_window',
             'res_model': 'hr.employee',
             'view_mode': 'tree,form',
-            'views': [(self.env.ref('hr.view_employee_tree').id, 'tree'),
-                      (self.env.ref('hr.view_employee_form').id, 'form')],
-            'domain': [('role', '=', 'training_officer'), ('department_id', '=', self.id)],
+            'views': [
+                (self.env.ref('hr.view_employee_tree').id, 'tree'),
+                (self.env.ref('hr.view_employee_form').id, 'form')
+            ],
+            'domain': [
+                ('role', '=', 'training_officer'),
+                ('department_id', '=', self.id)
+            ],
+            'context': {
+                'default_role': 'training_officer',
+                'default_department_id': self.id
+            },
         }
 
     def action_view_student(self):
@@ -97,5 +107,5 @@ class Department(models.Model):
             'view_mode': 'tree,form',
             'views': [(self.env.ref('hr.view_employee_tree').id, 'tree'),
                       (self.env.ref('hr.view_employee_form').id, 'form')],
-            'domain': [('role', '=', 'student'),('department_id', '=', self.id), ]
+            'domain': [('role', '=', 'student'), ('department_id', '=', self.id), ]
         }

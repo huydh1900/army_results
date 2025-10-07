@@ -10,25 +10,20 @@
                 <field name="total_employee" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </field>
+                <field name="manager_id" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>
                 <field name="parent_id" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </field>
+                <field name="display_name" position="attributes">
+                    <attribute name="string">Tên đơn vị</attribute>
+                </field>
+                <field name="display_name" position="after">
+                    <field name="province_id"/>
+                </field>
             </field>
         </record>
-
-<!--        <record id="view_department_kanban_inherit" model="ir.ui.view">-->
-<!--            <field name="name">hr.department.kanban</field>-->
-<!--            <field name="model">hr.department</field>-->
-<!--            <field name="inherit_id" ref="hr.hr_department_view_kanban"/>-->
-<!--            <field name="arch" type="xml">-->
-<!--                <xpath expr="//kanban/templates/t/div/div[2]/div[1]/div[1]" position="replace">-->
-<!--                    <button class="btn btn-primary" name="%(act_employee_from_department)d" type="action">-->
-<!--                        <t t-out="record.total_employee.raw_value"/>-->
-<!--                        Employees-->
-<!--                    </button>-->
-<!--                </xpath>-->
-<!--            </field>-->
-<!--        </record>-->
 
         <record id="view_department_form_inherit" model="ir.ui.view">
             <field name="name">hr.department.form</field>
@@ -51,9 +46,9 @@
                         <field string="CB phụ trách huấn luyện" name="training_officer_count" widget="statinfo"/>
                     </button>
 
-                    <button class="oe_stat_button" type="object" name="action_view_student"
+                    <button class="oe_stat_button" type="object" name="action_view_training_course"
                             icon="fa-users">
-                        <field string="Khóa huấn luyện" name="student_count" widget="statinfo"/>
+                        <field string="Khóa huấn luyện" name="training_course_count" widget="statinfo"/>
                     </button>
 
                     <!-- <button class="oe_stat_button" type="object" name="action_view_documents"
@@ -61,17 +56,18 @@
                             invisible="context.get('menu', False)">
                         <field string="Tài liệu" name="document_count" widget="statinfo"/>
                     </button> -->
-
                 </xpath>
-                <field name="parent_id" position="after">
-                    <field name="training_course_ids" widget="many2many_tags"
-                           options="{'no_create': True, 'no_create_edit': True, 'no_open':True}"/>
-<!--                    <field name="subject_ids">-->
-<!--                        <tree>-->
-<!--                            <field name="name"/>-->
-<!--                            <field name="hours"/>-->
-<!--                        </tree>-->
-<!--                    </field>-->
+                <field name="name" position="attributes">
+                    <attribute name="string">Tên đơn vị</attribute>
+                </field>
+                <field name="name" position="after">
+                    <field name="province_id"/>
+                </field>
+                <field name="manager_id" position="attributes">
+                    <attribute name="string">Thủ trưởng đơn vị</attribute>
+                </field>
+                <field name="parent_id" position="attributes">
+                    <attribute name="string">Đơn vị cha</attribute>
                 </field>
             </field>
         </record>

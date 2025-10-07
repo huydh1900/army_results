@@ -37,7 +37,7 @@
         'views/training_mission.xml',
         'views/training_month.xml',
         'views/training_mission_line.xml',
-        'views/training_mission_result.xml',
+        'views/training_result.xml',
         'views/hr_employee_views.xml',
         'wizard/modify_reason_wizard.xml',
         'views/training_plan.xml',

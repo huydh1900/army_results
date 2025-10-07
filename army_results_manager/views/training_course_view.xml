@@ -5,6 +5,7 @@
         <field name="arch" type="xml">
             <tree>
                 <field name="name"/>
+                <field name="plan_id" string="Tên kế hoạch"/>
                 <field name="start_date"/>
                 <field name="end_date"/>
             </tree>
@@ -28,6 +29,7 @@
                     <group>
                         <group>
                             <field name="name"/>
+                            <field name="participants_ids" widget="many2many_tags"/>
                             <field name="student_ids" widget="many2many_tags"/>
                         </group>
                         <group>
