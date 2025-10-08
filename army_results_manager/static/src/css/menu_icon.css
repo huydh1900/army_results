@@ -1,7 +1,0 @@
-/* Đổi icon cho root menu "Quản lý huấn luyện bộ đội" */
-[data-menu-xmlid="army_results_manager.menu_military_root"] .o_menu_icon {
-    background-image: url("/army_results_manager/static/src/img/Quoc_Huy_Viet_Nam_Chuan.png") !important;
-    background-size: contain !important;
-    background-repeat: no-repeat !important;
-    background-position: center !important;
-}
