@@ -19,6 +19,9 @@
     'depends': ['web', 'base', 'hr', 'web_unsplash'],
 
     "assets": {
+        'web.assets_frontend': [
+            'army_results_manager/static/src/css/login.css',
+        ],
         "web.assets_backend": [
             "army_results_manager/static/src/components/**/*.js",
             "army_results_manager/static/src/components/**/*.xml",
@@ -33,6 +36,8 @@
         'data/training_category_data.xml',
         'data/training_subject_data.xml',
         'wizard/print_word_wizard.xml',
+        'views/webclient_templates.xml',
+        'views/auth_totp_templates.xml',
         'views/hr_department_views.xml',
         'views/training_mission.xml',
         'views/training_month.xml',
@@ -45,5 +50,4 @@
         'views/training_subject.xml',
         'views/menu_view.xml',
     ],
-
 }

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Kế thừa trực tiếp web.login_layout và thay div.container py-5 -->
+    <template id="custom_login_layout" inherit_id="web.login_layout" name="Custom Login Layout">
+        <xpath expr="//div[@class='container py-5']" position="replace">
+            <div class="o_login_page">
+                <!-- chỗ này sẽ hiển thị nội dung form login -->
+                <t t-out="0"/>
+            </div>
+        </xpath>
+    </template>
+    <template id="custom_web_login" inherit_id="web.login" name="Custom Web Login">
+        <!-- Xử lý redirect sau đăng nhập -->
+        <xpath expr="//t[@t-call='web.login_layout']" position="replace">
+            <t t-call="web.login_layout">
+                <div class="custom_login_container">
+                    <!-- Left Section -->
+                    <div class="login_left_section">
+                        <h1>PHẦN MỀM QUẢN LÝ</h1>
+                        <div class="subtitle">VÀ GIÁM SÁT HUẤN LUYỆN BỘ ĐỘI</div>
+                        <p class="description">Hệ thống quản lý hiện đại, chuyên nghiệp</p>
+                        <ul>
+                            <li>Quản lý quân nhân toàn diện</li>
+                            <li>Giám sát các hoạt động quân sự</li>
+                            <li>Báo cáo và thống kê chính xác</li>
+                        </ul>
+                    </div>
+
+                    <!-- Right Section - Login Form -->
+                    <div class="login_right_section">
+                        <div class="custom_login_card">
+                            <h2>Đăng Nhập</h2>
+                            <form method="post" t-attf-action="/web/login"
+                                  onsubmit="this.action = '/web/login' + location.hash">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                                <div class="form-group">
+                                    <label for="login">Tên tài khoản *</label>
+                                    <input type="text"
+                                           name="login"
+                                           id="login"
+                                           placeholder="Nhập tài khoản"
+                                           required="required"
+                                           t-att-value="login"
+                                           autofocus="autofocus"/>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="password">Mật khẩu *</label>
+                                    <input type="password"
+                                           name="password"
+                                           id="password"
+                                           placeholder="Nhập mật khẩu"
+                                           required="required"/>
+                                </div>
+
+                                <div class="form-group" t-if="databases and len(databases) &gt; 1">
+                                    <label for="database">Cơ sở dữ liệu</label>
+                                    <select name="db" id="database">
+                                        <option value="" t-att-disabled="'disabled'" selected="selected">Chọn một CSDL
+                                        </option>
+
+                                        <t t-foreach="databases" t-as="db">
+                                            <option t-att-value="db" t-att-selected="db == database">
+                                                <t t-esc="db"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+
+                                <p class="alert alert-danger" t-if="error" role="alert">
+                                    <t t-esc="error"/>
+                                </p>
+                                <p class="alert alert-success" t-if="message" role="status">
+                                    <t t-esc="message"/>
+                                </p>
+
+                                <div class="forgot_password">
+                                    <a href="/web/reset_password">Quên mật khẩu?</a>
+                                </div>
+
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary">Đăng Nhập</button>
+                                </div>
+
+                                <input type="hidden" name="redirect" t-att-value="redirect"/>
+                            </form>
+                        </div>
+
+                        <div class="login_footer">
+                            © 2025 Hệ thống quản lý quân nhân - Cục Quân Huấn.
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>
