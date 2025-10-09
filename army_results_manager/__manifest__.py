@@ -17,7 +17,6 @@
     'version': '0.1',
 
     'depends': ['web', 'base', 'hr', 'web_unsplash'],
-
     "assets": {
         'web.assets_frontend': [
             'army_results_manager/static/src/css/login.css',
@@ -50,4 +49,5 @@
         'views/training_subject.xml',
         'views/menu_view.xml',
     ],
+
 }

@@ -1,5 +1,9 @@
+import json
+
 from odoo import fields, models, api
 from odoo.exceptions import UserError
+from lxml import etree
+import simplejson
 
 
 class TrainingPlan(models.Model):
@@ -31,7 +35,6 @@ class TrainingPlan(models.Model):
     course_ids = fields.One2many('training.course', 'plan_id')
     year = fields.Integer(string='Năm')
     total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True)
-
 
     @api.depends('course_ids.total_hours')
     def _compute_total_hours(self):
@@ -65,3 +68,13 @@ class TrainingPlan(models.Model):
     def action_cancel(self):
         for rec in self:
             rec.state = "cancel"
+
+    def action_print_word(self):
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Chọn phụ lục",
+            "res_model": "print.word.wizard",
+            "view_mode": "form",
+            "target": "new",
+        }
+

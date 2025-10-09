@@ -3,10 +3,10 @@
         <field name="name">training.plan.tree</field>
         <field name="model">training.plan</field>
         <field name="arch" type="xml">
-            <header>
-                <button name="%(action_print_word)d" type="action" string="In phụ lục"/>
-            </header>
             <tree string="Kế hoạch huấn luyện">
+                <header>
+                    <button name="action_print_word" class="btn btn-link" type="object" string="In phụ lục"/>
+                </header>
                 <field name="plan_code"/>
                 <field name="start_date"/>
                 <field name="end_date"/>
@@ -39,6 +39,7 @@
                             string="Phê duyệt"
                             type="object"
                             states="posted,to_modify"
+                            groups="army_results_manager.group_training_commander"
                             class="btn-success"/>
 
                     <button name="action_open_modify_wizard"
@@ -103,3 +104,4 @@
 
 
 </odoo>
+

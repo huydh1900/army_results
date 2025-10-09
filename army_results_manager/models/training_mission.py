@@ -13,7 +13,7 @@ class TrainingMission(models.Model):
     participants_ids = fields.Many2many('hr.department', string="Đối tượng tham gia")
     material_ids = fields.One2many('training.material', 'mission_id', string="Tài liệu / Video")
     course_id = fields.Many2one('training.course')
-    student_ids = fields.Many2many('hr.employee', string='Học viên')
+    student_ids = fields.Many2many('hr.employee', string='Học viên', related='course_id.student_ids')
     state = fields.Selection([
         ('draft', 'Dự thảo'),
         ('in_progress', 'Đang thực hiện'),
