@@ -4,13 +4,6 @@
         <!-- Root Menu -->
         <menuitem id="menu_military_root" name="Quản lý huấn luyện bộ đội"/>
 
-        <record id="action_print_word" model="ir.actions.act_window">
-            <field name="name">In kế hoạch</field>
-            <field name="res_model">print.word.wizard</field>
-            <field name="view_mode">form</field>
-            <field name="target">new</field>
-        </record>
-
         <!-- Actions -->
         <record id="action_training_course" model="ir.actions.act_window">
             <field name="name">Khóa huấn luyện</field>
@@ -82,6 +75,7 @@
         <menuitem id="menu_unit_management"
                   name="Quản lý Lực Lượng và Huấn luyện"
                   parent="menu_military_root"
+                  groups="army_results_manager.group_training_commander_assistant"
                   sequence="1"/>
 
         <menuitem id="menu_unit_management_units"
@@ -111,18 +105,21 @@
         <menuitem id="menu_training_course"
                   name="Khóa huấn luyện"
                   parent="menu_unit_management"
+                  groups="army_results_manager.group_training_commander_assistant"
                   action="action_training_course"/>
 
         <menuitem id="menu_training_mission"
                   name="Nhiệm vụ huấn luyện"
                   parent="menu_military_root"
                   action="action_training_mission"
+                  groups="army_results_manager.group_training_commander_assistant"
                   sequence="3"/>
 
         <menuitem id="menu_training_plan"
                   name="Kế hoạch huấn luyện"
                   parent="menu_military_root"
                   action="action_training_plan"
+                  groups="army_results_manager.group_training_commander_assistant"
                   sequence="2"/>
 
         <menuitem id="menu_training_mission_result"
@@ -134,6 +131,7 @@
         <menuitem id="menu_setting"
                   name="Cấu hình"
                   parent="menu_military_root"
+                  groups="army_results_manager.group_training_commander_assistant"
                   sequence="5"/>
 
         <menuitem id="menu_training_subject"
