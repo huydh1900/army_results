@@ -18,6 +18,8 @@ class TrainingCourse(models.Model):
         compute='_compute_student_count'
     )
     participants_ids = fields.Many2many('hr.department', string="Đối tượng tham gia")
+    category_id = fields.Many2one('training.category', string='Thành phần tham gia')
+    category_ids = fields.Many2one('training.category', string='Cấp phụ trách')
 
     @api.depends('mission_ids', 'mission_ids.total_hours')
     def _compute_total_hours(self):

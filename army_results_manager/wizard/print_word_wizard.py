@@ -3,12 +3,14 @@ from odoo import models, fields
 from odoo.modules.module import get_module_resource
 from io import BytesIO
 import base64
+from docx.shared import Pt
 from docx import Document
 from docx.shared import Cm
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_ALIGN_VERTICAL
+from docx.shared import Inches
 
 
 class PrintWordWizard(models.TransientModel):
@@ -76,7 +78,14 @@ class PrintWordWizard(models.TransientModel):
     # ==================== Table Replacement Functions ====================
 
     def replace_placeholder_with_table(self, doc, placeholder, records, rows_data, note=None):
-        """Replace placeholder with standard table format."""
+        """Replace placeholder with standard table format, chỉ lấy records có type='squad'."""
+        # 🔸 Lọc record theo type
+        filtered_records = [r for r in records if r.type == 'squad']
+
+        # Nếu không có record phù hợp thì không tạo bảng
+        if not filtered_records:
+            return
+
         for para in doc.paragraphs:
             if placeholder not in para.text:
                 continue
@@ -85,14 +94,14 @@ class PrintWordWizard(models.TransientModel):
             idx = parent.index(para._element)
             parent.remove(para._element)
 
-            num_records = len(records)
+            num_records = len(filtered_records)
             num_cols = 2 + num_records + (1 if note else 0)
             num_rows = 2 + len(rows_data)
 
             table = doc.add_table(rows=num_rows, cols=num_cols)
             table.style = 'Table Grid'
 
-            # Set column widths
+            # 🔸 Thiết lập độ rộng cột
             tt_width, nd_width, total_time_width = 1.2, 15, 25
             record_width = total_time_width / num_records if num_records else total_time_width
             widths = [tt_width, nd_width] + [record_width] * num_records
@@ -103,14 +112,16 @@ class PrintWordWizard(models.TransientModel):
                 for cell, w in zip(row.cells, widths):
                     self.set_column_width(cell, w)
 
-            # Create headers
-            self._build_standard_headers(table, records, num_records, num_cols, note)
+            # 🔸 Tạo phần header
+            self._build_standard_headers(table, filtered_records, num_records, num_cols, note)
 
-            # Fill data rows
-            self._fill_data_rows(table, records, rows_data, note, num_cols)
+            # 🔸 Điền dữ liệu vào bảng
+            self._fill_data_rows(table, filtered_records, rows_data, note, num_cols)
 
+            # 🔸 Chèn bảng vào đúng vị trí placeholder
             parent.insert(idx, table._element)
             break
+
 
     def _build_standard_headers(self, table, records, num_records, num_cols, note):
         """Build headers for standard table."""
@@ -148,7 +159,14 @@ class PrintWordWizard(models.TransientModel):
                 self.cell_set(table.cell(r_idx, num_cols - 1), note)
 
     def replace_table_3_aasam(self, doc, placeholder, records):
-        """Replace placeholder with AASAM-2025 competition table."""
+        """Replace placeholder with AASAM-2025 competition table (only records with type='squad')."""
+        # 🔸 Lọc chỉ những record có training_plan_id.type == 'squad'
+        filtered_records = [r for r in records if r.type == 'squad']
+
+        # Nếu không có record phù hợp thì không tạo bảng
+        if not filtered_records:
+            return
+
         for para in doc.paragraphs:
             if placeholder not in para.text:
                 continue
@@ -157,21 +175,22 @@ class PrintWordWizard(models.TransientModel):
             parent_idx = parent.index(para._element)
             parent.remove(para._element)
 
-            # Calculate total rows
-            total_courses = sum(len(r.course_ids) if r.course_ids else 0 for r in records)
-            num_rows = 2 + (len(records) * 2) + total_courses
+            # 🔸 Tính tổng số dòng dựa trên filtered_records
+            total_courses = sum(len(r.course_ids) if r.course_ids else 0 for r in filtered_records)
+            num_rows = 2 + (len(filtered_records) * 2) + total_courses
 
             table = doc.add_table(rows=num_rows, cols=15)
             table.style = 'Table Grid'
 
-            # Build headers
+            # Xây header
             self._build_aasam_headers(table)
 
-            # Fill data
-            self._fill_aasam_data(table, records)
+            # Điền dữ liệu cho các record đã lọc
+            self._fill_aasam_data(table, filtered_records)
 
             parent.insert(parent_idx, table._element)
             break
+
 
     def _build_aasam_headers(self, table):
         """Build headers for AASAM table."""
@@ -367,6 +386,272 @@ class PrintWordWizard(models.TransientModel):
             current_row += 1
 
         return current_row
+    
+    # ==================== Table 4: Huấn luyện sĩ quan ====================
+
+    def replace_table_4(self, doc, placeholder, records):
+        """Main function to replace placeholder with table 4, chỉ lấy records có type='squad'."""
+        # 🔸 Lọc record theo type
+        filtered_records = [r for r in records if r.type == 'officer']
+
+        # Nếu không có record phù hợp thì không tạo bảng
+        if not filtered_records:
+            return
+
+        for para in doc.paragraphs:
+            if placeholder not in para.text:
+                continue
+
+            # Xóa placeholder
+            parent = para._element.getparent()
+            idx = parent.index(para._element)
+            parent.remove(para._element)
+
+            # Tạo cấu trúc bảng
+            table = self._create_table_4_structure(doc)
+            
+            # Điền dữ liệu bảng
+            self._fill_table_4_data(table, filtered_records)
+            
+            # Thêm dòng tổng kết
+            # self._add_table_4_summary(table, filtered_records)
+
+            # Chèn bảng vào đúng vị trí placeholder
+            parent.insert(idx, table._element)
+            break
+
+
+
+    def _create_table_4_structure(self, doc):
+        """Create table 4 structure with headers."""
+        # Create table with 3 header rows
+        table = doc.add_table(rows=3, cols=18)
+        table.style = "Table Grid"
+
+        # Build headers
+        self._build_table_4_headers(table)
+        
+        # Set column widths
+        self._set_table_4_column_widths(table)
+        
+        # Format header cells
+        self._format_table_4_headers(table)
+        
+        return table
+
+
+    def _build_table_4_headers(self, table):
+        """Build header structure for table 4."""
+        # --- ROW 0: Main headers ---
+        hdr = table.rows[0].cells
+        hdr[0].text = "TT"
+        hdr[1].text = "Nội dung huấn luyện"
+        hdr[2].text = "Thành phần tham gia"
+        hdr[3].text = "Cấp phụ trách"
+        hdr[4].text = "Thời gian (giờ)"
+        hdr[17].text = "Biện pháp tiến hành"
+
+        # Merge "Thời gian (giờ)" horizontally (col 4 → 16)
+        hdr[4].merge(hdr[16])
+
+        # --- ROW 1: Sub headers ---
+        sub = table.rows[1].cells
+        sub[4].text = "Tổng số"
+        for i in range(12):
+            sub[5 + i].text = f"Tháng {i + 1:02d}"
+
+        # --- ROW 2: Numbers row ---
+        nums = table.rows[2].cells
+        # month_numbers = ["07", "77", "48", "48", "48", "48", "62", "48", "84", "21", "", ""]
+
+        # # Fill month numbers first
+        # for i, num in enumerate(month_numbers):
+        #     nums[5 + i].text = num
+
+        # Calculate total from cells 5-16
+        total = sum(int(nums[5 + i].text) for i in range(12) if nums[5 + i].text.strip())
+        nums[4].text = str(total)
+
+        # Merge vertically for fixed columns
+        for col in [0, 1, 2, 3, 17]:
+            table.cell(0, col).merge(table.cell(2, col))
+
+
+    def _set_table_4_column_widths(self, table):
+        """Set column widths for table 4."""
+        col_widths = [
+            0.5,   # TT
+            3.8,   # Nội dung huấn luyện
+            1.0,   # Thành phần tham gia
+            1.0,   # Cấp phụ trách
+            0.5,   # Tổng số
+            *[0.5] * 12,  # Tháng 01–12
+            2.8    # Biện pháp tiến hành
+        ]
+        
+        for i, width in enumerate(col_widths):
+            for row in table.rows:
+                row.cells[i].width = Inches(width)
+
+
+    def _format_table_4_headers(self, table):
+        """Format header cells for table 4."""
+        for row in table.rows[:3]:  # Only first 3 rows (headers)
+            for cell in row.cells:
+                cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+                for p in cell.paragraphs:
+                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    run = p.runs[0] if p.runs else p.add_run()
+                    run.font.name = "Times New Roman"
+                    run.font.size = Pt(14)
+                    run.bold = True
+
+
+    def _fill_table_4_data(self, table, records):
+        """Fill data rows for table 4."""
+        sequence_counter = 1  # Khởi tạo bộ đếm thứ tự
+        
+        for record in records:
+            courses = record.course_ids if hasattr(record, 'course_ids') and record.course_ids else []
+            
+            for course in courses:
+                missions = course.mission_ids if hasattr(course, 'mission_ids') and course.mission_ids else []
+                
+                for mission in missions:
+                    self._add_table_4_mission_row(table, mission, course, sequence_counter)
+                    sequence_counter += 1  # Tăng số thứ tự sau mỗi row
+
+
+    def _add_table_4_mission_row(self, table, mission, course, sequence_number):
+        """Add a single mission row to table 4."""
+        row = table.add_row()
+        cells = row.cells
+        
+        # Column 0: TT (Auto sequence number)
+        cells[0].text = str(sequence_number)
+        
+        # Columns 1-3: Merge và lấy tên từ training.course
+        course_name = getattr(course, 'name', '') or ''
+        
+        # Gộp cells 1, 2, 3
+        cells[1].merge(cells[2])
+        cells[1].merge(cells[3])
+        cells[1].text = course_name
+        cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
+        
+        # Columns 5-16: Monthly distribution
+        self._fill_monthly_hours(cells, mission)
+        
+        # Column 4: Tổng số giờ (tổng từ cells 5-16)
+        total_hours = sum([
+            self._get_cell_numeric_value(cells[i]) 
+            for i in range(5, 17)
+        ])
+        cells[4].text = str(int(total_hours)) if total_hours else ''
+        
+        # Column 17: Để trống
+        cells[17].text = ''
+        
+        # Format the row
+        self._format_table_4_data_row(cells)
+
+
+    def _get_cell_numeric_value(self, cell):
+        """Helper method to get numeric value from cell text."""
+        try:
+            text = cell.text.strip()
+            return float(text) if text else 0
+        except (ValueError, AttributeError):
+            return 0
+
+
+    def _fill_monthly_hours(self, cells, mission):
+        """Fill monthly hours distribution (columns 5-16)."""
+        monthly_hours = getattr(mission, 'monthly_distribution', [])
+        
+        # Ensure we have 12 values
+        if not monthly_hours:
+            monthly_hours = [''] * 12
+        elif len(monthly_hours) < 12:
+            monthly_hours = list(monthly_hours) + [''] * (12 - len(monthly_hours))
+        
+        for i in range(12):
+            value = monthly_hours[i] if i < len(monthly_hours) else ''
+            cells[5 + i].text = str(int(value)) if value else ''
+
+
+    def _format_table_4_data_row(self, cells):
+        """Format a data row in table 4."""
+        for cell in cells:
+            cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+            
+            # Default center alignment except for columns 1 and 17 (already set above)
+            for p in cell.paragraphs:
+                if p.alignment != WD_ALIGN_PARAGRAPH.LEFT:
+                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                
+                for run in p.runs:
+                    run.font.name = "Times New Roman"
+                    run.font.size = Pt(13)
+
+
+    def _add_table_4_summary(self, table, records):
+        """Add summary row at the bottom of table 4."""
+        summary_row = table.add_row()
+        cells = summary_row.cells
+        
+        # Column 1: Label
+        cells[1].text = "TỔNG SỐ"
+        cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+        
+        # Calculate totals
+        totals = self._calculate_table_4_totals(records)
+        
+        # Column 4: Total hours
+        cells[4].text = str(int(totals['total'])) if totals['total'] else ''
+        
+        # Columns 5-16: Monthly totals
+        for i in range(12):
+            month_total = totals['monthly'][i]
+            cells[5 + i].text = str(int(month_total)) if month_total else ''
+        
+        # Format summary row
+        for cell in cells:
+            cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+            for p in cell.paragraphs:
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                for run in p.runs:
+                    run.font.name = "Times New Roman"
+                    run.font.size = Pt(13)
+                    run.bold = True
+
+
+    def _calculate_table_4_totals(self, records):
+        """Calculate totals for all missions."""
+        total_hours = 0
+        monthly_totals = [0] * 12
+        
+        for record in records:
+            courses = record.course_ids if hasattr(record, 'course_ids') and record.course_ids else []
+            
+            for course in courses:
+                missions = course.mission_ids if hasattr(course, 'mission_ids') and course.mission_ids else []
+                
+                for mission in missions:
+                    # Add to total
+                    hours = getattr(mission, 'total_hours', 0) or 0
+                    total_hours += hours
+                    
+                    # Add to monthly totals
+                    monthly_hours = getattr(mission, 'monthly_distribution', [])
+                    for i in range(min(12, len(monthly_hours))):
+                        if monthly_hours[i]:
+                            monthly_totals[i] += monthly_hours[i]
+        
+        return {
+            'total': total_hours,
+            'monthly': monthly_totals
+        }
 
     # ==================== Main Action ====================
 
@@ -407,6 +692,8 @@ class PrintWordWizard(models.TransientModel):
         self.replace_placeholder_with_table(doc, "{{table_1}}", records, rows_data_table_1)
         self.replace_placeholder_with_table(doc, "{{table_2}}", records, rows_data_table_2, note=" ")
         self.replace_table_3_aasam(doc, "{{table_3}}", records)
+        self.replace_table_4(doc, "{{table_4}}", records)
+
 
         # Export Word file
         file_data = BytesIO()

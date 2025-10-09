@@ -59,6 +59,7 @@
                     <group>
                         <field name="plan_code"/>
                         <field name="name"/>
+                        <field name="type"/>
                         <field name="location"/>
                         <field name="description"/>
                         <field name="training_content"/>
