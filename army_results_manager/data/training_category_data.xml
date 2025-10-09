@@ -33,5 +33,14 @@
             <field name="name">Ban HC-KT</field>
         </record>
 
+        <record id="training_category_si_quan" model="training.category">
+            <field name="name">Sĩ quan</field>
+        </record>
+
+        <record id="training_category_si_quan_duoi_" model="training.category">
+            <field name="name">Sĩ quan dưới 45 tuổi</field>
+        </record>
+
+
     </data>
 </odoo>

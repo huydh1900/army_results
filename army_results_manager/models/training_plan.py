@@ -10,6 +10,11 @@ class TrainingPlan(models.Model):
     plan_code = fields.Char(string='Mã kế hoạch', required=True)
     name = fields.Char(string='Tên kế hoạch', required=True)
     description = fields.Text(string="Mô tả")
+    type = fields.Selection([
+        ('squad', 'Phân đội'),
+        ('officer', 'Sĩ quan')
+        ], string="Loại huấn luyện", required=True, default='squad'
+    )
     start_date = fields.Date(string="Thời gian bắt đầu", required=True)
     end_date = fields.Date(string="Thời gian kết thúc", required=True)
     participants_ids = fields.Many2many('hr.department', string="Đối tượng tham gia")

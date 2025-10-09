@@ -4,5 +4,6 @@ class TrainingCategory(models.Model):
     _name = "training.category"
     _description = "Danh mục Thành phần tham gia / Cấp phụ trách"
 
-    name = fields.Char(string="Tên", required=True)
-    code = fields.Char(string="Mã")
+    name = fields.Char(string="Tên cấp bậc", required=True)
+    code = fields.Char(string="Mã cấp bậc")
+    # course_id = fields.One2many('training.course', 'category_id')

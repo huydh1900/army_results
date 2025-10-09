@@ -24,6 +24,12 @@
             <field name="view_mode">tree,form</field>
         </record>
 
+        <record id="action_training_category" model="ir.actions.act_window">
+            <field name="name">Cấp bậc</field>
+            <field name="res_model">training.category</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
         <record id="action_training_mission_result" model="ir.actions.act_window">
             <field name="name">Kết quả huấn luyện</field>
             <field name="res_model">training.result</field>
@@ -139,8 +145,12 @@
         <menuitem id="menu_training_subject"
                   name="Môn học"
                   parent="menu_setting"
-                  action="action_training_subject"
-                  sequence="1"/>
+                  action="action_training_subject"/>
+
+        <menuitem id="menu_training_category"
+                  name="Cấp bậc"
+                  parent="menu_setting"
+                  action="action_training_category"/>
 
     </data>
 </odoo>
