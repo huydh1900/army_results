@@ -69,11 +69,15 @@
                     <notebook>
                         <page string="Chi tiết nhiệm vụ huấn luyện">
                             <field name="mission_line_ids">
-                                <tree>
+                                <tree editable="bottom">
                                     <field name="name"/>
                                     <field name="start_date"/>
                                     <field name="end_date"/>
                                     <field name="total_hours"/>
+                                    <button name="action_detail"
+                                            type="object"
+                                            class="oe_stat_button"
+                                            icon="fa-eye"/>
                                 </tree>
                             </field>
                         </page>

@@ -44,7 +44,7 @@ class TrainingCourse(models.Model):
             'res_model': 'training.course',
             'view_mode': 'form',
             'res_id': self.id,
-            'target': 'new',
+            'target': 'current',
         }
 
     def write(self, vals):

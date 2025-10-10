@@ -17,47 +17,45 @@
         <field name="model">training.course</field>
         <field name="arch" type="xml">
             <form string="Kế hoạch huấn luyện">
-                <sheet>
-                    <div class="oe_button_box" name="button_box">
-                        <button name="action_open_students"
-                                type="object"
-                                class="oe_stat_button"
-                                icon="fa-users">
-                            <field name="student_count" widget="statinfo" string="Học viên"/>
-                        </button>
-                    </div>
+                <div class="oe_button_box" name="button_box">
+                    <button name="action_open_students"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-users">
+                        <field name="student_count" widget="statinfo" string="Học viên"/>
+                    </button>
+                </div>
+                <group>
                     <group>
-                        <group>
-                            <field name="name"/>
-                            <field name="participants_ids" widget="many2many_tags"/>
-                            <field name="student_ids" widget="many2many_tags"/>
-                            <field name="participant_category_id"/>
-                            <field name="responsible_level_id"/>
-                        </group>
-                        <group>
-                            <field name="start_date"/>
-                            <field name="end_date"/>
-                            <field name="total_hours"/>
-                        </group>
+                        <field name="name"/>
+                        <field name="participants_ids" widget="many2many_tags"/>
+                        <field name="student_ids" widget="many2many_tags"/>
+                        <field name="participant_category_id"/>
+                        <field name="responsible_level_id"/>
                     </group>
-                    <notebook>
-                        <page string="Danh sách nội dung huấn luyện">
-                            <field name="mission_ids">
-                                <tree editable="bottom">
-                                    <field name="name"/>
-                                    <field name="type_training"/>
-                                    <field name="start_date"/>
-                                    <field name="end_date"/>
-                                    <field name="total_hours"/>
-                                    <button name="action_detail"
-                                            type="object"
-                                            class="oe_stat_button"
-                                            icon="fa-eye"/>
-                                </tree>
-                            </field>
-                        </page>
-                    </notebook>
-                </sheet>
+                    <group>
+                        <field name="start_date"/>
+                        <field name="end_date"/>
+                        <field name="total_hours"/>
+                    </group>
+                </group>
+                <notebook>
+                    <page string="Danh sách nội dung huấn luyện">
+                        <field name="mission_ids">
+                            <tree editable="bottom">
+                                <field name="name"/>
+                                <field name="type_training"/>
+                                <field name="start_date"/>
+                                <field name="end_date"/>
+                                <field name="total_hours"/>
+                                <button name="action_detail"
+                                        type="object"
+                                        class="oe_stat_button"
+                                        icon="fa-eye"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
             </form>
         </field>
     </record>

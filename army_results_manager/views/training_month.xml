@@ -18,9 +18,13 @@
                     <notebook>
                         <page string="Tuần huấn luyện">
                             <field name="week_ids">
-                                <tree>
+                                <tree editable="bottom">
                                     <field name="week"/>
                                     <field name="total_hours"/>
+                                    <button name="action_detail"
+                                            type="object"
+                                            class="oe_stat_button"
+                                            icon="fa-eye"/>
                                 </tree>
                             </field>
                         </page>

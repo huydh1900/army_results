@@ -39,7 +39,7 @@ class TrainingMission(models.Model):
             'res_model': 'training.mission',
             'view_mode': 'form',
             'res_id': self.id,
-            'target': 'new',
+            'target': 'current',
         }
 
     @api.depends('mission_line_ids.total_hours')
@@ -70,6 +70,17 @@ class TrainingMissionLine(models.Model):
     start_date = fields.Date(string="Thời gian bắt đầu")
     end_date = fields.Date(string="Thời gian kết thúc")
     month_ids = fields.One2many('training.month', 'month_id', string='Thời gian huấn luyện theo tháng')
+
+    def action_detail(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Chi tiết nhiệm vụ huấn luyện',
+            'res_model': 'training.mission.line',
+            'view_mode': 'form',
+            'res_id': self.id,
+            'target': 'current',
+        }
 
     @api.constrains('month_ids', 'month_ids.total_hours')
     @api.onchange('month_ids')

@@ -33,9 +33,13 @@
                     <notebook>
                         <page string="Thời gian huấn luyện">
                             <field name="month_ids">
-                                <tree>
+                                <tree editable="bottom">
                                     <field name="month"/>
                                     <field name="total_hours"/>
+                                    <button name="action_detail"
+                                            type="object"
+                                            class="oe_stat_button"
+                                            icon="fa-eye"/>
                                 </tree>
                             </field>
                         </page>

@@ -5,16 +5,22 @@ import calendar
 
 class TrainingMonth(models.Model):
     _name = 'training.month'
-    _rec_name = 'month'
     _description = 'Thời gian huấn luyện theo tháng'
 
     month = fields.Selection(
         [(str(i), f"Tháng {i}") for i in range(1, 13)],
-        string="Tháng"
+        string="Tháng", required=True,
     )
     month_id = fields.Many2one('training.mission.line', string='Tên bài học')
     week_ids = fields.One2many('training.week', 'week_id', string='Thời gian huấn luyện theo tuần')
     total_hours = fields.Float(string='Số giờ')
+
+    def name_get(self):
+        result = []
+        for record in self:
+            name = dict(self._fields['month'].selection).get(record.month, record.month)
+            result.append((record.id, name))
+        return result
 
     @api.constrains('week_ids')
     @api.onchange('week_ids')
@@ -25,19 +31,47 @@ class TrainingMonth(models.Model):
             else:
                 rec.total_hours = 0
 
+    def action_detail(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Theo tháng',
+            'res_model': 'training.month',
+            'view_mode': 'form',
+            'res_id': self.id,
+            'target': 'current',
+        }
+
 
 class TrainingWeek(models.Model):
     _name = 'training.week'
-    _rec_name = 'week'
     _description = 'Thời gian huấn luyện theo tuần'
 
     week_id = fields.Many2one('training.month', string='Tháng', readonly=True)
     week = fields.Selection(
         [(str(i), f"Tuần {i}") for i in range(1, 6)],
-        string="Tuần"
+        string="Tuần", required=True,
     )
     total_hours = fields.Float(string='Số giờ')
     day_ids = fields.One2many('training.day', 'day_id', string='Thời gian huấn luyện theo ngày')
+
+    def name_get(self):
+        result = []
+        for record in self:
+            name = dict(self._fields['week'].selection).get(record.week, record.week)
+            result.append((record.id, name))
+        return result
+
+    def action_detail(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Theo tuần',
+            'res_model': 'training.week',
+            'view_mode': 'form',
+            'res_id': self.id,
+            'target': 'current',
+        }
 
     @api.constrains('day_ids')
     @api.onchange('day_ids')
@@ -64,7 +98,7 @@ class TrainingDay(models.Model):
         ('6', 'Thứ 6'),
         ('7', 'Thứ 7'),
         ('cn', 'Chủ nhật'),
-    ], string="Thứ", )
+    ], string="Thứ", required=True)
 
     @api.onchange('weekday')
     def _onchange_weekday(self):
