@@ -19,7 +19,7 @@ class TrainingResult(models.Model):
         ],
         string="Xếp loại",
     )
-    note = fields.Char(string='Ghi chú')
+    note = fields.Char(string='Nhận xét')
 
     @api.onchange("score")
     def _onchange_score(self):

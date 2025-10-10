@@ -2,8 +2,6 @@ import json
 
 from odoo import fields, models, api
 from odoo.exceptions import UserError
-from lxml import etree
-import simplejson
 
 
 class TrainingPlan(models.Model):

@@ -6,4 +6,3 @@ class TrainingCategory(models.Model):
 
     name = fields.Char(string="Tên cấp bậc", required=True)
     code = fields.Char(string="Mã cấp bậc")
-    # course_id = fields.One2many('training.course', 'category_id')

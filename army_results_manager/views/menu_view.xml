@@ -124,7 +124,6 @@
         <menuitem id="menu_training_plan"
                   name="Kế hoạch huấn luyện"
                   parent="menu_military_root"
-                  action="action_training_plan"
                   groups="army_results_manager.group_training_commander_assistant"
                   sequence="2"/>
 

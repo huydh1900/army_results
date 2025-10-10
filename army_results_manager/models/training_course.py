@@ -10,7 +10,7 @@ class TrainingCourse(models.Model):
     start_date = fields.Date(string="Bắt đầu huấn luyện")
     end_date = fields.Date(string="Kết thúc huấn luyện")
     total_hours = fields.Float(string='Tổng số giờ', compute='_compute_total_hours', store=True)
-    plan_id = fields.Many2one('training.plan')
+    plan_id = fields.Many2one('training.plan', ondelete='cascade')
     mission_ids = fields.One2many('training.mission', 'course_id', string='Danh sách nội dung huấn luyện')
     student_ids = fields.Many2many('hr.employee', string='Học viên', domain="[('role', '=', 'student')]")
     student_count = fields.Integer(
@@ -18,8 +18,8 @@ class TrainingCourse(models.Model):
         compute='_compute_student_count'
     )
     participants_ids = fields.Many2many('hr.department', string="Đối tượng tham gia")
-    category_id = fields.Many2one('training.category', string='Thành phần tham gia')
-    category_ids = fields.Many2one('training.category', string='Cấp phụ trách')
+    participant_category_id = fields.Many2one('training.category', string='Thành phần tham gia')
+    responsible_level_id = fields.Many2one('training.category', string='Cấp phụ trách')
 
     @api.depends('mission_ids', 'mission_ids.total_hours')
     def _compute_total_hours(self):
@@ -36,9 +36,21 @@ class TrainingCourse(models.Model):
                 ('result_ids.training_course_id', '=', rec.id),
             ])
 
+    def action_detail(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Khóa huấn luyện',
+            'res_model': 'training.course',
+            'view_mode': 'form',
+            'res_id': self.id,
+            'target': 'new',
+        }
+
     def write(self, vals):
         res = super().write(vals)
-        self._sync_students_to_results()
+        if vals.get('student_ids') or vals.get('mission_ids'):
+            self._sync_students_to_results()
         return res
 
     def _sync_students_to_results(self):

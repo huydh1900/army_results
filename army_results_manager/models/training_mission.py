@@ -12,7 +12,7 @@ class TrainingMission(models.Model):
     end_date = fields.Date(string="Thời gian kết thúc")
     participants_ids = fields.Many2many('hr.department', string="Đối tượng tham gia")
     material_ids = fields.One2many('training.material', 'mission_id', string="Tài liệu / Video")
-    course_id = fields.Many2one('training.course')
+    course_id = fields.Many2one('training.course', ondelete='cascade')
     student_ids = fields.Many2many('hr.employee', string='Học viên', related='course_id.student_ids')
     state = fields.Selection([
         ('draft', 'Dự thảo'),
@@ -30,6 +30,17 @@ class TrainingMission(models.Model):
         ('private_training', 'Huấn luyện riêng'),
     ], string="Loại huấn luyện")
     subject_id = fields.Many2one('training.subject', string="Môn học")
+
+    def action_detail(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Danh sách nội dung huấn luyện',
+            'res_model': 'training.mission',
+            'view_mode': 'form',
+            'res_id': self.id,
+            'target': 'new',
+        }
 
     @api.depends('mission_line_ids.total_hours')
     def _compute_total_hours(self):

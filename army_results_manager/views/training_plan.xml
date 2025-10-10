@@ -53,7 +53,6 @@
                             type="object"
                             states="draft,posted,to_modify"
                             class="btn-danger"/>
-
                 </header>
                 <group>
                     <group>
@@ -80,6 +79,10 @@
                                 <field name="start_date"/>
                                 <field name="end_date"/>
                                 <field name="total_hours"/>
+                                <button name="action_detail"
+                                        type="object"
+                                        class="oe_stat_button"
+                                        icon="fa-eye"/>
                             </tree>
                         </field>
                     </page>
