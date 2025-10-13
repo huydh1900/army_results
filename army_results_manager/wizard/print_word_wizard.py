@@ -77,7 +77,7 @@ class PrintWordWizard(models.TransientModel):
 
     # ==================== Table Replacement Functions ====================
 
-    def replace_placeholder_with_table(self, doc, placeholder, records, rows_data, note=None):
+    def replace_placeholder_with_table(self, doc, placeholder, records, rows_data=None, note=None):
         """Replace placeholder with standard table format, chỉ lấy records có type='squad'."""
         # 🔸 Lọc record theo type
         filtered_records = [r for r in records if r.type == 'squad']
@@ -121,6 +121,23 @@ class PrintWordWizard(models.TransientModel):
             # 🔸 Chèn bảng vào đúng vị trí placeholder
             parent.insert(idx, table._element)
             break
+
+    def replace_placeholder_with_table_template2(self, doc, placeholder, records, rows_data=None, note=None):
+        """Hàm này dành cho mẫu in template2 nếu cần."""
+        # 🔸 Lọc record theo type
+        filtered_records = [r for r in records if r.type == 'squad']
+
+        # Nếu không có record phù hợp thì không tạo bảng
+        if not filtered_records:
+            return
+
+        for para in doc.paragraphs:
+            if placeholder not in para.text:
+                continue
+
+            parent = para._element.getparent()
+            idx = parent.index(para._element)
+            parent.remove(para._element)
 
 
     def _build_standard_headers(self, table, records, num_records, num_cols, note):
@@ -714,58 +731,100 @@ class PrintWordWizard(models.TransientModel):
         active_ids = self.env.context.get("active_ids", [])
         records = self.env['training.plan'].browse(active_ids)
 
-        # Data definitions
-        rows_data_table_1 = [
-            ("1.1", "Bắt đầu huấn luyện", "start_date"),
-            ("1.2", "Kết thúc huấn luyện", "end_date"),
-            ("1.3", "Tổng số thời gian", "total_hours"),
-            ("1.4", "Số tuần huấn luyện", ""),
-            ("1.5", "Số ngày huấn luyện", ""),
-            ("1.6", "Số ngày nghỉ", ""),
-            ("a", "Nghỉ thứ 7 + CN", ""),
-            ("b", "Nghỉ lễ, Tết", ""),
-        ]
+        if self.mau_in == 'template1':
+            # Data definitions
+            rows_data_table_1 = [
+                ("1.1", "Bắt đầu huấn luyện", "start_date"),
+                ("1.2", "Kết thúc huấn luyện", "end_date"),
+                ("1.3", "Tổng số thời gian", "total_hours"),
+                ("1.4", "Số tuần huấn luyện", ""),
+                ("1.5", "Số ngày huấn luyện", ""),
+                ("1.6", "Số ngày nghỉ", ""),
+                ("a", "Nghỉ thứ 7 + CN", ""),
+                ("b", "Nghỉ lễ, Tết", ""),
+            ]
 
-        rows_data_table_2 = [
-            ("a", "Tổng số thời gian huấn luyện", "total_hours"),
-            ("b", "Huấn luyện chung", "total_hours_type_common"),
-            ("", "Giáo dục chính trị, nghị quyết, pháp luật", ""),
-            ("", "Huấn luyện quân sự chung", ""),
-            ("c", "Huấn luyện riêng", "total_hours_type_private"),
-            ("", "Huấn luyện các bài bắn theo Quy chế, Điều lệ", ""),
-            ("", "Huấn luyện thể lực", ""),
-            ("d", "Học tiếng Anh ngoại khoá buổi tối (thứ 3, 5 hàng tuần)", ""),
-        ]
+            rows_data_table_2 = [
+                ("a", "Tổng số thời gian huấn luyện", "total_hours"),
+                ("b", "Huấn luyện chung", "total_hours_type_common"),
+                ("", "Giáo dục chính trị, nghị quyết, pháp luật", ""),
+                ("", "Huấn luyện quân sự chung", ""),
+                ("c", "Huấn luyện riêng", "total_hours_type_private"),
+                ("", "Huấn luyện các bài bắn theo Quy chế, Điều lệ", ""),
+                ("", "Huấn luyện thể lực", ""),
+                ("d", "Học tiếng Anh ngoại khoá buổi tối (thứ 3, 5 hàng tuần)", ""),
+            ]
 
-        # Load template and replace tables
-        template_path = get_module_resource(
-            'army_results_manager', 'static', 'src', 'word', f'{self.mau_in}.docx'
-        )
-        doc = Document(template_path)
+            # Load template and replace tables
+            template_path = get_module_resource(
+                'army_results_manager', 'static', 'src', 'word', f'{self.mau_in}.docx'
+            )
+            doc = Document(template_path)
 
-        self.replace_placeholder_with_table(doc, "{{table_1}}", records, rows_data_table_1)
-        self.replace_placeholder_with_table(doc, "{{table_2}}", records, rows_data_table_2, note=" ")
-        self.replace_table_3_aasam(doc, "{{table_3}}", records)
-        self.replace_table_4(doc, "{{table_4}}", records)
+            self.replace_placeholder_with_table(doc, "{{table_1}}", records, rows_data_table_1)
+            self.replace_placeholder_with_table(doc, "{{table_2}}", records, rows_data_table_2, note=" ")
+            self.replace_table_3_aasam(doc, "{{table_3}}", records)
+            self.replace_table_4(doc, "{{table_4}}", records)
 
 
-        # Export Word file
-        file_data = BytesIO()
-        doc.save(file_data)
-        file_data.seek(0)
-        data = base64.b64encode(file_data.read())
+            # Export Word file
+            file_data = BytesIO()
+            doc.save(file_data)
+            file_data.seek(0)
+            data = base64.b64encode(file_data.read())
 
-        attachment = self.env['ir.attachment'].create({
-            'name': f'{self.mau_in}.docx',
-            'type': 'binary',
-            'datas': data,
-            'res_model': self._name,
-            'res_id': self.id,
-            'mimetype': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        })
+            attachment = self.env['ir.attachment'].create({
+                'name': f'{self.mau_in}.docx',
+                'type': 'binary',
+                'datas': data,
+                'res_model': self._name,
+                'res_id': self.id,
+                'mimetype': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            })
 
-        return {
-            'type': 'ir.actions.act_url',
-            'url': f'/web/content/{attachment.id}?download=true',
-            'target': 'new',
-        }
+            return {
+                'type': 'ir.actions.act_url',
+                'url': f'/web/content/{attachment.id}?download=true',
+                'target': 'new',
+            }
+
+        elif self.mau_in == 'template2':
+            # Data definitions
+            # Load template and replace tables
+            template_path = get_module_resource('army_results_manager', 'static', 'src', 'word', f'{self.mau_in}.docx')
+            doc = Document(template_path)
+
+            self.replace_placeholder_with_table_template2(doc, "{{table_1}}", records)
+            self.replace_placeholder_with_table_template2(doc, "{{table_2}}", records, note=" ")
+            self.replace_table_3_aasam(doc, "{{table_3}}", records)
+            self.replace_table_4(doc, "{{table_4}}", records)
+
+            # Export Word file
+            file_data = BytesIO()
+            doc.save(file_data)
+            file_data.seek(0)
+            data = base64.b64encode(file_data.read())
+
+            attachment = self.env['ir.attachment'].create({
+                'name': f'{self.mau_in}.docx',
+                'type': 'binary',
+                'datas': data,
+                'res_model': self._name,
+                'res_id': self.id,
+                'mimetype': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            })
+
+            return {
+                'type': 'ir.actions.act_url',
+                'url': f'/web/content/{attachment.id}?download=true',
+                'target': 'new',
+            }
+
+        elif self.mau_in == 'template3':
+            return True
+
+        elif self.mau_in == 'template4':
+            return True
+
+        else:
+            return True
