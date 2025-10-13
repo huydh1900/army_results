@@ -32,6 +32,7 @@
                         <field name="student_ids" widget="many2many_tags"/>
                         <field name="participant_category_id"/>
                         <field name="responsible_level_id"/>
+                        <field name="measure"/>
                     </group>
                     <group>
                         <field name="start_date"/>

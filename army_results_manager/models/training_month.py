@@ -2,7 +2,7 @@ from odoo import models, fields, api
 from datetime import date, timedelta
 from datetime import datetime
 
-from odoo16.odoo16.odoo.exceptions import UserError
+from odoo.exceptions import UserError
 
 
 class TrainingMonth(models.Model):
