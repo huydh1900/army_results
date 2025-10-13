@@ -1,6 +1,8 @@
 from odoo import models, fields, api
 from datetime import date, timedelta
-import calendar
+from datetime import datetime
+
+from odoo16.odoo16.odoo.exceptions import UserError
 
 
 class TrainingMonth(models.Model):
@@ -14,6 +16,12 @@ class TrainingMonth(models.Model):
     month_id = fields.Many2one('training.mission.line', string='Tên bài học')
     week_ids = fields.One2many('training.week', 'week_id', string='Thời gian huấn luyện theo tuần')
     total_hours = fields.Float(string='Số giờ')
+    student_ids = fields.Many2many('hr.employee', string='Học viên', compute='_compute_student_ids', store=True)
+
+    @api.depends('month_id.student_ids')
+    def _compute_student_ids(self):
+        for rec in self:
+            rec.student_ids = rec.month_id.student_ids
 
     def name_get(self):
         result = []
@@ -54,6 +62,13 @@ class TrainingWeek(models.Model):
     )
     total_hours = fields.Float(string='Số giờ')
     day_ids = fields.One2many('training.day', 'day_id', string='Thời gian huấn luyện theo ngày')
+    student_ids = fields.Many2many('hr.employee', string='Học viên', compute='_compute_student_ids', store=True)
+    month_id_name = fields.Char(string="Tên bài học", related='week_id.month_id.name',store=True)
+
+    @api.depends('week_id.student_ids')
+    def _compute_student_ids(self):
+        for rec in self:
+            rec.student_ids = rec.week_id.student_ids
 
     def name_get(self):
         result = []
@@ -99,38 +114,108 @@ class TrainingDay(models.Model):
         ('7', 'Thứ 7'),
         ('cn', 'Chủ nhật'),
     ], string="Thứ", required=True)
+    student_ids = fields.Many2many('hr.employee', string='Học viên', compute='_compute_student_ids', store=True)
+    line_ids = fields.One2many('training.day.line', 'day_id', string='Chi tiết kết quả')
+    day_id_name = fields.Char(string="Tên bài học", related='day_id.month_id_name',store=True)
+
+    @api.model
+    def create(self, vals):
+        record = super().create(vals)
+        if record.day and record.student_ids:
+            for student in record.day_id.student_ids:
+                self.env['training.day.line'].create({
+                    'day_id': record.id,
+                    'employee_id': student.id,
+                })
+        return record
+
+    @api.depends('day_id')
+    def _compute_student_ids(self):
+        for rec in self:
+            rec.student_ids = rec.day_id.student_ids
 
     @api.onchange('weekday')
     def _onchange_weekday(self):
+        weekday_map = {
+            '2': 0,  # Monday
+            '3': 1,
+            '4': 2,
+            '5': 3,
+            '6': 4,
+            '7': 5,
+            'cn': 6,  # Sunday
+        }
+
         for rec in self:
-            if rec.weekday and rec.day_id and rec.day_id.week_id:
-                today = date.today()
-                year = today.year
-                month = int(rec.day_id.week_id.month)
-                week_num = int(rec.day_id.week)
-                weekday_map = {
-                    '2': 0,  # Monday
-                    '3': 1,
-                    '4': 2,
-                    '5': 3,
-                    '6': 4,
-                    '7': 5,
-                    'cn': 6,  # Sunday
-                }
-                weekday_idx = weekday_map[rec.weekday]
+            week_id = rec.day_id.week_id if rec.day_id else False
+            if not (rec.weekday and rec.day_id and week_id):
+                rec.day = False
+                continue
 
-                # Lấy ngày đầu tháng
-                first_day = date(year, month, 1)
-                # Tìm ngày đầu tiên đúng weekday trong tháng
-                first_weekday = first_day + timedelta(
-                    days=(weekday_idx - first_day.weekday() + 7) % 7
-                )
-                # Cộng thêm (week_num - 1) * 7 để ra tuần cần
-                target_day = first_weekday + timedelta(weeks=week_num - 1)
-
-                # Kiểm tra còn nằm trong tháng không
-                last_day = date(year, month, calendar.monthrange(year, month)[1])
-                if target_day <= last_day:
-                    rec.day = target_day
-                else:
+            try:
+                year = date.today().year
+                iso_week_num = int(rec.day_id.week)  # Tuần ISO
+                weekday_idx = weekday_map.get(rec.weekday)
+                if weekday_idx is None:
                     rec.day = False
+                    continue
+
+                # === Tìm ngày Thứ Hai của tuần ISO ===
+                # ISO week 1 của năm có thể bắt đầu từ tháng trước
+                first_week_monday = date.fromisocalendar(year, iso_week_num, 1)
+                target_day = date.fromisocalendar(year, iso_week_num, weekday_idx + 1)
+
+                # === Kiểm tra hợp lệ ===
+                start_week = first_week_monday
+                end_week = start_week + timedelta(days=6)
+
+                if not (start_week <= target_day <= end_week):
+                    raise UserError(
+                        f"Thứ bạn chọn không nằm trong tuần {iso_week_num} của năm {year}.\n"
+                        f"Tuần này bắt đầu từ {start_week.strftime('%d/%m/%Y')} "
+                        f"đến {end_week.strftime('%d/%m/%Y')}."
+                    )
+
+                rec.day = target_day
+
+            except ValueError:
+                # Nếu tuần vượt ngoài phạm vi ISO hợp lệ (1–52 hoặc 53)
+                raise UserError(
+                    f"Tuần {rec.day_id.week} không hợp lệ cho năm {year}."
+                )
+            except UserError:
+                raise
+            except Exception:
+                rec.day = False
+
+class TrainingDayLine(models.Model):
+    _name = 'training.day.line'
+    _description = 'Kết quả huấn luyện trong ngày'
+
+    day_id = fields.Many2one('training.day', string='Ngày huấn luyện', ondelete='cascade')
+    employee_id = fields.Many2one('hr.employee', string='Học viên', required=True)
+    note = fields.Char(string='Nhận xét')
+    day_date = fields.Date(related='day_id.day', store=True, string='Ngày')
+    day_date_char = fields.Char(string='Ngày', compute='_compute_day_date_char', store=True)
+    day_id_name = fields.Char(string="Tên bài học", related='day_id.day_id_name',store=True)
+
+    @api.depends('day_date')
+    def _compute_day_date_char(self):
+        for rec in self:
+            if rec.day_date:
+                rec.day_date_char = rec.day_date.strftime("%d/%m/%Y")
+            else:
+                rec.day_date_vn = ''
+
+
+    @api.depends('day_id.day', 'employee_id.name')
+    def name_get(self):
+        result = []
+        for rec in self:
+            vn_date = ''
+            if rec.day_id.day:
+                vn_date = datetime.strftime(rec.day_id.day, "%d-%m-%Y")
+            name = f"{vn_date} - {rec.employee_id.name or ''}"
+            result.append((rec.id, name))
+        return result
+

@@ -22,9 +22,10 @@
             'army_results_manager/static/src/css/login.css',
         ],
         "web.assets_backend": [
+            "army_results_manager/static/src/components/**/*.css",
+            "army_results_manager/static/src/components/**/*.scss",
             "army_results_manager/static/src/components/**/*.js",
             "army_results_manager/static/src/components/**/*.xml",
-            "army_results_manager/static/src/components/**/*.css",
         ],
     },
     # always loaded
@@ -36,6 +37,7 @@
         'data/training_subject_data.xml',
         'wizard/print_word_wizard.xml',
         'views/webclient_templates.xml',
+        'views/training_day_line_view.xml',
         'views/auth_totp_templates.xml',
         'views/hr_department_views.xml',
         'views/training_mission.xml',

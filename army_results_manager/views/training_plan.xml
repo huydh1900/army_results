@@ -82,6 +82,7 @@
                                 <button name="action_detail"
                                         type="object"
                                         class="oe_stat_button"
+                                        title="Chi tiết"
                                         icon="fa-eye"/>
                             </tree>
                         </field>

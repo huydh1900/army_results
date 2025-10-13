@@ -15,6 +15,8 @@ class HrEmployeePrivate(models.Model):
     job_id = fields.Many2one(tracking=True, string='Chức vụ')
     identification_id = fields.Char(string='Số hiệu sĩ quan', groups="hr.group_hr_user", tracking=True)
     result_ids = fields.One2many('training.result', 'employee_id')
+    comment_ids = fields.One2many('training.comment', 'employee_id')
+    day_ids = fields.Many2many('training.day')
 
     @api.model
     def default_get(self, fields_list):
@@ -22,7 +24,6 @@ class HrEmployeePrivate(models.Model):
         role = self.env.context.get('default_role')
         department_id = self.env.context.get('default_department_id')
         course_id = self.env.context.get('default_course')
-
         res['department_id'] = department_id
 
         if role == 'commanding_officer':
@@ -32,11 +33,9 @@ class HrEmployeePrivate(models.Model):
         else:
             res['role'] = 'student'
 
-        # Nếu có default_course thì tạo sẵn một dòng result_ids
         if course_id:
             res['result_ids'] = [(0, 0, {
                 'training_course_id': course_id,
-                # thêm các field mặc định khác của training.result nếu cần
             })]
 
         return res
