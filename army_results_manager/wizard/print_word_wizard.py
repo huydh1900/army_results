@@ -390,11 +390,8 @@ class PrintWordWizard(models.TransientModel):
     # ==================== Table 4: Huấn luyện sĩ quan ====================
 
     def replace_table_4(self, doc, placeholder, records):
-        """Main function to replace placeholder with table 4, chỉ lấy records có type='squad'."""
-        # 🔸 Lọc record theo type
+        """Main function to replace placeholder with table 4, chỉ lấy records officer."""
         filtered_records = [r for r in records if r.type == 'officer']
-
-        # Nếu không có record phù hợp thì không tạo bảng
         if not filtered_records:
             return
 
@@ -402,256 +399,313 @@ class PrintWordWizard(models.TransientModel):
             if placeholder not in para.text:
                 continue
 
-            # Xóa placeholder
             parent = para._element.getparent()
             idx = parent.index(para._element)
             parent.remove(para._element)
 
-            # Tạo cấu trúc bảng
             table = self._create_table_4_structure(doc)
-            
-            # Điền dữ liệu bảng
             self._fill_table_4_data(table, filtered_records)
-            
-            # Thêm dòng tổng kết
-            # self._add_table_4_summary(table, filtered_records)
+            self._update_table_4_header_totals(table)
 
-            # Chèn bảng vào đúng vị trí placeholder
             parent.insert(idx, table._element)
             break
 
-
-
     def _create_table_4_structure(self, doc):
-        """Create table 4 structure with headers."""
-        # Create table with 3 header rows
+        """Tạo bảng với cấu trúc header tối ưu."""
         table = doc.add_table(rows=3, cols=18)
         table.style = "Table Grid"
-
+        
+        # Set column widths trước khi build header
+        self._set_table_4_column_widths(table)
+        
         # Build headers
         self._build_table_4_headers(table)
         
-        # Set column widths
-        self._set_table_4_column_widths(table)
-        
-        # Format header cells
+        # Format headers và set row height
         self._format_table_4_headers(table)
         
         return table
 
-
     def _build_table_4_headers(self, table):
-        """Build header structure for table 4."""
-        # --- ROW 0: Main headers ---
-        hdr = table.rows[0].cells
-        hdr[0].text = "TT"
-        hdr[1].text = "Nội dung huấn luyện"
-        hdr[2].text = "Thành phần tham gia"
-        hdr[3].text = "Cấp phụ trách"
-        hdr[4].text = "Thời gian (giờ)"
-        hdr[17].text = "Biện pháp tiến hành"
-
-        # Merge "Thời gian (giờ)" horizontally (col 4 → 16)
-        hdr[4].merge(hdr[16])
-
-        # --- ROW 1: Sub headers ---
-        sub = table.rows[1].cells
-        sub[4].text = "Tổng số"
-        for i in range(12):
-            sub[5 + i].text = f"Tháng {i + 1:02d}"
-
-        # --- ROW 2: Numbers row ---
-        nums = table.rows[2].cells
-        # month_numbers = ["07", "77", "48", "48", "48", "48", "62", "48", "84", "21", "", ""]
-
-        # # Fill month numbers first
-        # for i, num in enumerate(month_numbers):
-        #     nums[5 + i].text = num
-
-        # Calculate total from cells 5-16
-        total = sum(int(nums[5 + i].text) for i in range(12) if nums[5 + i].text.strip())
-        nums[4].text = str(total)
-
-        # Merge vertically for fixed columns
-        for col in [0, 1, 2, 3, 17]:
-            table.cell(0, col).merge(table.cell(2, col))
-
-
-    def _set_table_4_column_widths(self, table):
-        """Set column widths for table 4."""
-        col_widths = [
-            0.5,   # TT
-            3.8,   # Nội dung huấn luyện
-            1.0,   # Thành phần tham gia
-            1.0,   # Cấp phụ trách
-            0.5,   # Tổng số
-            *[0.5] * 12,  # Tháng 01–12
-            2.8    # Biện pháp tiến hành
+        """Tạo 3 hàng tiêu đề cho Bảng 4 với cấu trúc tối ưu."""
+        
+        # ───── 1. HEADER CHÍNH (ROW 0) ─────
+        row0 = table.rows[0]
+        headers_row0 = [
+            "TT", "Nội dung huấn luyện", "Thành phần tham gia", 
+            "Cấp phụ trách", "Thời gian (giờ)", "", "", "", "", "", 
+            "", "", "", "", "", "", "", "Biện pháp tiến hành"
         ]
         
-        for i, width in enumerate(col_widths):
-            for row in table.rows:
-                row.cells[i].width = Inches(width)
+        for i, text in enumerate(headers_row0):
+            if text:  # Only set non-empty cells
+                row0.cells[i].text = text
+        
+        # Merge "Thời gian (giờ)" từ cột 4 → 16
+        row0.cells[4].merge(row0.cells[16])
+        
+        # ───── 2. SUBHEADER (ROW 1) ─────
+        row1 = table.rows[1]
+        row1.cells[4].text = "Tổng số"
+        for month_idx in range(12):
+            row1.cells[5 + month_idx].text = f"Tháng {month_idx + 1:02d}"
+        
+        # ───── 3. MERGE CỘT CỐ ĐỊNH THEO CHIỀU DỌC ─────
+        # Merge các cột: TT, Nội dung, Thành phần, Cấp phụ trách, Biện pháp
+        fixed_cols = [0, 1, 2, 3, 17]
+        for col_idx in fixed_cols:
+            table.cell(0, col_idx).merge(table.cell(2, col_idx))
 
+    def _set_table_4_column_widths(self, table):
+        """Đặt chiều rộng cố định cho từng cột."""
+        col_widths = [
+            0.4,   # TT
+            4.5,   # Nội dung huấn luyện
+            1.0,   # Thành phần
+            0.9,   # Cấp phụ trách
+            0.5,   # Tổng số
+            0.45, 0.45, 0.45, 0.45, 0.45, 0.45,  # Tháng 1-6
+            0.45, 0.45, 0.45, 0.45, 0.45, 0.45,  # Tháng 7-12
+            2.5    # Biện pháp
+        ]
+        
+        for row in table.rows:
+            for col_idx, width_in in enumerate(col_widths):
+                row.cells[col_idx].width = Inches(width_in)
 
     def _format_table_4_headers(self, table):
-        """Format header cells for table 4."""
-        for row in table.rows[:3]:  # Only first 3 rows (headers)
+        """Định dạng header với chiều cao cố định."""
+        # Set height cho từng row riêng biệt
+        height_values = [0.3, 0.45, 0.3]  # Row 0, Row 1 (tháng), Row 2
+        
+        for row_idx in range(3):
+            row = table.rows[row_idx]
+            # Set row height
+            tr = row._tr
+            trPr = tr.get_or_add_trPr()
+            trHeight = OxmlElement('w:trHeight')
+            trHeight.set(qn('w:val'), str(int(height_values[row_idx] * 1440)))  # 1440 twips per inch
+            trHeight.set(qn('w:hRule'), 'exact')
+            trPr.append(trHeight)
+            
+            # Format cells
             for cell in row.cells:
-                cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-                for p in cell.paragraphs:
-                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                    run = p.runs[0] if p.runs else p.add_run()
-                    run.font.name = "Times New Roman"
-                    run.font.size = Pt(14)
-                    run.bold = True
-
+                self._format_cell(
+                    cell,
+                    bold=True,
+                    font_size=14,
+                    align_center=True,
+                    vertical_center=True
+                )
 
     def _fill_table_4_data(self, table, records):
-        """Fill data rows for table 4."""
-        sequence_counter = 1  # Khởi tạo bộ đếm thứ tự
-        
+        """Điền dữ liệu vào bảng."""
+        seq = 1
         for record in records:
-            courses = record.course_ids if hasattr(record, 'course_ids') and record.course_ids else []
-            
-            for course in courses:
-                missions = course.mission_ids if hasattr(course, 'mission_ids') and course.mission_ids else []
+            courses = getattr(record, 'course_ids', [])
+            if not courses:
+                continue
                 
-                for mission in missions:
-                    self._add_table_4_mission_row(table, mission, course, sequence_counter)
-                    sequence_counter += 1  # Tăng số thứ tự sau mỗi row
+            for course in courses:
+                mission_lines = getattr(course, 'mission_ids', [])
+                if not mission_lines:
+                    continue
 
+                # Add parent row và sub rows
+                parent_idx = self._add_parent_row(table, course, seq)
+                seq += 1
+                
+                sub_start = len(table.rows)
+                self._add_sub_rows(table, course, mission_lines)
+                sub_end = len(table.rows) - 1
+                
+                # Update totals cho parent row
+                if sub_end >= sub_start:
+                    self._update_parent_row_totals(table, sub_start, sub_end, parent_idx, course)
 
-    def _add_table_4_mission_row(self, table, mission, course, sequence_number):
-        """Add a single mission row to table 4."""
+    def _add_parent_row(self, table, course, seq):
+        """Thêm dòng cha (course name)."""
         row = table.add_row()
         cells = row.cells
         
-        # Column 0: TT (Auto sequence number)
-        cells[0].text = str(sequence_number)
+        # STT
+        cells[0].text = str(seq)
         
-        # Columns 1-3: Merge và lấy tên từ training.course
-        course_name = getattr(course, 'name', '') or ''
-        
-        # Gộp cells 1, 2, 3
-        cells[1].merge(cells[2])
-        cells[1].merge(cells[3])
-        cells[1].text = course_name
+        # Merge cột 1-3 cho tên khóa học
+        cells[1].merge(cells[2]).merge(cells[3])
+        cells[1].text = getattr(course, 'name', '')
         cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
         
-        # Columns 5-16: Monthly distribution
-        self._fill_monthly_hours(cells, mission)
+        # Clear các cột khác
+        for i in range(4, 18):
+            cells[i].text = ''
         
-        # Column 4: Tổng số giờ (tổng từ cells 5-16)
-        total_hours = sum([
-            self._get_cell_numeric_value(cells[i]) 
-            for i in range(5, 17)
-        ])
-        cells[4].text = str(int(total_hours)) if total_hours else ''
+        # Format row
+        self._format_data_row(row)
         
-        # Column 17: Để trống
-        cells[17].text = ''
-        
-        # Format the row
-        self._format_table_4_data_row(cells)
+        return len(table.rows) - 1
 
+    def _add_sub_rows(self, table, course, mission_lines):
+        """Thêm các dòng con (mission details)."""
+        all_sub_lines = []
+        
+        # Collect all sub_lines
+        for mission_line in mission_lines:
+            sub_lines = getattr(mission_line, 'mission_line_ids', [])
+            all_sub_lines.extend(sub_lines)
+        
+        if not all_sub_lines:
+            return
+        
+        start_row = len(table.rows)
+        
+        # Add sub rows
+        for sub_line in all_sub_lines:
+            row = table.add_row()
+            cells = row.cells
+            
+            cells[0].text = ''
+            cells[1].text = sub_line.name or ''
+            cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
+            cells[2].text = ''
+            cells[3].text = ''
+            
+            # Tổng giờ
+            total_hours = getattr(sub_line, 'total_hours', 0) or 0
+            cells[4].text = str(int(total_hours)) if total_hours else ''
+            
+            # Giờ theo tháng
+            month_hours = self._get_month_hours(sub_line)
+            for m_idx in range(1, 13):
+                val = month_hours.get(m_idx, 0)
+                cells[4 + m_idx].text = str(int(val)) if val else ''
+            
+            cells[17].text = ''
+            
+            # Format row
+            self._format_data_row(row)
+        
+        end_row = len(table.rows) - 1
+        
+        # Merge cột 2 và 3 cho sub rows
+        if end_row >= start_row:
+            participant = getattr(getattr(course, 'participant_category_id', None), 'name', '')
+            responsible = getattr(getattr(course, 'responsible_level_id', None), 'name', '')
+            
+            self._merge_and_fill(table, start_row, end_row, 2, participant)
+            self._merge_and_fill(table, start_row, end_row, 3, responsible)
+
+    def _update_parent_row_totals(self, table, sub_start, sub_end, parent_idx, course):
+        """Cập nhật tổng cho dòng cha."""
+        if parent_idx is None or sub_end < sub_start:
+            return
+        
+        parent_cells = table.rows[parent_idx].cells
+        
+        # Tính tổng cho các cột 4-16 (tổng số + 12 tháng)
+        for col_idx in range(4, 17):
+            total = sum(
+                self._get_cell_numeric_value(table.rows[r].cells[col_idx])
+                for r in range(sub_start, sub_end + 1)
+            )
+            parent_cells[col_idx].text = str(int(total)) if total else ''
+        
+        # Merge cột 17 (Biện pháp) với các dòng con
+        cell17 = parent_cells[17]
+        for r in range(sub_start, sub_end + 1):
+            cell17 = cell17.merge(table.rows[r].cells[17])
+        cell17.text = getattr(course, 'measure', '') or ''
+        cell17.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
+        
+        # Bôi đậm dòng cha
+        for i in range(0, 17):
+            self._bold_cell(parent_cells[i])
+
+    def _update_table_4_header_totals(self, table):
+        """Cập nhật tổng cho hàng header (row 2)."""
+        header_row = table.rows[2]
+        month_totals = {i: 0 for i in range(1, 13)}
+        total_all = 0
+        
+        # Tính tổng từ các dòng cha (có STT)
+        for r_idx in range(3, len(table.rows)):
+            cells = table.rows[r_idx].cells
+            if cells[0].text.strip().isdigit():  # Chỉ tính dòng cha
+                total_all += self._get_cell_numeric_value(cells[4])
+                for m_idx in range(1, 13):
+                    month_totals[m_idx] += self._get_cell_numeric_value(cells[4 + m_idx])
+        
+        # Ghi tổng vào header
+        header_row.cells[4].text = str(int(total_all)) if total_all else ''
+        for m_idx in range(1, 13):
+            val = month_totals[m_idx]
+            header_row.cells[4 + m_idx].text = str(int(val)) if val else ''
+        
+        # Bold header totals
+        for cell in header_row.cells:
+            self._bold_cell(cell)
+
+    def _get_month_hours(self, sub_line):
+        """Lấy tổng giờ theo tháng cho sub_line."""
+        month_hours = {i: 0 for i in range(1, 13)}
+        months = self.env['training.month'].search([('month_id', 'in', sub_line.ids)])
+        for m in months:
+            month_num = int(m.month)
+            if 1 <= month_num <= 12:
+                month_hours[month_num] = m.total_hours or 0
+        return month_hours
+
+    def _merge_and_fill(self, table, start_row, end_row, col_idx, text):
+        """Merge cells và điền text."""
+        if end_row < start_row:
+            return
+        
+        start_cell = table.rows[start_row].cells[col_idx]
+        for r in range(start_row + 1, end_row + 1):
+            start_cell = start_cell.merge(table.rows[r].cells[col_idx])
+        
+        start_cell.text = str(text) if text not in (None, True, False) else ''
+        start_cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     def _get_cell_numeric_value(self, cell):
-        """Helper method to get numeric value from cell text."""
+        """Lấy giá trị số từ cell."""
         try:
             text = cell.text.strip()
             return float(text) if text else 0
         except (ValueError, AttributeError):
             return 0
 
+    def _format_data_row(self, row):
+        """Format một dòng dữ liệu."""
+        for cell in row.cells:
+            self._format_cell(cell, font_size=14, vertical_center=True)
 
-    def _fill_monthly_hours(self, cells, mission):
-        """Fill monthly hours distribution (columns 5-16)."""
-        monthly_hours = getattr(mission, 'monthly_distribution', [])
-        
-        # Ensure we have 12 values
-        if not monthly_hours:
-            monthly_hours = [''] * 12
-        elif len(monthly_hours) < 12:
-            monthly_hours = list(monthly_hours) + [''] * (12 - len(monthly_hours))
-        
-        for i in range(12):
-            value = monthly_hours[i] if i < len(monthly_hours) else ''
-            cells[5 + i].text = str(int(value)) if value else ''
-
-
-    def _format_table_4_data_row(self, cells):
-        """Format a data row in table 4."""
-        for cell in cells:
+    def _format_cell(self, cell, bold=False, font_size=14, align_center=False, vertical_center=False):
+        """Format một cell với các tùy chọn."""
+        if vertical_center:
             cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+        
+        for para in cell.paragraphs:
+            if align_center:
+                para.alignment = WD_ALIGN_PARAGRAPH.CENTER
             
-            # Default center alignment except for columns 1 and 17 (already set above)
-            for p in cell.paragraphs:
-                if p.alignment != WD_ALIGN_PARAGRAPH.LEFT:
-                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                
-                for run in p.runs:
-                    run.font.name = "Times New Roman"
-                    run.font.size = Pt(13)
-
-
-    def _add_table_4_summary(self, table, records):
-        """Add summary row at the bottom of table 4."""
-        summary_row = table.add_row()
-        cells = summary_row.cells
-        
-        # Column 1: Label
-        cells[1].text = "TỔNG SỐ"
-        cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-        
-        # Calculate totals
-        totals = self._calculate_table_4_totals(records)
-        
-        # Column 4: Total hours
-        cells[4].text = str(int(totals['total'])) if totals['total'] else ''
-        
-        # Columns 5-16: Monthly totals
-        for i in range(12):
-            month_total = totals['monthly'][i]
-            cells[5 + i].text = str(int(month_total)) if month_total else ''
-        
-        # Format summary row
-        for cell in cells:
-            cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-            for p in cell.paragraphs:
-                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                for run in p.runs:
-                    run.font.name = "Times New Roman"
-                    run.font.size = Pt(13)
-                    run.bold = True
-
-
-    def _calculate_table_4_totals(self, records):
-        """Calculate totals for all missions."""
-        total_hours = 0
-        monthly_totals = [0] * 12
-        
-        for record in records:
-            courses = record.course_ids if hasattr(record, 'course_ids') and record.course_ids else []
+            # Ensure at least one run exists
+            if not para.runs:
+                para.add_run()
             
-            for course in courses:
-                missions = course.mission_ids if hasattr(course, 'mission_ids') and course.mission_ids else []
-                
-                for mission in missions:
-                    # Add to total
-                    hours = getattr(mission, 'total_hours', 0) or 0
-                    total_hours += hours
-                    
-                    # Add to monthly totals
-                    monthly_hours = getattr(mission, 'monthly_distribution', [])
-                    for i in range(min(12, len(monthly_hours))):
-                        if monthly_hours[i]:
-                            monthly_totals[i] += monthly_hours[i]
-        
-        return {
-            'total': total_hours,
-            'monthly': monthly_totals
-        }
+            for run in para.runs:
+                run.font.name = "Times New Roman"
+                run.font.size = Pt(font_size)
+                run.bold = bold
+
+    def _bold_cell(self, cell):
+        """Bôi đậm tất cả text trong cell."""
+        for para in cell.paragraphs:
+            if not para.runs:
+                para.add_run()
+            for run in para.runs:
+                run.font.bold = True
+
 
     # ==================== Main Action ====================
 
