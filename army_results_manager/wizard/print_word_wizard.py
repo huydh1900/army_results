@@ -724,6 +724,166 @@ class PrintWordWizard(models.TransientModel):
                 run.font.bold = True
 
 
+    # ==template3==
+    def _iter_all_paragraphs(self, doc):
+        """Duyệt tất cả các paragraph trong doc, kể cả trong bảng."""
+        for p in doc.paragraphs:
+            yield p
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for p in cell.paragraphs:
+                        yield p
+
+
+    def replace_table_3_1(self, doc, placeholder, records):
+        """Thay thế placeholder {{table_3_1}} bằng bảng kế hoạch huấn luyện tuần."""
+        filtered_records = [r for r in records if r.type == 'squad']
+        if not filtered_records:
+            return
+
+        for para in self._iter_all_paragraphs(doc):
+            if placeholder not in para.text:
+                continue
+
+            parent = para._element.getparent()
+            idx = parent.index(para._element)
+            parent.remove(para._element)
+
+            table = self._create_table_3_1_structure(doc)
+            # self._fill_table_3_1_data(table, records)
+
+            parent.insert(idx, table._element)
+            break
+
+    def _create_table_3_1_structure(self, doc):
+        """Tạo bảng 3.1 với 7 cột như trong ảnh."""
+        table = doc.add_table(rows=1, cols=7)
+        table.style = "Table Grid"
+
+        # Set column widths
+        self._set_table_3_1_column_widths(table)
+
+        # Build header
+        self._build_table_3_1_headers(table)
+
+        # Format header
+        self._format_table_3_1_headers(table)
+
+        # Add 7 rows for days of the week
+        self._add_table_3_1_week_rows(table)
+
+        return table
+
+    def _set_table_3_1_column_widths(self, table):
+        """Chiều rộng cột bảng 3.1."""
+        col_widths = [
+            0.8,  # Thứ, Ngày tháng
+            5.3,  # Nội dung
+            1.1,  # Tổng thời gian (giờ)
+            3.2,  # Thời gian huấn luyện
+            1.0,  # Cấp phụ trách
+            1.0,  # Địa điểm
+            2.8   # Vật chất bảo đảm chính
+        ]
+
+        for row in table.rows:
+            for col_idx, width_in in enumerate(col_widths):
+                row.cells[col_idx].width = Inches(width_in)
+
+    def _build_table_3_1_headers(self, table):
+        """Xây dựng dòng header bảng 3.1."""
+        headers = [
+            "Thứ, Ngày tháng",
+            "Nội dung",
+            "Tổng thời gian (giờ)",
+            "Thời gian huấn luyện\n(Sáng: 07.30 - 11.30)\n(Chiều: 13.30 - 16.30)",
+            "Cấp phụ trách",
+            "Địa điểm",
+            "Vật chất\nbảo đảm chính"
+        ]
+
+        row = table.rows[0]
+        for i, text in enumerate(headers):
+            row.cells[i].text = text
+
+    def _format_table_3_1_headers(self, table):
+        """Định dạng header: Times New Roman, cỡ 14, đậm, căn giữa."""
+        header_row = table.rows[0]
+        tr = header_row._tr
+        trPr = tr.get_or_add_trPr()
+        trHeight = OxmlElement('w:trHeight')
+        trHeight.set(qn('w:val'), str(int(0.9 * 1440)))  # Chiều cao 0.6 inch
+        trHeight.set(qn('w:hRule'), 'exact')
+        trPr.append(trHeight)
+
+        for cell in header_row.cells:
+            self._format_cell(
+                cell,
+                bold=True,
+                font_size=13,
+                align_center=True,
+                vertical_center=True
+            )
+    def _add_table_3_1_week_rows(self, table):
+        """Thêm 7 dòng vào bảng 3.1, với cột đầu tiên là thứ trong tuần."""
+        days = ["Hai,\n", "Ba,\n", "Tư,\n", "Năm,\n", "Sáu,\n", "Bảy,\n", "CN,\n"]
+
+        for day in days:
+            row = table.add_row()
+
+            # Cột đầu tiên: căn giữa ngang & dọc
+            first_cell = row.cells[0]
+            first_cell.text = day
+            for p in first_cell.paragraphs:
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            first_cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+
+            # Các cột còn lại: để nguyên (không căn giữa)
+            for i in range(1, len(row.cells)):
+                row.cells[i].text = ""
+
+    def _fill_table_3_1_data(self, table, records):
+        """
+        Điền dữ liệu vào bảng 3.1.
+        records là danh sách dict hoặc object có thuộc tính:
+        - weekday (str): 'Hai', 'Ba', ...
+        - date (str): '17', '18/10'...
+        - content (str): Nội dung huấn luyện
+        - total_hours (int)
+        - time_range (str): '07.30 - 09.30'
+        - level (str): Cấp phụ trách
+        - location (str): Địa điểm
+        - materials (str): Vật chất bảo đảm chính
+        """
+        for rec in records:
+            row = table.add_row()
+            cells = row.cells
+
+            cells[0].text = f"{rec.weekday}\n{rec.date}"
+            cells[1].text = rec.content or ''
+            cells[2].text = str(rec.total_hours or '')
+            cells[3].text = rec.time_range or ''
+            cells[4].text = rec.level or ''
+            cells[5].text = rec.location or ''
+            cells[6].text = rec.materials or ''
+
+            self._format_data_row(row)
+
+    def _format_data_row(self, row):
+        """Định dạng dòng dữ liệu bảng 3.1."""
+        for i, cell in enumerate(row.cells):
+            self._format_cell(
+                cell,
+                font_size=13,
+                align_center=(i not in [1, 6]),  # cột Nội dung & Vật chất căn trái
+                vertical_center=True
+            )
+            if i in [1, 6]:
+                for para in cell.paragraphs:
+                    para.alignment = WD_ALIGN_PARAGRAPH.LEFT
+
+
     # ==================== Main Action ====================
 
     def action_print_word(self):
@@ -765,7 +925,6 @@ class PrintWordWizard(models.TransientModel):
             self.replace_placeholder_with_table(doc, "{{table_2}}", records, rows_data_table_2, note=" ")
             self.replace_table_3_aasam(doc, "{{table_3}}", records)
             self.replace_table_4(doc, "{{table_4}}", records)
-
 
             # Export Word file
             file_data = BytesIO()
@@ -821,7 +980,35 @@ class PrintWordWizard(models.TransientModel):
             }
 
         elif self.mau_in == 'template3':
-            return True
+            # Data definitions
+            active_ids = self.env.context.get("active_ids", [])
+            records = self.env['training.plan'].browse(active_ids)
+            # Load template and replace tables
+            template_path = get_module_resource('army_results_manager', 'static', 'src', 'word', f'{self.mau_in}.docx')
+            doc = Document(template_path)
+
+            self.replace_table_3_1(doc, "{{table31}}", records)
+
+            # Export Word file
+            file_data = BytesIO()
+            doc.save(file_data)
+            file_data.seek(0)
+            data = base64.b64encode(file_data.read())
+
+            attachment = self.env['ir.attachment'].create({
+                'name': f'{self.mau_in}.docx',
+                'type': 'binary',
+                'datas': data,
+                'res_model': self._name,
+                'res_id': self.id,
+                'mimetype': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            })
+
+            return {
+                'type': 'ir.actions.act_url',
+                'url': f'/web/content/{attachment.id}?download=true',
+                'target': 'new',
+            }
 
         elif self.mau_in == 'template4':
             return True
