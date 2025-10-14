@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="army_results_manager.training_progress_of_units" owl="1">
+        <div class="dashboard_row">
+                <div class="dashboard_card">
+                    <div class="card_header">ĐÁNH GIÁ CHỈ SỐ HUẤN LUYỆN</div>
+                    <div class="card_body">
+                        <div class="radar_container">
+                            <svg class="radar_chart" viewBox="0 0 200 200">
+                                <polygon class="radar_grid" points="100,20 173,62 173,138 100,180 27,138 27,62"/>
+                                <polygon class="radar_grid" points="100,50 146,77 146,123 100,150 54,123 54,77"/>
+
+                                <line class="radar_axis" x1="100" y1="100" x2="100" y2="20"/>
+                                <line class="radar_axis" x1="100" y1="100" x2="173" y2="62"/>
+                                <line class="radar_axis" x1="100" y1="100" x2="173" y2="138"/>
+                                <line class="radar_axis" x1="100" y1="100" x2="100" y2="180"/>
+                                <line class="radar_axis" x1="100" y1="100" x2="27" y2="138"/>
+                                <line class="radar_axis" x1="100" y1="100" x2="27" y2="62"/>
+
+                                <polygon class="radar_polygon" points="100,32 163,67 163,128 100,158 42,123 42,72"/>
+
+                                <text class="radar_label" x="100" y="15">Kỹ thuật</text>
+                                <text class="radar_label" x="185" y="65">Thể lực</text>
+                                <text class="radar_label" x="185" y="145">Chiến thuật</text>
+                                <text class="radar_label" x="100" y="195">Chính trị</text>
+                                <text class="radar_label" x="15" y="145">Kỷ luật</text>
+                                <text class="radar_label" x="15" y="65">An toàn</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            <div class="dashboard_card">
+                    <div class="card_header">KẾT QUẢ HUẤN LUYỆN GẦN NHẤT</div>
+                <div class="card_body">
+                        <div class="table_row table_header">
+                            <div class="table_cell">Tháng</div>
+                            <div class="table_cell">Nội dung</div>
+                            <div class="table_cell">Điểm</div>
+                            <div class="table_cell">Kết quả</div>
+                        </div>
+                    <div class="table_row">
+                            <div class="table_cell">Tháng 1</div>
+                        <div class="table_cell">Bài tập huấn luyện 5/2025</div>
+                        <div class="table_cell"
+                             style="text-align: center; font-weight: bold; color: #22c55e;">92%</div>
+                        <div class="table_cell" style="text-align: center;">
+                                <span class="status_badge status_success">Xuất sắc</span>
+                            </div>
+                        </div>
+                    <div class="table_row">
+                            <div class="table_cell">Tháng 2</div>
+                        <div class="table_cell">Tổ hội thao đồng</div>
+                        <div class="table_cell"
+                             style="text-align: center; font-weight: bold; color: #22c55e;">88%</div>
+                        <div class="table_cell" style="text-align: center;">
+                                <span class="status_badge status_success">Tốt</span>
+                            </div>
+                        </div>
+                    <div class="table_row">
+                            <div class="table_cell">Tháng 3</div>
+                        <div class="table_cell">Diễn tập tổng hợp</div>
+                        <div class="table_cell"
+                             style="text-align: center; font-weight: bold; color: #22c55e;">91%</div>
+                        <div class="table_cell" style="text-align: center;">
+                                <span class="status_badge status_success">Xuất sắc</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </t>
+</templates>

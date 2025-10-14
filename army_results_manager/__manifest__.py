@@ -17,17 +17,7 @@
     'version': '0.1',
 
     'depends': ['web', 'base', 'hr', 'web_unsplash'],
-    "assets": {
-        'web.assets_frontend': [
-            'army_results_manager/static/src/css/login.css',
-        ],
-        "web.assets_backend": [
-            "army_results_manager/static/src/components/**/*.css",
-            "army_results_manager/static/src/components/**/*.scss",
-            "army_results_manager/static/src/components/**/*.js",
-            "army_results_manager/static/src/components/**/*.xml",
-        ],
-    },
+
     # always loaded
     'data': [
         "security/training_result_security.xml",
@@ -51,5 +41,20 @@
         'views/training_subject.xml',
         'views/menu_view.xml',
     ],
+
+    "assets": {
+        'web.assets_frontend': [
+            'army_results_manager/static/src/css/login.css',
+        ],
+        "web.assets_backend": [
+            "army_results_manager/static/src/components/**/*.scss",
+            "army_results_manager/static/lib/chart/chart.umd.min.js",
+            "army_results_manager/static/src/components/**/*.js",
+            "army_results_manager/static/src/components/**/*.xml",
+            "army_results_manager/static/src/xml/*.xml",
+            "army_results_manager/static/src/js/*.js",
+            "army_results_manager/static/src/css/*.css",
+        ],
+    },
 
 }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="army_results_manager.BarChartTemplate" owl="1">
+        <div class="dashboard_card" style="flex: 1 1 calc(40% - 10px); min-width: 350px;">
+            <div class="card_header">TỔNG QUAN KẾ HOẠCH HUẤN LUYỆN</div>
+            <div class="card_body">
+                <canvas t-ref="canvasRef" width="400" height="200"/>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -84,11 +84,22 @@
             <field name="view_id" ref="view_training_plan_tree"/>
         </record>
 
+        <record id="action_dashboard" model="ir.actions.client">
+            <field name="name">Dashboard</field>
+            <field name="tag">army_dashboard</field>
+        </record>
+
         <!-- Menu structure -->
         <menuitem id="menu_unit_management"
                   name="Quản lý Lực Lượng và Huấn luyện"
                   parent="menu_military_root"
                   groups="army_results_manager.group_training_commander_assistant"
+                  sequence="2"/>
+
+        <menuitem id="menu_dashboard"
+                  name="Dashboard"
+                  parent="menu_military_root"
+                  action="action_dashboard"
                   sequence="1"/>
 
         <menuitem id="menu_unit_management_units"
@@ -126,19 +137,19 @@
                   parent="menu_military_root"
                   action="action_training_mission"
                   groups="army_results_manager.group_training_commander_assistant"
-                  sequence="3"/>
+                  sequence="4"/>
 
         <menuitem id="menu_training_plan"
                   name="Kế hoạch huấn luyện"
                   parent="menu_military_root"
                   action="action_training_plan"
                   groups="army_results_manager.group_training_commander_assistant"
-                  sequence="2"/>
+                  sequence="3"/>
 
         <menuitem id="menu_training_result"
                   name="Kết quả huấn luyện"
                   parent="menu_military_root"
-                  sequence="4"/>
+                  sequence="5"/>
 
         <menuitem id="menu_training_stage_result"
                   name="Kết quả giai đoạn"
@@ -156,7 +167,7 @@
                   name="Cấu hình"
                   parent="menu_military_root"
                   groups="army_results_manager.group_training_commander_assistant"
-                  sequence="5"/>
+                  sequence="6"/>
 
         <menuitem id="menu_training_subject"
                   name="Môn học"

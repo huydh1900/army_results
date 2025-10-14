@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="army_results_manager.warning_important" owl="1">
+        <div class="dashboard_row">
+                <div class="dashboard_card">
+                    <div class="card_header">CẢNH BÁO - THÔNG BÁO QUAN TRỌNG</div>
+                    <div class="card_body">
+                        <div class="alert_box alert_warning">
+                            <div class="alert_icon icon_warning">!</div>
+                            <div style="flex: 1;">Cảnh báo: Tiểu đoàn 4 chưa đạt chỉ tiêu huấn luyện</div>
+                            <span class="status_badge status_warning">Đang xử lý</span>
+                        </div>
+                        <div class="alert_box alert_success">
+                            <div class="alert_icon icon_success">✓</div>
+                            <div style="flex: 1;">Đã xuất: Hoàn thành tốt chỉ tiêu tháng 3 năm 2025</div>
+                            <span class="status_badge status_success">Đã xong</span>
+                        </div>
+                        <div class="alert_box alert_danger">
+                            <div class="alert_icon icon_danger">!</div>
+                            <div style="flex: 1;">Cảnh báo: Tiểu đoàn 4 chưa đạt chỉ tiêu huấn luyện</div>
+                            <span class="status_badge status_danger">Khẩn cấp</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </t>
+</templates>

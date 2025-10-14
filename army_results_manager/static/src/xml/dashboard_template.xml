@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="army_results_manager.DashboardTemplate" owl="1">
+        <div class="o_army_dashboard">
+            <t t-call="army_results_manager.training_overview_statistics"/>
+            <t t-call="army_results_manager.training_progress_of_units"/>
+            <t t-call="army_results_manager.warning_important"/>
+
+
+<!--            <div class="dashboard_row">-->
+<!--                <div class="dashboard_card">-->
+<!--                    <div class="card_header">BIỂU ĐỒ TIẾN ĐỘ TỔNG HỢP</div>-->
+<!--                    <div class="card_body">-->
+<!--                        <div style="text-align: center; padding: 40px;">-->
+<!--                            <div style="font-size: 14px; color: #666; margin-bottom: 20px;">Chọn loại biểu đồ để xem chi tiết</div>-->
+<!--                            <div style="display: flex; justify-content: center; gap: 15px;">-->
+<!--                                <button style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;">Theo đơn vị</button>-->
+<!--                                <button style="padding: 10px 20px; background: white; color: #333; border: 1px solid #ddd; border-radius: 6px; cursor: pointer;">Theo thời gian</button>-->
+<!--                                <button style="padding: 10px 20px; background: white; color: #333; border: 1px solid #ddd; border-radius: 6px; cursor: pointer;">Theo nội dung</button>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                <div class="dashboard_card">-->
+<!--                    <div class="card_header">NHẬN XÉT - KIẾN NGHỊ</div>-->
+<!--                    <div class="card_body">-->
+<!--                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">-->
+<!--                            <button style="padding: 8px 16px; background: white; border: 1px solid #ddd; border-radius: 6px; cursor: pointer;">Chưa xử lý</button>-->
+<!--                            <button style="padding: 8px 16px; background: white; border: 1px solid #ddd; border-radius: 6px; cursor: pointer;">Đang xử lý</button>-->
+<!--                            <button style="padding: 8px 16px; background: white; border: 1px solid #ddd; border-radius: 6px; cursor: pointer;">Đã xử lý</button>-->
+<!--                        </div>-->
+<!--                        <div style="background: #f9fafb; padding: 15px; border-radius: 6px; min-height: 120px;">-->
+<!--                            <p style="margin: 0 0 10px 0; font-size: 13px; color: #333;">-->
+<!--                                <strong>Nội dung:</strong>-->
+<!--                                Cần tăng cường huấn luyện cho Tiểu đoàn 4-->
+<!--                            </p>-->
+<!--                            <p style="margin: 0; font-size: 12px; color: #666;">-->
+<!--                                Trong thời gian qua...-->
+<!--                            </p>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+        </div>
+    </t>
+</templates>

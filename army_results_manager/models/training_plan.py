@@ -45,6 +45,33 @@ class TrainingPlan(models.Model):
             if rec.start_date > rec.end_date:
                 raise UserError('Ngày bắt đầu phải nhỏ hơn ngay kết thúc.')
 
+    @api.model
+    def get_training_state_summary(self):
+        """Trả dữ liệu tổng hợp theo state"""
+        states = [
+            ('draft', 'Soạn thảo'),
+            ('to_modify', 'Cần chỉnh sửa'),
+            ('not_done', 'Chưa hoàn thành'),
+            ('posted', 'Chờ duyệt'),
+            ('approved', 'Đã duyệt'),
+            ('cancel', 'Hủy'),
+        ]
+        result = []
+        for state, label in states:
+            count = self.search_count([('state', '=', state)])
+            result.append({'state': state, 'label': label, 'value': count})
+        return result
+
+    @api.model
+    def action_open_training_chart(self):
+        """Trả action để render biểu đồ"""
+        data = self.env["training.plan"].get_training_state_summary()
+        return {
+            "type": "ir.actions.client",
+            "tag": "training_bar_chart",
+            "context": {"chart_data": data},
+        }
+
     def action_post(self):
         for rec in self:
             rec.state = "posted"
