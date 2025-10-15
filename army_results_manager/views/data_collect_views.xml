@@ -1,0 +1,83 @@
+<odoo>
+    <!-- ====================================================== -->
+    <!-- 1️⃣  VIEW: DATA SOURCE (Nguồn thu thập) -->
+    <!-- ====================================================== -->
+
+    <!-- Tree View -->
+    <record id="view_data_source_tree" model="ir.ui.view">
+        <field name="name">data.source.tree</field>
+        <field name="model">data.source</field>
+        <field name="arch" type="xml">
+            <tree string="Nguồn thu thập">
+                <field name="name"/>
+                <field name="source_type"/>
+                <field name="url"/>
+                <field name="last_collected"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_data_source_form" model="ir.ui.view">
+        <field name="name">data.source.form</field>
+        <field name="model">data.source</field>
+        <field name="arch" type="xml">
+            <form string="Nguồn thu thập">
+                <header>
+                    <!-- ✅ Nút thu thập thủ công -->
+                    <button name="action_collect_now"
+                            type="object"
+                            string="Thu thập thủ công"
+                            class="oe_highlight"
+                            icon="fa-refresh"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="source_type"/>
+                        <field name="category"/>
+                        <field name="url"/>
+                        <field name="active"/>
+                        <field name="last_collected" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ====================================================== -->
+    <!-- 2️⃣  VIEW: COLLECTED DATA (Dữ liệu thu thập) -->
+    <!-- ====================================================== -->
+
+    <!-- Tree View -->
+    <record id="view_collected_data_tree" model="ir.ui.view">
+        <field name="name">collected.data.tree</field>
+        <field name="model">collected.data</field>
+        <field name="arch" type="xml">
+            <tree string="Dữ liệu đã thu thập">
+                <field name="title"/>
+                <field name="source_id"/>
+                <field name="collected_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_collected_data_form" model="ir.ui.view">
+        <field name="name">collected.data.form</field>
+        <field name="model">collected.data</field>
+        <field name="arch" type="xml">
+            <form string="Dữ liệu thu thập">
+                <sheet>
+                    <group>
+                        <field name="title"/>
+                        <field name="source_id"/>
+                        <field name="collected_date" readonly="1"/>
+                        <field name="content"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

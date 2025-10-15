@@ -88,6 +88,18 @@
             <field name="name">Dashboard</field>
             <field name="tag">army_dashboard</field>
         </record>
+        
+        <record id="action_army_data_source" model="ir.actions.act_window">
+            <field name="name">Nguồn thu thập</field>
+            <field name="res_model">data.source</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <record id="action_army_collected_data" model="ir.actions.act_window">
+            <field name="name">Dữ liệu thu thập</field>
+            <field name="res_model">collected.data</field>
+            <field name="view_mode">tree,form</field>
+        </record>
 
         <!-- Menu structure -->
         <menuitem id="menu_unit_management"
@@ -167,7 +179,7 @@
                   name="Cấu hình"
                   parent="menu_military_root"
                   groups="army_results_manager.group_training_commander_assistant"
-                  sequence="6"/>
+                  sequence="7"/>
 
         <menuitem id="menu_training_subject"
                   name="Môn học"
@@ -178,6 +190,24 @@
                   name="Cấp bậc"
                   parent="menu_setting"
                   action="action_training_category"/>
+
+        <menuitem id="menu_data_collect_root"
+                  name="Thu thập dữ liệu"
+                  parent="menu_military_root"
+                  sequence="6"/>
+
+        <menuitem id="menu_data_source"
+                  name="Nguồn thu thập"
+                  parent="menu_data_collect_root"
+                  action="action_army_data_source"
+                  sequence="1"/>
+
+        <menuitem id="menu_collected_data"
+                  name="Dữ liệu thu thập"
+                  parent="menu_data_collect_root"
+                  action="action_army_collected_data"
+                  sequence="2"/>
+
 
     </data>
 </odoo>
