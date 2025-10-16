@@ -41,6 +41,8 @@
         'views/training_subject.xml',
         'views/camera_device_views.xml',
         'views/menu_view.xml',
+        'views/data_collect_views.xml',
+        'data/ir_cron_data.xml',
     ],
 
     "assets": {
