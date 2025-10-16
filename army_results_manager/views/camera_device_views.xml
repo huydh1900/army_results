@@ -1,0 +1,39 @@
+<odoo>
+    <record id="view_camera_device_form" model="ir.ui.view">
+        <field name="name">camera.device.form</field>
+        <field name="model">camera.device</field>
+        <field name="arch" type="xml">
+            <form string="Camera">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_test_connect_camera"
+                                type="object"
+                                class="oe_stat_button"
+                                string="Test connect">
+                        </button>
+                    </div>
+                    <group>
+                        <field name="name"/>
+                        <field name="location_id"/>
+                        <field name="department_id"/>
+                        <field name="ip_address"/>
+                        <field name="username"/>
+                        <field name="password"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_camera_device_tree" model="ir.ui.view">
+        <field name="name">camera.device.tree</field>
+        <field name="model">camera.device</field>
+        <field name="arch" type="xml">
+            <tree string="Camera">
+                <field name="name"/>
+                <field name="location_id"/>
+                <button name="action_view_camera" type="object" title="Mở camera" icon="fa-video-camera"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

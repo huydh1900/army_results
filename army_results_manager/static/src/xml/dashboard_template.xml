@@ -3,7 +3,7 @@
     <t t-name="army_results_manager.DashboardTemplate" owl="1">
         <div class="o_army_dashboard">
             <t t-call="army_results_manager.training_overview_statistics"/>
-            <t t-call="army_results_manager.training_progress_of_units"/>
+<!--            <t t-call="army_results_manager.training_progress_of_units"/>-->
             <t t-call="army_results_manager.warning_important"/>
 
 

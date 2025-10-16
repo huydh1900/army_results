@@ -30,6 +30,22 @@ class TrainingCourse(models.Model):
             else:
                 rec.total_hours = 0
 
+    @api.model
+    def get_list_course(self):
+        data = []
+        courses = self.search([])
+        for course in courses:
+            total_mission = len(course.mission_ids)
+            done_mission = len(course.mission_ids.filtered(lambda m: m.state == 'done'))
+            percent_done = round((done_mission / total_mission) * 100, 2) if total_mission else 0
+
+            data.append({
+                'name': course.name,
+                'id': course.id,
+                'percent_done': percent_done,
+            })
+        return data
+
     def _compute_student_count(self):
         for rec in self:
             rec.student_count = self.env['hr.employee'].search_count([

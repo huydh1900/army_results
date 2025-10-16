@@ -11,3 +11,5 @@ from . import hr_employee
 from . import training_plan
 from . import training_course
 from . import training_comment
+from . import camera_device
+from . import training_location

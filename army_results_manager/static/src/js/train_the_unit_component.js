@@ -1,15 +1,23 @@
 /** @odoo-module **/
-import {Component, onMounted, useRef} from "@odoo/owl";
+import {Component, onMounted, useState} from "@odoo/owl";
 import {useService} from "@web/core/utils/hooks";
 
 export class TrainTheUnitComponent extends Component {
     setup() {
         this.orm = useService("orm");
-        this.actionService = useService("action");
+        this.state = useState({units: []});
+        onMounted(() => this.getUnitItemData());
     }
 
-    async getUnitItemData(){
-        const data = await this.orm.call("training.plan", "get_participants_ids", []);
+    async getUnitItemData() {
+        const data = await this.orm.call("training.course", "get_list_course", []);
+        this.state.units = data;
+    }
+
+    getProgressColor(percent) {
+        if (percent < 40) return "progress_red";
+        if (percent < 80) return "progress_yellow";
+        return "progress_green";
     }
 }
 

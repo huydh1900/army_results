@@ -39,6 +39,7 @@
         'views/training_plan.xml',
         'views/training_course_view.xml',
         'views/training_subject.xml',
+        'views/camera_device_views.xml',
         'views/menu_view.xml',
     ],
 

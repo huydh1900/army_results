@@ -2,16 +2,20 @@
 <templates id="template" xml:space="preserve">
     <t t-name="army_results_manager.TrainTheUnitTemplate" owl="1">
         <div class="dashboard_card" style="flex: 1 1 calc(30% - 10px); min-width: 300px;">
-            <div class="card_header">TIẾN ĐỘ HUẤN LUYỆN CÁC ĐƠN VỊ</div>
-            <div class="card_body">
+            <div class="card_header">TIẾN ĐỘ HUẤN LUYỆN THEO NHIỆM VỤ</div>
+            <div class="card_body" style="max-height: 400px; overflow-y: auto; padding-right: 5px;">
                 <ul class="unit_list">
-                    <li class="unit_item">
-                        <span class="unit_name">Tiểu đoàn 1</span>
-                        <div class="progress_bar">
-                            <div class="progress_fill progress_green" style="width: 95%;"></div>
-                            <span class="progress_text">95%</span>
-                        </div>
-                    </li>
+                    <t t-foreach="state.units" t-as="unit" t-key="unit.id">
+                        <li class="unit_item">
+                            <span class="unit_name"><t t-esc="unit.name"/></span>
+                            <div class="progress_bar">
+                                <div class="progress_fill"
+                                     t-att-class="'progress_fill ' + this.getProgressColor(unit.percent_done)"
+                                     t-att-style="'width: %s%%;' % unit.percent_done"/>
+                                <span class="progress_text"><t t-esc="unit.percent_done"/>%</span>
+                            </div>
+                        </li>
+                    </t>
                 </ul>
             </div>
         </div>

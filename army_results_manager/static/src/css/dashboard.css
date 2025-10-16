@@ -4,9 +4,44 @@
     font-family: Arial, sans-serif;
     width: 100%;
     box-sizing: border-box;
-    max-height: calc(100vh - 100px);
-    overflow-y: auto;
-    overflow-x: hidden;
+    max-height: 100vh;
+    /*max-height: calc(100vh - 100px);*/
+    /*overflow-y: auto;*/
+    /*overflow-x: hidden;*/
+}
+.progress_bar {
+    position: relative;
+    background: #f3f4f6;
+    border-radius: 8px;
+    height: 16px;
+    overflow: hidden;
+    margin-top: 6px;
+}
+
+.progress_fill {
+    height: 100%;
+    transition: width 0.8s ease-in-out;
+}
+
+.progress_red {
+    background-color: #ef4444; /* đỏ */
+}
+
+.progress_yellow {
+    background-color: #facc15; /* vàng */
+}
+
+.progress_green {
+    background-color: #22c55e; /* xanh */
+}
+
+.progress_text {
+    position: absolute;
+    right: 8px;
+    top: -20px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #111827;
 }
 
 .dashboard_header {

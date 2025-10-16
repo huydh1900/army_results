@@ -1,8 +1,6 @@
-import json
-
 from odoo import fields, models, api
 from odoo.exceptions import UserError
-
+import requests
 
 class TrainingPlan(models.Model):
     _name = "training.plan"
@@ -27,12 +25,38 @@ class TrainingPlan(models.Model):
         ('approved', 'Đã duyệt'),
         ('cancel', 'Hủy'),
     ], string="Trạng thái", default="draft")
-    location = fields.Char(string='Địa điểm')
+    location_id = fields.Many2one('training.location', string='Địa điểm')
     training_content = fields.Char(string='Nội dung huấn luyện')
     reason_modify = fields.Char(string='Lý do chỉnh sửa')
     course_ids = fields.One2many('training.course', 'plan_id')
     year = fields.Integer(string='Năm')
     total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True)
+    camera_ids = fields.Many2many('camera.device', string="Camera giám sát")
+    camera_count = fields.Integer(compute='_compute_camera_count')
+
+    @api.depends('location_id')
+    def _compute_camera_count(self):
+        for rec in self:
+            rec.camera_count = self.env['camera.device'].search_count([
+                ('location_id', '=', rec.location_id.id)
+            ])
+
+    def action_open_camera(self):
+        if self.camera_count == 0:
+            raise UserError("Không có camera được gán cho vị trí huấn luyện này!")
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Danh mục camera",
+            "res_model": "camera.device",
+            "view_mode": "tree",
+            "domain": [('location_id', '=', self.location_id.id)],
+            "target": "new",
+            'context': {
+                'create': False,
+                'delete': False,
+            },
+        }
 
     @api.depends('course_ids.total_hours')
     def _compute_total_hours(self):

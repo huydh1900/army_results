@@ -70,6 +70,18 @@
             <field name="view_mode">tree,form,gantt</field>
         </record>
 
+        <record id="action_view_camera_device" model="ir.actions.act_window">
+            <field name="name">Danh mục camera</field>
+            <field name="res_model">camera.device</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <record id="action_view_training_location" model="ir.actions.act_window">
+            <field name="name">Vị trí huấn luyện</field>
+            <field name="res_model">training.location</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
         <record id="hr_department_kanban_action_inherit" model="ir.actions.act_window">
             <field name="name">Đơn vị</field>
             <field name="res_model">hr.department</field>
@@ -90,17 +102,55 @@
         </record>
 
         <!-- Menu structure -->
-        <menuitem id="menu_unit_management"
-                  name="Quản lý Lực Lượng và Huấn luyện"
-                  parent="menu_military_root"
-                  groups="army_results_manager.group_training_commander_assistant"
-                  sequence="2"/>
 
         <menuitem id="menu_dashboard"
                   name="Dashboard"
                   parent="menu_military_root"
                   action="action_dashboard"
                   sequence="1"/>
+
+        <menuitem id="menu_unit_management"
+                  name="Quản lý Lực Lượng và Huấn luyện"
+                  parent="menu_military_root"
+                  groups="army_results_manager.group_training_commander_assistant"
+                  sequence="2"/>
+
+<!--        Menu camera-->
+        <menuitem id="menu_camera_management"
+                  name="Quản lý camera"
+                  parent="menu_military_root"
+                  groups="army_results_manager.group_training_commander_assistant"
+                  sequence="3"/>
+
+        <menuitem id="menu_list_camera"
+                  name="Danh mục Camera"
+                  parent="menu_camera_management"
+                  action="action_view_camera_device"/>
+
+        <menuitem id="menu_training_plan"
+                  name="Kế hoạch huấn luyện"
+                  parent="menu_military_root"
+                  action="action_training_plan"
+                  groups="army_results_manager.group_training_commander_assistant"
+                  sequence="4"/>
+
+        <menuitem id="menu_training_mission"
+                  name="Nhiệm vụ huấn luyện"
+                  parent="menu_military_root"
+                  action="action_training_mission"
+                  groups="army_results_manager.group_training_commander_assistant"
+                  sequence="5"/>
+
+        <menuitem id="menu_training_result"
+                  name="Kết quả huấn luyện"
+                  parent="menu_military_root"
+                  sequence="6"/>
+
+        <menuitem id="menu_setting"
+                  name="Cấu hình"
+                  parent="menu_military_root"
+                  groups="army_results_manager.group_training_commander_assistant"
+                  sequence="7"/>
 
         <menuitem id="menu_unit_management_units"
                   name="Lực Lượng"
@@ -132,24 +182,6 @@
                   groups="army_results_manager.group_training_commander_assistant"
                   action="action_training_course"/>
 
-        <menuitem id="menu_training_mission"
-                  name="Nhiệm vụ huấn luyện"
-                  parent="menu_military_root"
-                  action="action_training_mission"
-                  groups="army_results_manager.group_training_commander_assistant"
-                  sequence="4"/>
-
-        <menuitem id="menu_training_plan"
-                  name="Kế hoạch huấn luyện"
-                  parent="menu_military_root"
-                  action="action_training_plan"
-                  groups="army_results_manager.group_training_commander_assistant"
-                  sequence="3"/>
-
-        <menuitem id="menu_training_result"
-                  name="Kết quả huấn luyện"
-                  parent="menu_military_root"
-                  sequence="5"/>
 
         <menuitem id="menu_training_stage_result"
                   name="Kết quả giai đoạn"
@@ -163,12 +195,6 @@
                   action="action_training_mission_result"
                   sequence="2"/>
 
-        <menuitem id="menu_setting"
-                  name="Cấu hình"
-                  parent="menu_military_root"
-                  groups="army_results_manager.group_training_commander_assistant"
-                  sequence="6"/>
-
         <menuitem id="menu_training_subject"
                   name="Môn học"
                   parent="menu_setting"
@@ -178,6 +204,11 @@
                   name="Cấp bậc"
                   parent="menu_setting"
                   action="action_training_category"/>
+
+        <menuitem id="menu_training_location"
+                  name="Vị trí huấn luyện"
+                  parent="menu_setting"
+                  action="action_view_training_location"/>
 
     </data>
 </odoo>

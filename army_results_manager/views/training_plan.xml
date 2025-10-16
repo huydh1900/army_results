@@ -10,7 +10,7 @@
                 <field name="plan_code"/>
                 <field name="start_date"/>
                 <field name="end_date"/>
-                <field name="location"/>
+                <field name="location_id"/>
                 <field name="state" widget="badge"
                        decoration-muted="state == 'draft'"
                        decoration-info="state == 'posted'"
@@ -28,7 +28,6 @@
             <form string="Kế hoạch huấn luyện">
                 <header>
                     <field name="state" widget="statusbar"/>
-
                     <button name="action_post"
                             string="Gửi duyệt"
                             type="object"
@@ -54,12 +53,23 @@
                             states="draft,posted,to_modify"
                             class="btn-danger"/>
                 </header>
+
+                <div class="oe_button_box" name="button_box">
+                    <button name="action_open_camera"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-video-camera"
+                            string="Mở camera">
+                        <field name="camera_count" widget="statinfo" string="Camera"/>
+                    </button>
+                </div>
+
                 <group>
                     <group>
                         <field name="plan_code"/>
                         <field name="name"/>
                         <field name="type"/>
-                        <field name="location"/>
+                        <field name="location_id"/>
                         <field name="description"/>
                         <field name="training_content"/>
                     </group>
