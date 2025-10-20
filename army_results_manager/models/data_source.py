@@ -13,63 +13,78 @@ class DataSource(models.Model):
     source_type = fields.Selection([
         ('rss', 'RSS Feed'),
         ('api', 'Webservice (API)'),
+        ('html', 'Trang web (HTML)'),
     ], string="Phương thức", required=True)
     category = fields.Selection([
         ('tin_tuc', 'Tin tức'),
         ('su_kien', 'Sự kiện'),
         ('thong_bao', 'Thông báo'),
     ], string='Loại tin cần thu thập', required=True)
-    url = fields.Char(string='URL', required=True, default='https://vnexpress.net/')
+    url = fields.Char(string='URL', required=True)
     active = fields.Boolean(string='Kích hoạt', default=True)
     last_collected = fields.Datetime(string='Lần thu thập gần nhất', readonly=True)
 
-    # ==============================
-    # ========== THU THẬP ==========
-    # ==============================
+    def action_collect_now(self):
+        self._collect_from_source()
 
     def _collect_from_source(self):
-        """Thu thập link bài viết từ VnExpress theo category."""
-        try:
-            response = requests.get(self.url, timeout=10)
-            response.raise_for_status()
-            soup = BeautifulSoup(response.text, 'html.parser')
+        """Thu thập dữ liệu từ nguồn"""
+        for record in self:
+            try:
+                response = requests.get(record.url, timeout=10)
+                response.raise_for_status()
 
-            links = set()
-            for a in soup.find_all('a', href=True):
-                href = a['href']
-                # Loại bỏ link không phải bài báo
-                if href.startswith('https://timkiem.vnexpress.net') and href.count('/') > 3:
-                    # Tùy theo category mà lọc
-                    if self.category == 'tin_tuc' and '?q=tin%20tức' in href:
-                        links.add(href)
-                    elif self.category == 'su_kien' and '/su-kien' in href:
-                        links.add(href)
-                    elif self.category == 'thong_bao' and '/thong-bao' in href:
-                        links.add(href)
-                    elif self.category not in ['tin_tuc', 'su_kien', 'thong_bao']:
-                        links.add(href)
+                soup = BeautifulSoup(response.text, 'html.parser')
+                print(soup)
+                links = soup.find_all('a')
 
-            for link in links:
-                self.env['collected.data'].create({
-                    'title': link,
-                    'content': '',
-                    'source_id': self.id,
-                })
+                for link in links:
+                    url = link.get('href')
+                    title = link.get('title')
+                    text = link.text.strip()
 
-            self.last_collected = fields.Datetime.now()
-            _logger.info(f"✅ Thu thập {len(links)} link từ {self.url} ({self.category})")
+                    print(f"Title: {title}, Text: {text}, Link: {url}")
 
-        except Exception as e:
-            _logger.error(f"❌ Lỗi khi thu thập từ {self.url}: {e}")
+                    try:
+                        news = requests.get(url)
+                        news_soup = BeautifulSoup(news.content, "html.parser")
 
-    def action_collect_now(self):
-        """Gọi từ nút thủ công."""
-        for src in self:
-            src._collect_from_source()
+                        # Lấy tất cả ảnh trong body bài viết
+                        body_tag = news_soup.find("div", itemprop="articleBody")
+                        images = []
+                        if body_tag:
+                            for img_tag in body_tag.find_all("img"):
+                                src = img_tag.get("src")
+                                if src:
+                                    images.append(src)
 
-    @api.model
-    def collect_data_cron(self):
-        """Hàm gọi từ cron (tự động) để thu thập tất cả nguồn đang active."""
-        sources = self.search([('active', '=', True)])
-        for src in sources:
-            src._collect_from_source()
+                        print(f"Images ({len(images)}): {images}")
+                        print("_________________________________________________________________")
+
+                    except Exception as e:
+                        print(f"Lỗi khi crawl {url}: {e}")
+                # titles = soup.findAll('h3')
+                # print(titles)
+
+                # links = [link.find('a').attrs["href"] for link in titles]
+                # # print(links)
+                # articles = soup.find_all('div', class_='item-news')
+                #
+                # for link in links:
+                #     news = requests.get(link)
+                #     soup = BeautifulSoup(news.content, "html.parser")
+                #     title = soup.find("h1", class_="post-title").text
+                #     abstract = soup.find("h2", class_="sapo").text
+                #     body = soup.find("div", id="main-detail-body")
+                #     content = body.findChildren("p", recursive=False)[0].text + body.findChildren("p", recursive=False)[
+                #         1].text
+                #     image = body.find("img").attrs["src"]
+                #     print("Tiêu đề: " + title)
+                #     print("Tiêu đề: " + soup)
+                #     # print("Mô tả: " + abstract)
+                #     # print("Nội dung: " + content)
+                #     # print("Ảnh minh họa: " + image)
+                #     print("_________________________________________________________________________")
+
+            except Exception as e:
+                _logger.error(f"Lỗi khi thu thập dữ liệu từ {record.url}: {e}")

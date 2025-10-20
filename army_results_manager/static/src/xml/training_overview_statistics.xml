@@ -2,35 +2,7 @@
 <templates id="template" xml:space="preserve">
     <t t-name="army_results_manager.training_overview_statistics" owl="1">
         <div class="dashboard_row">
-            <div class="dashboard_card" style="flex: 1 1 calc(30% - 10px); min-width: 300px;">
-                <div class="card_header">KẾT QUẢ HUẤN LUYỆN THEO BỘ ĐỘI</div>
-                <div class="card_body">
-                    <div class="stats_grid">
-                        <div class="stat_item">
-                            <div class="stat_label">Tổng số học viên</div>
-                            <div class="stat_value" style="color: #3b82f6;">40</div>
-                        </div>
-                        <div class="stat_item">
-                            <div class="stat_label">Hoàn thành tốt</div>
-                            <div class="stat_value" style="color: #22c55e;">380</div>
-                        </div>
-                        <div class="stat_item">
-                            <div class="stat_label">Đang huấn luyện</div>
-                            <div class="stat_value" style="color: #eab308;">45</div>
-                        </div>
-                        <div class="stat_item">
-                            <div class="stat_label">Chưa đạt</div>
-                            <div class="stat_value" style="color: #ef4444;">25</div>
-                        </div>
-                    </div>
-                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #f0f0f0;">
-                                <p style="margin: 0; font-size: 12px; color: #666;">
-                                    <strong>Kết luận:</strong>
-                                    Tỷ lệ hoàn thành xuất sắc với 84.4% đạt chuẩn
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+            <TrainingResultComponent/>
             <BarChartComponent/>
             <TrainTheUnitComponent/>
         </div>

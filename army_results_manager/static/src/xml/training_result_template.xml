@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="army_results_manager.TrainingResultTemplate" owl="1">
+        <div class="dashboard_card" style="flex: 1 1 calc(30% - 10px); min-width: 300px;">
+            <div class="card_header">KẾT QUẢ HUẤN LUYỆN THEO BỘ ĐỘI</div>
+            <div class="card_body">
+                <div class="stats_grid">
+                    <div class="stat_item">
+                        <div class="stat_label">Tổng số học viên</div>
+                        <div class="stat_value" style="color: #3b82f6;" t-esc="state.totalStudents"/>
+                    </div>
+                    <div class="stat_item">
+                        <div class="stat_label">Hoàn thành tốt</div>
+                        <div class="stat_value" style="color: #22c55e;" t-esc="state.goodStudents"/>
+                    </div>
+                    <div class="stat_item">
+                        <div class="stat_label">Đang huấn luyện</div>
+                        <div class="stat_value" style="color: #eab308;" t-esc="state.trainingStudents"/>
+                    </div>
+                    <div class="stat_item">
+                        <div class="stat_label">Chưa đạt</div>
+                        <div class="stat_value" style="color: #ef4444;" t-esc="state.failStudents"/>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #f0f0f0;">
+                                <p style="margin: 0; font-size: 12px; color: #666;">
+                                    <strong>Kết luận:</strong>
+                                    <span t-esc="state.conclusion"/>
+                                </p>
+                            </div>
+            </div>
+        </div>
+    </t>
+</templates>

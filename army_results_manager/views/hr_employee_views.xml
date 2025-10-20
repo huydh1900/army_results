@@ -59,6 +59,7 @@
         <field name="arch" type="xml">
             <field name="work_email" position="after">
                 <field name="training_expertise" attrs="{'invisible': [('role', '!=', 'training_officer')]}"/>
+                <field name="classification" attrs="{'invisible': [('role', '!=', 'student')]}"/>
                 <field name="coaching_experience" attrs="{'invisible': [('role', '!=', 'training_officer')]}"/>
                 <field name="role"/>
             </field>

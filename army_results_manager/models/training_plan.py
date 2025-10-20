@@ -1,6 +1,5 @@
 from odoo import fields, models, api
 from odoo.exceptions import UserError
-import requests
 
 class TrainingPlan(models.Model):
     _name = "training.plan"
@@ -13,7 +12,7 @@ class TrainingPlan(models.Model):
     type = fields.Selection([
         ('squad', 'Phân đội'),
         ('officer', 'Sĩ quan')
-        ], string="Loại huấn luyện", required=True, default='squad'
+    ], string="Loại huấn luyện", required=True, default='squad'
     )
     start_date = fields.Date(string="Thời gian bắt đầu", required=True)
     end_date = fields.Date(string="Thời gian kết thúc", required=True)
@@ -126,4 +125,3 @@ class TrainingPlan(models.Model):
             "view_mode": "form",
             "target": "new",
         }
-

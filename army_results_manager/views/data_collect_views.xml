@@ -55,26 +55,34 @@
         <field name="name">collected.data.tree</field>
         <field name="model">collected.data</field>
         <field name="arch" type="xml">
-            <tree string="Dữ liệu đã thu thập">
-                <field name="title"/>
+            <tree string="Dữ liệu thu thập" default_order="collected_date desc">
+                <field name="name"/>
+                <field name="category"/>
                 <field name="source_id"/>
                 <field name="collected_date"/>
+                <field name="url"/>
             </tree>
         </field>
     </record>
 
-    <!-- Form View -->
+    <!-- Form view -->
     <record id="view_collected_data_form" model="ir.ui.view">
         <field name="name">collected.data.form</field>
         <field name="model">collected.data</field>
         <field name="arch" type="xml">
-            <form string="Dữ liệu thu thập">
+            <form string="Chi tiết dữ liệu thu thập">
                 <sheet>
                     <group>
-                        <field name="title"/>
-                        <field name="source_id"/>
-                        <field name="collected_date" readonly="1"/>
-                        <field name="content"/>
+                        <group>
+                            <field name="name"/>
+                            <field name="url"/>
+                            <field name="category"/>
+                            <field name="source_id"/>
+                            <field name="collected_date"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description" nolabel="1" placeholder="Mô tả chi tiết..."/>
                     </group>
                 </sheet>
             </form>

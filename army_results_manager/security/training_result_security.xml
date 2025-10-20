@@ -42,11 +42,4 @@
         <field name="perm_unlink">0</field>
     </record>
 
-    <!-- Rule cho CB chỉ huy: xem được tất cả -->
-    <!--    <record id="training_result_rule_commander" model="ir.rule">-->
-    <!--        <field name="name">Training Result: Commander can see all</field>-->
-    <!--        <field name="model_id" ref="army_results_manager.model_training_mission_result"/>-->
-    <!--        <field name="groups" eval="[(4, ref('army_results_manager.group_training_commander'))]"/>-->
-    <!--        <field name="domain_force">[(1, '=', 1)]</field>-->
-    <!--    </record>-->
 </odoo>

@@ -1,5 +1,5 @@
 from odoo import api, fields, models, _
-
+from statistics import mean
 
 class HrEmployeePrivate(models.Model):
     _inherit = ['hr.employee']
@@ -17,6 +17,70 @@ class HrEmployeePrivate(models.Model):
     result_ids = fields.One2many('training.result', 'employee_id')
     comment_ids = fields.One2many('training.comment', 'employee_id')
     day_ids = fields.Many2many('training.day')
+    classification = fields.Selection(
+        [
+            ("pass", "Đạt"),
+            ("fail", "Không đạt"),
+            ("excellent", "Xuất sắc"),
+            ("good", "Khá"),
+            ("average", "Trung bình"),
+        ],
+        string="Xếp loại", compute="_compute_classification", store=True,
+    )
+
+    @api.model
+    def count_student_summary(self):
+        Employee = self.env['hr.employee']
+
+        domain_student = [('role', '=', 'student')]
+
+        total = Employee.search_count(domain_student)
+        good = Employee.search_count(domain_student + [('classification', '=', 'excellent')])
+        fail = Employee.search_count(domain_student + [('classification', '=', 'fail')])
+
+        plans = self.env['training.plan'].search([])
+        students = plans.mapped('course_ids.student_ids')
+        unique_students = set(students)
+        training = len(unique_students)
+
+        return {
+            'total': total,
+            'good': good,
+            'fail': fail,
+            'training': training,
+        }
+
+    @api.depends("result_ids")
+    def _compute_classification(self):
+        for rec in self:
+            scores = []
+
+            # Thu thập toàn bộ điểm của record
+            for result in rec.result_ids:
+                # Nếu result.score là 1 con số:
+                if isinstance(result.score, (int, float)):
+                    scores.append(result.score)
+                # Nếu là danh sách điểm (ví dụ One2many):
+                elif isinstance(result.score, list):
+                    scores.extend(result.score)
+
+            if not scores:
+                rec.classification = False
+                continue
+
+            avg_score = mean(scores)
+
+            # Xếp loại theo ngưỡng điểm
+            if avg_score >= 9:
+                rec.classification = "excellent"
+            elif avg_score >= 8:
+                rec.classification = "good"
+            elif avg_score >= 6.5:
+                rec.classification = "average"
+            elif avg_score >= 5:
+                rec.classification = "pass"
+            else:
+                rec.classification = "fail"
 
     @api.model
     def default_get(self, fields_list):
