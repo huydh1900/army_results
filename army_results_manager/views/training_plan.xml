@@ -116,5 +116,23 @@
         </field>
     </record>
 
+    <record id="view_training_plan_calendar" model="ir.ui.view">
+        <field name="name">training.plan.calendar</field>
+        <field name="model">training.plan</field>
+        <field name="arch" type="xml">
+            <calendar
+                    string="Lịch huấn luyện"
+                    date_start="start_date"
+                    date_stop="end_date"
+                    color="participants_ids"
+                    mode="month"
+                    quick_add="false"
+            >
+                <field name="name"/>
+                <field name="participants_ids"/>
+            </calendar>
+        </field>
+    </record>
+
 </odoo>
 

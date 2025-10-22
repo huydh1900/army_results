@@ -34,57 +34,45 @@ class DataSource(models.Model):
                 response = requests.get(record.url, timeout=10)
                 response.raise_for_status()
 
-                soup = BeautifulSoup(response.text, 'html.parser')
-                print(soup)
-                links = soup.find_all('a')
+                soup = BeautifulSoup(response.text, "html.parser")
+                articles = soup.find_all("article")
 
-                for link in links:
-                    url = link.get('href')
-                    title = link.get('title')
-                    text = link.text.strip()
+                results = []
+                for art in articles:
+                    a_tag = art.find("a", href=True, title=True)
+                    title = a_tag["title"].strip() if a_tag else ""
+                    link = a_tag["href"].strip() if a_tag else ""
 
-                    print(f"Title: {title}, Text: {text}, Link: {url}")
+                    # Lấy ảnh trong bài
+                    img_tag = art.find("img")
+                    img_src = img_tag["src"].strip() if img_tag and img_tag.has_attr("src") else ""
 
+                    if not img_src or not link:
+                        continue
+
+                    # 🔹 Lấy toàn bộ <p> trong trang chi tiết bài viết
+                    description = ""
                     try:
-                        news = requests.get(url)
-                        news_soup = BeautifulSoup(news.content, "html.parser")
+                        article_page = requests.get(link, timeout=10)
+                        article_page.raise_for_status()
+                        article_soup = BeautifulSoup(article_page.text, "html.parser")
 
-                        # Lấy tất cả ảnh trong body bài viết
-                        body_tag = news_soup.find("div", itemprop="articleBody")
-                        images = []
-                        if body_tag:
-                            for img_tag in body_tag.find_all("img"):
-                                src = img_tag.get("src")
-                                if src:
-                                    images.append(src)
+                        # Gộp tất cả các thẻ <p> trong nội dung bài
+                        paragraphs = article_soup.find_all("p")
+                        description = "\n".join(p.get_text(strip=True) for p in paragraphs if p.get_text(strip=True))
+                    except Exception as sub_e:
+                        _logger.warning(f"Không thể lấy nội dung chi tiết từ {link}: {sub_e}")
 
-                        print(f"Images ({len(images)}): {images}")
-                        print("_________________________________________________________________")
+                    results.append({
+                        "title": title,
+                        "source_id": self.id,
+                        "link": link,
+                        "image_url": img_src,
+                        "description": description,
+                        "category": "tin_tuc",
+                    })
 
-                    except Exception as e:
-                        print(f"Lỗi khi crawl {url}: {e}")
-                # titles = soup.findAll('h3')
-                # print(titles)
-
-                # links = [link.find('a').attrs["href"] for link in titles]
-                # # print(links)
-                # articles = soup.find_all('div', class_='item-news')
-                #
-                # for link in links:
-                #     news = requests.get(link)
-                #     soup = BeautifulSoup(news.content, "html.parser")
-                #     title = soup.find("h1", class_="post-title").text
-                #     abstract = soup.find("h2", class_="sapo").text
-                #     body = soup.find("div", id="main-detail-body")
-                #     content = body.findChildren("p", recursive=False)[0].text + body.findChildren("p", recursive=False)[
-                #         1].text
-                #     image = body.find("img").attrs["src"]
-                #     print("Tiêu đề: " + title)
-                #     print("Tiêu đề: " + soup)
-                #     # print("Mô tả: " + abstract)
-                #     # print("Nội dung: " + content)
-                #     # print("Ảnh minh họa: " + image)
-                #     print("_________________________________________________________________________")
-
+                Collected = self.env['collected.data']
+                Collected.create(results)
             except Exception as e:
                 _logger.error(f"Lỗi khi thu thập dữ liệu từ {record.url}: {e}")

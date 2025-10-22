@@ -17,6 +17,12 @@
             <field name="view_mode">tree,form</field>
         </record>
 
+        <record id="action_view_support_contact" model="ir.actions.act_window">
+            <field name="name">Trợ giúp trực tuyến</field>
+            <field name="res_model">support.contact</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
         <record id="action_training_category" model="ir.actions.act_window">
             <field name="name">Cấp bậc</field>
             <field name="res_model">training.category</field>
@@ -67,7 +73,7 @@
         <record id="action_training_plan" model="ir.actions.act_window">
             <field name="name">Kế hoạch huấn luyện</field>
             <field name="res_model">training.plan</field>
-            <field name="view_mode">tree,form,gantt</field>
+            <field name="view_mode">tree,form,gantt,calendar</field>
         </record>
 
         <record id="action_view_camera_device" model="ir.actions.act_window">
@@ -194,7 +200,6 @@
                   groups="army_results_manager.group_training_commander_assistant"
                   action="action_training_course"/>
 
-
         <menuitem id="menu_training_stage_result"
                   name="Kết quả giai đoạn"
                   parent="menu_training_result"
@@ -211,7 +216,7 @@
                   name="Cấu hình"
                   parent="menu_military_root"
                   groups="army_results_manager.group_training_commander_assistant"
-                  sequence="7"/>
+                  sequence="8"/>
 
         <menuitem id="menu_training_subject"
                   name="Môn học"
@@ -233,6 +238,12 @@
                   parent="menu_military_root"
                   sequence="6"/>
 
+        <menuitem id="menu_support_contact"
+                  name="Trợ giúp"
+                  parent="menu_military_root"
+                  action="action_view_support_contact"
+                  sequence="7"/>
+
         <menuitem id="menu_data_source"
                   name="Nguồn thu thập"
                   parent="menu_data_collect_root"
@@ -244,7 +255,6 @@
                   parent="menu_data_collect_root"
                   action="action_army_collected_data"
                   sequence="2"/>
-
 
     </data>
 </odoo>

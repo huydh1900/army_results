@@ -23,11 +23,11 @@
                     </div>
                 </div>
                 <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #f0f0f0;">
-                                <p style="margin: 0; font-size: 12px; color: #666;">
-                                    <strong>Kết luận:</strong>
-                                    <span t-esc="state.conclusion"/>
-                                </p>
-                            </div>
+                    <p style="margin: 0; font-size: 12px; color: #666;">
+                        <strong>Kết luận:</strong>
+                        <span t-esc="state.conclusion"/>
+                    </p>
+                </div>
             </div>
         </div>
     </t>

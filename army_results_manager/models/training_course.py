@@ -22,6 +22,17 @@ class TrainingCourse(models.Model):
     responsible_level_id = fields.Many2one('training.category', string='Cấp phụ trách')
     measure = fields.Char(string="Biện pháp tiến hành")
 
+    def action_open_result_training(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Kết quả huấn luyện',
+            'res_model': 'training.result',
+            'view_mode': 'tree,form',
+            'domain': [('employee_id', 'in', self.student_ids.ids), ('training_course_id', '=', self.id)],
+            'target': 'current',
+        }
+
     @api.depends('mission_ids', 'mission_ids.total_hours')
     def _compute_total_hours(self):
         for rec in self:

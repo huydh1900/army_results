@@ -1,0 +1,40 @@
+<odoo>
+    <record id="view_support_contact_tree" model="ir.ui.view">
+        <field name="name">support.contact.tree</field>
+        <field name="model">support.contact</field>
+        <field name="arch" type="xml">
+            <tree string="Thông tin hỗ trợ">
+                <field name="name"/>
+                <field name="phone"/>
+                <field name="position"/>
+                <field name="email"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_support_contact_form" model="ir.ui.view">
+        <field name="name">support.contact.form</field>
+        <field name="model">support.contact</field>
+        <field name="arch" type="xml">
+            <form string="Thông tin hỗ trợ">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="position"/>
+                        <field name="phone"/>
+                        <field name="email"/>
+                    </group>
+
+                    <div class="text-center" style="margin-top: 20px;">
+                        <field name="zalo_qr" widget="image" class="oe_avatar"
+                               style="max-width:200px; margin:auto;" force_save="1"/>
+                        <p style="margin-top:10px;">
+                            Quét mã để liên hệ Zalo:
+                            <field name="phone" readonly="1" nolabel="1" force_save="1"/>
+                        </p>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

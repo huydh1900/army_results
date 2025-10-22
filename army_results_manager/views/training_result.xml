@@ -9,21 +9,25 @@
                 <field name="score"/>
                 <field name="result"/>
                 <field name="note"/>
+                <button name="action_generate_note_by_ai"
+                        type="object"
+                        title="Tạo nhận xét bằng AI"
+                        icon="fa-magic"/>
             </tree>
         </field>
     </record>
 
-<!--    <record id="view_training_result_form" model="ir.ui.view">-->
-<!--        <field name="name">training.result.form</field>-->
-<!--        <field name="model">training.result</field>-->
-<!--        <field name="arch" type="xml">-->
-<!--            <from string="Kết quả huấn luyện" create="false" editable="bottom">-->
-<!--                <field name="employee_id" options='{"no_open":True}'/>-->
-<!--                <field name="training_course_id" options='{"no_open":True}'/>-->
-<!--                <field name="score"/>-->
-<!--                <field name="result"/>-->
-<!--            </from>-->
-<!--        </field>-->
-<!--    </record>-->
+    <!--    <record id="view_training_result_form" model="ir.ui.view">-->
+    <!--        <field name="name">training.result.form</field>-->
+    <!--        <field name="model">training.result</field>-->
+    <!--        <field name="arch" type="xml">-->
+    <!--            <from string="Kết quả huấn luyện" create="false" editable="bottom">-->
+    <!--                <field name="employee_id" options='{"no_open":True}'/>-->
+    <!--                <field name="training_course_id" options='{"no_open":True}'/>-->
+    <!--                <field name="score"/>-->
+    <!--                <field name="result"/>-->
+    <!--            </from>-->
+    <!--        </field>-->
+    <!--    </record>-->
 
 </odoo>

@@ -18,7 +18,6 @@ export class TrainingResultComponent extends Component {
 
     async countStudentSummary() {
         const summary = await this.orm.call("hr.employee", "count_student_summary", []);
-        console.log(summary);
 
         this.state.totalStudents = summary.total || 0;
         this.state.goodStudents = summary.good || 0;

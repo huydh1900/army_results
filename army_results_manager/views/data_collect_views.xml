@@ -56,11 +56,11 @@
         <field name="model">collected.data</field>
         <field name="arch" type="xml">
             <tree string="Dữ liệu thu thập" default_order="collected_date desc">
-                <field name="name"/>
+                <field name="title"/>
                 <field name="category"/>
                 <field name="source_id"/>
                 <field name="collected_date"/>
-                <field name="url"/>
+                <field name="link"/>
             </tree>
         </field>
     </record>
@@ -74,16 +74,26 @@
                 <sheet>
                     <group>
                         <group>
-                            <field name="name"/>
-                            <field name="url"/>
+                            <field name="title"/>
+                            <field name="link"/>
                             <field name="category"/>
                             <field name="source_id"/>
                             <field name="collected_date"/>
                         </group>
                     </group>
-                    <group>
-                        <field name="description" nolabel="1" placeholder="Mô tả chi tiết..."/>
-                    </group>
+                    <sheet>
+                        <div class="text-center">
+                            <field name="image_url" widget="image_url"/>
+                        </div>
+                        <div class="text-center" style="margin-top: 10px;">
+                            <h2 style="text-align: center; margin: 10px 0;">
+                                <field name="title" nolabel="1" readonly="1"/>
+                            </h2>
+                        </div>
+                        <div style="margin-top: 20px; text-align: justify; line-height: 1.6;">
+                            <field name="description" readonly="1" nolabel="1"/>
+                        </div>
+                    </sheet>
                 </sheet>
             </form>
         </field>

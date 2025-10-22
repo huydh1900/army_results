@@ -24,6 +24,13 @@
                             icon="fa-users">
                         <field name="student_count" widget="statinfo" string="Học viên"/>
                     </button>
+                    <button name="action_open_result_training"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-list-alt"
+                            attrs="{'invisible': [('student_count', '=', 0)]}"
+                            title="Kết quả huấn luyện"
+                            string="Kết quả huấn luyện"/>
                 </div>
                 <group>
                     <group>

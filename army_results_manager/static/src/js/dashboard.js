@@ -5,18 +5,19 @@ import {useService} from "@web/core/utils/hooks";
 import {BarChartComponent} from "./bar_chart_component";
 import {TrainTheUnitComponent} from "./train_the_unit_component";
 import {TrainingResultComponent} from "./training_result_component";
+import {WarningImportantComponent} from "./warning_important_component";
 
 export class Dashboard extends Component {
     setup() {
         this.rpc = useService("rpc");
     }
-
 }
 
 Dashboard.template = "army_results_manager.DashboardTemplate"
 Dashboard.components = {
     BarChartComponent,
     TrainTheUnitComponent,
-    TrainingResultComponent
+    TrainingResultComponent,
+    WarningImportantComponent
 };
 registry.category("actions").add("army_dashboard", Dashboard)

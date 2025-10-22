@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_res_config_settings_openai" model="ir.ui.view">
+        <field name="name">res.config.settings.openai.api</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='languages']" position="after">
+                <div class="app_settings_block" id="openai_settings_block" data-string="AI Settings">
+                    <h2>Cấu hình AI</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="openai_api_key" string="OpenAI API Key"/>
+                                <field name="openai_api_key" password="True"
+                                       placeholder="Nhập OpenAI API Key tại đây..."/>
+                                <div class="text-muted">
+                                    Dùng để kết nối với OpenAI cho các tính năng nhận xét tự động.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

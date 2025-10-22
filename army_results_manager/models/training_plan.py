@@ -1,5 +1,7 @@
 from odoo import fields, models, api
 from odoo.exceptions import UserError
+from datetime import date, timedelta
+
 
 class TrainingPlan(models.Model):
     _name = "training.plan"
@@ -32,6 +34,31 @@ class TrainingPlan(models.Model):
     total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True)
     camera_ids = fields.Many2many('camera.device', string="Camera giám sát")
     camera_count = fields.Integer(compute='_compute_camera_count')
+
+    @api.model
+    def cron_generate_daily_warning(self):
+        today = date.today()
+        upcoming_days = 3  # số ngày trước khi bắt đầu mà bạn muốn cảnh báo
+        upcoming_date = today + timedelta(days=upcoming_days)
+
+        # Lọc các kế hoạch chưa duyệt và sắp bắt đầu
+        plans = self.search([
+            ("state", "in", ["draft", "posted", "to_modify"]),
+            ("start_date", "<=", upcoming_date),
+            ("start_date", ">=", today),
+        ])
+
+        if not plans:
+            message = "Không có cảnh báo nào hôm nay."
+        else:
+            message = (
+                    "Các kế hoạch sắp đến ngày bắt đầu nhưng chưa được duyệt:\n" +
+                    "\n".join([f"- {plan.name} (ngày {plan.start_date})" for plan in plans])
+            )
+
+        # Ghi log lại
+        self.env["training.warning.log"].create({"message": message})
+        return True
 
     @api.depends('location_id')
     def _compute_camera_count(self):

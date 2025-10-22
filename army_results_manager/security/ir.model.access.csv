@@ -11,6 +11,8 @@ access_training_day,access_training_day,model_training_day,,1,1,1,1
 access_training_day_line,access_training_day_line,model_training_day_line,,1,1,1,1
 access_training_result,access_training_result,model_training_result,,1,1,1,1
 access_training_comment,access_training_comment,model_training_comment,,1,1,1,1
+access_support_contact,access_support_contact,model_support_contact,,1,1,1,1
+access_training_warning_log,access_training_warning_log,model_training_warning_log,,1,1,1,1
 access_training_location,access_training_location,model_training_location,,1,1,1,1
 access_camera_device,access_camera_device,model_camera_device,,1,1,1,1
 access_training_material,access_training_material,model_training_material,,1,1,1,1

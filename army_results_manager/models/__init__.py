@@ -15,3 +15,6 @@ from . import data_source
 from . import collected_data
 from . import camera_device
 from . import training_location
+from . import support_contact
+from . import res_config_settings
+from . import training_warning_log

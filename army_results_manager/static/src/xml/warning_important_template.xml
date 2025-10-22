@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="army_results_manager.WarningImportantTemplate" owl="1">
+        <div class="dashboard_row">
+            <div class="dashboard_card">
+                <div class="card_header">CẢNH BÁO - THÔNG BÁO QUAN TRỌNG</div>
+                <div class="card_body" style="max-height: 400px; overflow-y: auto; padding-right: 5px;">
+                    <t t-if="state.warnings.length">
+                        <t t-foreach="state.warnings" t-as="warn" t-key="warn.id">
+                            <div class="alert_box alert_warning">
+                                <div class="alert_icon icon_warning">!</div>
+                                <div style="flex: 1;">
+                                    <strong t-esc="warn.date"/>:
+                                    <span t-esc="warn.message"/>
+                                </div>
+                                <span class="status_badge status_warning">Đang xử lý</span>
+                            </div>
+                        </t>
+                    </t>
+                    <t t-else="">
+                        <div class="alert_box alert_success">
+                            <div class="alert_icon icon_success">✓</div>
+                            <div style="flex: 1;">Không có cảnh báo nào hôm nay 🎉</div>
+                            <span class="status_badge status_success">Tốt</span>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
