@@ -134,5 +134,16 @@
         </field>
     </record>
 
+    <record id="view_training_plan_search" model="ir.ui.view">
+        <field name="name">training.plan.search</field>
+        <field name="model">training.plan</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kế hoạch huấn luyện">
+                <field name="name" string="Tên kế hoạch"/>
+                <field name="start_date" string="Ngày bắt đầu"/>
+                <field name="end_date" string="Ngày kết thúc"/>
+            </search>
+        </field>
+    </record>
 </odoo>
 
