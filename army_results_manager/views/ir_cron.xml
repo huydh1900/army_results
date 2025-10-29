@@ -10,6 +10,7 @@
             <field name="numbercall">-1</field>
             <field name="doall">False</field>
             <field name="active">True</field>
+            <field name="nextcall" eval="(DateTime.now() + relativedelta(days=1)).strftime('%Y-%m-%d 07:00:00')" />
         </record>
     </data>
 </odoo>

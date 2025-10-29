@@ -28,12 +28,28 @@ class TrainingPlan(models.Model):
     ], string="Trạng thái", default="draft")
     location_id = fields.Many2one('training.location', string='Địa điểm')
     training_content = fields.Char(string='Nội dung huấn luyện')
-    reason_modify = fields.Char(string='Lý do chỉnh sửa')
+    reason_modify = fields.Text(string='Lý do chỉnh sửa')
     course_ids = fields.One2many('training.course', 'plan_id')
-    year = fields.Integer(string='Năm')
-    total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True)
+    year = fields.Char(string='Năm')
+    total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', readonly=0, store=True)
     camera_ids = fields.Many2many('camera.device', string="Camera giám sát")
     camera_count = fields.Integer(compute='_compute_camera_count')
+    common_subject_ids = fields.One2many(
+        'training.course',
+        'plan_id',
+        domain=[('is_common', '=', True)],
+        context={'default_is_common': True},
+        string='Môn huấn luyện chung'
+    )
+
+    # Môn huấn luyện riêng theo nhóm/đơn vị
+    specific_subject_ids = fields.One2many(
+        'training.course',
+        'plan_id',
+        domain=[('is_common', '=', False)],
+        string='Môn huấn luyện riêng'
+    )
+
 
     @api.model
     def cron_generate_daily_warning(self):
@@ -87,7 +103,7 @@ class TrainingPlan(models.Model):
     @api.depends('course_ids.total_hours')
     def _compute_total_hours(self):
         for rec in self:
-            rec.total_hours = sum(line.total_hours for line in rec.course_ids)
+            rec.total_hours = sum(line.total_hours or 0.0 for line in rec.course_ids)
 
     @api.constrains('start_date', 'end_date')
     def _check_start_date(self):
@@ -147,7 +163,7 @@ class TrainingPlan(models.Model):
     def action_print_word(self):
         return {
             "type": "ir.actions.act_window",
-            "name": "Chọn phụ lục",
+            "name": "Báo cáo tổng hợp huấn luyện",
             "res_model": "print.word.wizard",
             "view_mode": "form",
             "target": "new",

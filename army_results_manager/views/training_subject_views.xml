@@ -9,7 +9,6 @@
                     <group>
                         <field name="code"/>
                         <field name="name"/>
-                        <field name="type_training"/>
                     </group>
                 </sheet>
             </form>

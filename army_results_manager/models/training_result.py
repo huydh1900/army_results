@@ -20,7 +20,7 @@ class TrainingResult(models.Model):
         ],
         string="Xếp loại",
     )
-    note = fields.Char(string='Nhận xét')
+    note = fields.Text(string='Nhận xét')
 
     def action_generate_note_by_ai(self):
         # Lấy key 1 lần duy nhất

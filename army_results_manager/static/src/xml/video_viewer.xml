@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="army_results_manager.VideoViewer">
+    <!--    <t t-if="props.value">-->
+        <!--        <video width="480" height="270" controls>-->
+        <!--            <source t-att-src="'data:video/mp4;base64,%s' % props.value" type="video/mp4"/>-->
+        <!--        </video>-->
+        <!--    </t>-->
+    </t>
+</templates>

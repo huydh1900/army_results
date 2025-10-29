@@ -4,11 +4,11 @@ from odoo import fields, models, api
 class TrainingCourse(models.Model):
     _name = "training.course"
     _rec_name = 'name'
-    _description = "Khóa huấn luyện"
+    _description = "Nội dung huấn luyện"
 
-    name = fields.Char(string="Tên khóa")
-    start_date = fields.Date(string="Bắt đầu huấn luyện")
-    end_date = fields.Date(string="Kết thúc huấn luyện")
+    name = fields.Char(string="Nội dung huấn luyện")
+    start_date = fields.Datetime(string="Bắt đầu huấn luyện")
+    end_date = fields.Datetime(string="Kết thúc huấn luyện")
     total_hours = fields.Float(string='Tổng số giờ', compute='_compute_total_hours', store=True)
     plan_id = fields.Many2one('training.plan', ondelete='cascade')
     mission_ids = fields.One2many('training.mission', 'course_id', string='Danh sách nội dung huấn luyện')
@@ -21,6 +21,9 @@ class TrainingCourse(models.Model):
     participant_category_id = fields.Many2one('training.category', string='Thành phần tham gia')
     responsible_level_id = fields.Many2one('training.category', string='Cấp phụ trách')
     measure = fields.Char(string="Biện pháp tiến hành")
+    year = fields.Char(related='plan_id.year', store=True)
+    is_common = fields.Boolean('Là môn chung', default=False)
+
 
     def action_open_result_training(self):
         self.ensure_one()
@@ -37,7 +40,7 @@ class TrainingCourse(models.Model):
     def _compute_total_hours(self):
         for rec in self:
             if rec.mission_ids:
-                rec.total_hours = sum(line.total_hours for line in rec.mission_ids if not line.exclude_main_training)
+                rec.total_hours = sum(line.total_hours or 0.0 for line in rec.mission_ids if not line.exclude_main_training)
             else:
                 rec.total_hours = 0
 

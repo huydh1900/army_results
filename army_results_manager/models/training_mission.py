@@ -8,11 +8,11 @@ class TrainingMission(models.Model):
     name = fields.Char(string="Tên nhiệm vụ", required=True)
     description = fields.Text(string="Mô tả nhiệm vụ")
     total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True)
-    start_date = fields.Date(string="Thời gian bắt đầu")
-    end_date = fields.Date(string="Thời gian kết thúc")
     participants_ids = fields.Many2many('hr.department', string="Đối tượng tham gia")
     material_ids = fields.One2many('training.material', 'mission_id', string="Tài liệu / Video")
     course_id = fields.Many2one('training.course', ondelete='cascade')
+    start_date = fields.Datetime(related='course_id.start_date', string="Thời gian bắt đầu", store=True)
+    end_date = fields.Datetime(related='course_id.end_date', string="Thời gian kết thúc", store=True)
     student_ids = fields.Many2many('hr.employee', string='Học viên', compute='_compute_student_ids', store=True)
     state = fields.Selection([
         ('draft', 'Dự thảo'),
@@ -25,10 +25,6 @@ class TrainingMission(models.Model):
         string="Không tính vào thời gian huấn luyện chính khóa",
         default=False
     )
-    type_training = fields.Selection([
-        ('common_training', 'Huấn luyện chung'),
-        ('private_training', 'Huấn luyện riêng'),
-    ], string="Loại huấn luyện")
     subject_id = fields.Many2one('training.subject', string="Môn học")
 
     @api.depends('course_id.student_ids')
@@ -50,7 +46,7 @@ class TrainingMission(models.Model):
     @api.depends('mission_line_ids.total_hours')
     def _compute_total_hours(self):
         for rec in self:
-            rec.total_hours = sum(line.total_hours for line in rec.mission_line_ids)
+            rec.total_hours = sum(line.total_hours or 0.0 for line in rec.mission_line_ids)
 
     def action_in_progress(self):
         self.write({'state': 'in_progress'})
@@ -71,11 +67,15 @@ class TrainingMissionLine(models.Model):
 
     mission_id = fields.Many2one('training.mission', string='Nhiệm vụ', readonly=True)
     name = fields.Char(string="Tên bài học", required=True)
-    total_hours = fields.Float(string='Số giờ')
-    start_date = fields.Date(string="Thời gian bắt đầu")
-    end_date = fields.Date(string="Thời gian kết thúc")
-    month_ids = fields.One2many('training.month', 'month_id', string='Thời gian huấn luyện theo tháng')
+    total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True)
+    day_ids = fields.One2many('training.day', 'mission_line_id', string='Thời gian huấn luyện')
     student_ids = fields.Many2many('hr.employee', string='Học viên', compute='_compute_student_ids', store=True)
+    title = fields.Char(string='Chủ đề')
+
+    @api.depends('day_ids', 'day_ids.total_hours')
+    def _compute_total_hours(self):
+        for rec in self:
+            rec.total_hours = sum(line.total_hours or 0.0 for line in rec.day_ids)
 
     @api.depends('mission_id.student_ids')
     def _compute_student_ids(self):
@@ -93,11 +93,11 @@ class TrainingMissionLine(models.Model):
             'target': 'current',
         }
 
-    @api.constrains('month_ids', 'month_ids.total_hours')
-    @api.onchange('month_ids')
-    def _check_month_ids(self):
+    @api.constrains('day_ids', 'day_ids.total_hours')
+    @api.onchange('day_ids')
+    def _check_day_ids(self):
         for rec in self:
-            if rec.month_ids:
-                rec.total_hours = sum(line.total_hours for line in rec.month_ids)
+            if rec.day_ids:
+                rec.total_hours = sum(line.total_hours or 0.0 for line in rec.day_ids)
             else:
                 rec.total_hours = 0

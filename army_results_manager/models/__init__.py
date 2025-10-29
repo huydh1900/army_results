@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from . import training_subject
+from . import training_time
 from . import training_result
 from . import training_category
 from . import training_mission
 from . import training_material
-from . import training_month
+from . import training_day
 from . import hr_department
 from . import hr_employee
 from . import training_plan

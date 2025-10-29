@@ -145,7 +145,6 @@
                 <page string="Nhận xét" attrs="{'invisible': [('role','!=','student')]}">
                     <field name="day_ids">
                         <tree editable="bottom">
-                            <field name="weekday"/>
                             <field name="day"/>
                         </tree>
                     </field>

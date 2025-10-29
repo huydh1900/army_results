@@ -44,9 +44,15 @@
         <field name="type_training">private_training</field>
     </record>
 
-    <record id="subject_the_luc" model="training.subject">
-        <field name="name">Thể lực</field>
-        <field name="code">TL</field>
+    <record id="subject_the_luc_chuyen_mon" model="training.subject">
+        <field name="name">Thể lực chuyên môn</field>
+        <field name="code">TLCM</field>
+        <field name="type_training">private_training</field>
+    </record>
+
+    <record id="subject_the_luc_chung" model="training.subject">
+        <field name="name">Thể lực chung</field>
+        <field name="code">TLC</field>
         <field name="type_training">private_training</field>
     </record>
 

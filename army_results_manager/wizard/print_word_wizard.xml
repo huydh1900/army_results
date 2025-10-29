@@ -4,9 +4,14 @@
         <field name="name">print.word.wizard.form</field>
         <field name="model">print.word.wizard</field>
         <field name="arch" type="xml">
-            <form string="In Word">
+            <form string="Báo cáo tổng hợp huấn luyện">
                 <group>
-                    <field name="mau_in"/>
+                    <field name="report_type"/>
+                    <field name="week"
+                           attrs="{'invisible':[('report_type','!=','week')], 'required':[('report_type','=','week')]}"/>
+                    <field name="month"
+                           attrs="{'invisible':[('report_type','=','year')], 'required':[('report_type','in',['month','week'])]}"/>
+                    <field name="year"/>
                 </group>
                 <footer>
                     <button string="In" type="object" name="action_print_word" class="btn-primary"/>

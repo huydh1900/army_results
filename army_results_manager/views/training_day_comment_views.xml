@@ -1,0 +1,13 @@
+<odoo>
+
+    <record id="view_training_day_comment_tree" model="ir.ui.view">
+        <field name="name">training.day.comment.tree</field>
+        <field name="model">training.day.comment</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom" create="0" delete="0">
+<!--                <field name="student_ids" readonly="True"/>-->
+                <field name="comment"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

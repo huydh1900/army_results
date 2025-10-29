@@ -3,6 +3,7 @@ from odoo import models, fields
 from odoo.modules.module import get_module_resource
 from io import BytesIO
 import base64
+import string
 from docx.shared import Pt
 from docx import Document
 from docx.shared import Cm
@@ -11,6 +12,9 @@ from docx.oxml.ns import qn
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_ALIGN_VERTICAL
 from docx.shared import Inches
+from datetime import date
+from odoo.exceptions import UserError
+from collections import defaultdict
 
 
 class PrintWordWizard(models.TransientModel):
@@ -23,8 +27,26 @@ class PrintWordWizard(models.TransientModel):
          ('template3', 'Phụ lục 3'),
          ('template4', 'Phụ lục 4'),
          ('template5', 'Phụ lục 5')],
-        string="Chọn mẫu phụ lục", required=True, default='template1'
+        string="Chọn mẫu phụ lục"
     )
+    report_type = fields.Selection([
+        ('week', 'Theo tuần'),
+        ('month', 'Theo tháng'),
+        ('year', 'Theo năm'),
+    ], string="Loại báo cáo", required=True, default='week')
+
+    year = fields.Char(string="Năm", default=lambda self: date.today().year)
+    month = fields.Selection([
+        ('1', 'Tháng 1'), ('2', 'Tháng 2'), ('3', 'Tháng 3'),
+        ('4', 'Tháng 4'), ('5', 'Tháng 5'), ('6', 'Tháng 6'),
+        ('7', 'Tháng 7'), ('8', 'Tháng 8'), ('9', 'Tháng 9'),
+        ('10', 'Tháng 10'), ('11', 'Tháng 11'), ('12', 'Tháng 12'),
+    ], string="Tháng")
+
+    week = fields.Selection([
+        ('1', 'Tuần 1'), ('2', 'Tuần 2'),
+        ('3', 'Tuần 3'), ('4', 'Tuần 4'), ('5', 'Tuần 5'),
+    ], string="Tuần")
 
     # ==================== Helper Functions ====================
 
@@ -122,24 +144,6 @@ class PrintWordWizard(models.TransientModel):
             parent.insert(idx, table._element)
             break
 
-    def replace_placeholder_with_table_template2(self, doc, placeholder, records, rows_data=None, note=None):
-        """Hàm này dành cho mẫu in template2 nếu cần."""
-        # 🔸 Lọc record theo type
-        filtered_records = [r for r in records if r.type == 'squad']
-
-        # Nếu không có record phù hợp thì không tạo bảng
-        if not filtered_records:
-            return
-
-        for para in doc.paragraphs:
-            if placeholder not in para.text:
-                continue
-
-            parent = para._element.getparent()
-            idx = parent.index(para._element)
-            parent.remove(para._element)
-
-
     def _build_standard_headers(self, table, records, num_records, num_cols, note):
         """Build headers for standard table."""
         # Column 1: TT
@@ -207,7 +211,6 @@ class PrintWordWizard(models.TransientModel):
 
             parent.insert(parent_idx, table._element)
             break
-
 
     def _build_aasam_headers(self, table):
         """Build headers for AASAM table."""
@@ -403,7 +406,7 @@ class PrintWordWizard(models.TransientModel):
             current_row += 1
 
         return current_row
-    
+
     # ==================== Table 4: Huấn luyện sĩ quan ====================
 
     def replace_table_4(self, doc, placeholder, records):
@@ -431,42 +434,42 @@ class PrintWordWizard(models.TransientModel):
         """Tạo bảng với cấu trúc header tối ưu."""
         table = doc.add_table(rows=3, cols=18)
         table.style = "Table Grid"
-        
+
         # Set column widths trước khi build header
         self._set_table_4_column_widths(table)
-        
+
         # Build headers
         self._build_table_4_headers(table)
-        
+
         # Format headers và set row height
         self._format_table_4_headers(table)
-        
+
         return table
 
     def _build_table_4_headers(self, table):
         """Tạo 3 hàng tiêu đề cho Bảng 4 với cấu trúc tối ưu."""
-        
+
         # ───── 1. HEADER CHÍNH (ROW 0) ─────
         row0 = table.rows[0]
         headers_row0 = [
-            "TT", "Nội dung huấn luyện", "Thành phần tham gia", 
-            "Cấp phụ trách", "Thời gian (giờ)", "", "", "", "", "", 
+            "TT", "Nội dung huấn luyện", "Thành phần tham gia",
+            "Cấp phụ trách", "Thời gian (giờ)", "", "", "", "", "",
             "", "", "", "", "", "", "", "Biện pháp tiến hành"
         ]
-        
+
         for i, text in enumerate(headers_row0):
             if text:  # Only set non-empty cells
                 row0.cells[i].text = text
-        
+
         # Merge "Thời gian (giờ)" từ cột 4 → 16
         row0.cells[4].merge(row0.cells[16])
-        
+
         # ───── 2. SUBHEADER (ROW 1) ─────
         row1 = table.rows[1]
         row1.cells[4].text = "Tổng số"
         for month_idx in range(12):
             row1.cells[5 + month_idx].text = f"Tháng {month_idx + 1:02d}"
-        
+
         # ───── 3. MERGE CỘT CỐ ĐỊNH THEO CHIỀU DỌC ─────
         # Merge các cột: TT, Nội dung, Thành phần, Cấp phụ trách, Biện pháp
         fixed_cols = [0, 1, 2, 3, 17]
@@ -476,16 +479,16 @@ class PrintWordWizard(models.TransientModel):
     def _set_table_4_column_widths(self, table):
         """Đặt chiều rộng cố định cho từng cột."""
         col_widths = [
-            0.4,   # TT
-            4.5,   # Nội dung huấn luyện
-            1.0,   # Thành phần
-            0.9,   # Cấp phụ trách
-            0.5,   # Tổng số
+            0.4,  # TT
+            4.5,  # Nội dung huấn luyện
+            1.0,  # Thành phần
+            0.9,  # Cấp phụ trách
+            0.5,  # Tổng số
             0.45, 0.45, 0.45, 0.45, 0.45, 0.45,  # Tháng 1-6
             0.45, 0.45, 0.45, 0.45, 0.45, 0.45,  # Tháng 7-12
-            2.5    # Biện pháp
+            2.5  # Biện pháp
         ]
-        
+
         for row in table.rows:
             for col_idx, width_in in enumerate(col_widths):
                 row.cells[col_idx].width = Inches(width_in)
@@ -494,7 +497,7 @@ class PrintWordWizard(models.TransientModel):
         """Định dạng header với chiều cao cố định."""
         # Set height cho từng row riêng biệt
         height_values = [0.3, 0.45, 0.3]  # Row 0, Row 1 (tháng), Row 2
-        
+
         for row_idx in range(3):
             row = table.rows[row_idx]
             # Set row height
@@ -504,7 +507,7 @@ class PrintWordWizard(models.TransientModel):
             trHeight.set(qn('w:val'), str(int(height_values[row_idx] * 1440)))  # 1440 twips per inch
             trHeight.set(qn('w:hRule'), 'exact')
             trPr.append(trHeight)
-            
+
             # Format cells
             for cell in row.cells:
                 self._format_cell(
@@ -522,7 +525,7 @@ class PrintWordWizard(models.TransientModel):
             courses = getattr(record, 'course_ids', [])
             if not courses:
                 continue
-                
+
             for course in courses:
                 mission_lines = getattr(course, 'mission_ids', [])
                 if not mission_lines:
@@ -531,11 +534,11 @@ class PrintWordWizard(models.TransientModel):
                 # Add parent row và sub rows
                 parent_idx = self._add_parent_row(table, course, seq)
                 seq += 1
-                
+
                 sub_start = len(table.rows)
                 self._add_sub_rows(table, course, mission_lines)
                 sub_end = len(table.rows) - 1
-                
+
                 # Update totals cho parent row
                 if sub_end >= sub_start:
                     self._update_parent_row_totals(table, sub_start, sub_end, parent_idx, course)
@@ -544,71 +547,71 @@ class PrintWordWizard(models.TransientModel):
         """Thêm dòng cha (course name)."""
         row = table.add_row()
         cells = row.cells
-        
+
         # STT
         cells[0].text = str(seq)
-        
+
         # Merge cột 1-3 cho tên khóa học
         cells[1].merge(cells[2]).merge(cells[3])
         cells[1].text = getattr(course, 'name', '')
         cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
-        
+
         # Clear các cột khác
         for i in range(4, 18):
             cells[i].text = ''
-        
+
         # Format row
         self._format_data_row(row)
-        
+
         return len(table.rows) - 1
 
     def _add_sub_rows(self, table, course, mission_lines):
         """Thêm các dòng con (mission details)."""
         all_sub_lines = []
-        
+
         # Collect all sub_lines
         for mission_line in mission_lines:
             sub_lines = getattr(mission_line, 'mission_line_ids', [])
             all_sub_lines.extend(sub_lines)
-        
+
         if not all_sub_lines:
             return
-        
+
         start_row = len(table.rows)
-        
+
         # Add sub rows
         for sub_line in all_sub_lines:
             row = table.add_row()
             cells = row.cells
-            
+
             cells[0].text = ''
             cells[1].text = sub_line.name or ''
             cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
             cells[2].text = ''
             cells[3].text = ''
-            
+
             # Tổng giờ
             total_hours = getattr(sub_line, 'total_hours', 0) or 0
             cells[4].text = str(int(total_hours)) if total_hours else ''
-            
+
             # Giờ theo tháng
             month_hours = self._get_month_hours(sub_line)
             for m_idx in range(1, 13):
                 val = month_hours.get(m_idx, 0)
                 cells[4 + m_idx].text = str(int(val)) if val else ''
-            
+
             cells[17].text = ''
-            
+
             # Format row
             self._format_data_row(row)
-        
+
         end_row = len(table.rows) - 1
-        
+
         # Merge cột 2 và 3 cho sub rows
         if end_row >= start_row:
             participant = getattr(getattr(course, 'participant_category_id', None), 'name', '')
             responsible = getattr(getattr(course, 'responsible_level_id', None), 'name', '')
-            
+
             self._merge_and_fill(table, start_row, end_row, 2, participant)
             self._merge_and_fill(table, start_row, end_row, 3, responsible)
 
@@ -616,9 +619,9 @@ class PrintWordWizard(models.TransientModel):
         """Cập nhật tổng cho dòng cha."""
         if parent_idx is None or sub_end < sub_start:
             return
-        
+
         parent_cells = table.rows[parent_idx].cells
-        
+
         # Tính tổng cho các cột 4-16 (tổng số + 12 tháng)
         for col_idx in range(4, 17):
             total = sum(
@@ -626,14 +629,14 @@ class PrintWordWizard(models.TransientModel):
                 for r in range(sub_start, sub_end + 1)
             )
             parent_cells[col_idx].text = str(int(total)) if total else ''
-        
+
         # Merge cột 17 (Biện pháp) với các dòng con
         cell17 = parent_cells[17]
         for r in range(sub_start, sub_end + 1):
             cell17 = cell17.merge(table.rows[r].cells[17])
         cell17.text = getattr(course, 'measure', '') or ''
         cell17.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
-        
+
         # Bôi đậm dòng cha
         for i in range(0, 17):
             self._bold_cell(parent_cells[i])
@@ -643,7 +646,7 @@ class PrintWordWizard(models.TransientModel):
         header_row = table.rows[2]
         month_totals = {i: 0 for i in range(1, 13)}
         total_all = 0
-        
+
         # Tính tổng từ các dòng cha (có STT)
         for r_idx in range(3, len(table.rows)):
             cells = table.rows[r_idx].cells
@@ -651,36 +654,26 @@ class PrintWordWizard(models.TransientModel):
                 total_all += self._get_cell_numeric_value(cells[4])
                 for m_idx in range(1, 13):
                     month_totals[m_idx] += self._get_cell_numeric_value(cells[4 + m_idx])
-        
+
         # Ghi tổng vào header
         header_row.cells[4].text = str(int(total_all)) if total_all else ''
         for m_idx in range(1, 13):
             val = month_totals[m_idx]
             header_row.cells[4 + m_idx].text = str(int(val)) if val else ''
-        
+
         # Bold header totals
         for cell in header_row.cells:
             self._bold_cell(cell)
-
-    def _get_month_hours(self, sub_line):
-        """Lấy tổng giờ theo tháng cho sub_line."""
-        month_hours = {i: 0 for i in range(1, 13)}
-        months = self.env['training.month'].search([('month_id', 'in', sub_line.ids)])
-        for m in months:
-            month_num = int(m.month)
-            if 1 <= month_num <= 12:
-                month_hours[month_num] = m.total_hours or 0
-        return month_hours
 
     def _merge_and_fill(self, table, start_row, end_row, col_idx, text):
         """Merge cells và điền text."""
         if end_row < start_row:
             return
-        
+
         start_cell = table.rows[start_row].cells[col_idx]
         for r in range(start_row + 1, end_row + 1):
             start_cell = start_cell.merge(table.rows[r].cells[col_idx])
-        
+
         start_cell.text = str(text) if text not in (None, True, False) else ''
         start_cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
@@ -701,15 +694,15 @@ class PrintWordWizard(models.TransientModel):
         """Format một cell với các tùy chọn."""
         if vertical_center:
             cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-        
+
         for para in cell.paragraphs:
             if align_center:
                 para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            
+
             # Ensure at least one run exists
             if not para.runs:
                 para.add_run()
-            
+
             for run in para.runs:
                 run.font.name = "Times New Roman"
                 run.font.size = Pt(font_size)
@@ -723,7 +716,6 @@ class PrintWordWizard(models.TransientModel):
             for run in para.runs:
                 run.font.bold = True
 
-
     # ==template3==
     def _iter_all_paragraphs(self, doc):
         """Duyệt tất cả các paragraph trong doc, kể cả trong bảng."""
@@ -734,7 +726,6 @@ class PrintWordWizard(models.TransientModel):
                 for cell in row.cells:
                     for p in cell.paragraphs:
                         yield p
-
 
     def replace_table_3_1(self, doc, placeholder, records):
         """Thay thế placeholder {{table_3_1}} bằng bảng kế hoạch huấn luyện tuần."""
@@ -784,7 +775,7 @@ class PrintWordWizard(models.TransientModel):
             3.2,  # Thời gian huấn luyện
             1.0,  # Cấp phụ trách
             1.0,  # Địa điểm
-            2.8   # Vật chất bảo đảm chính
+            2.8  # Vật chất bảo đảm chính
         ]
 
         for row in table.rows:
@@ -825,6 +816,7 @@ class PrintWordWizard(models.TransientModel):
                 align_center=True,
                 vertical_center=True
             )
+
     def _add_table_3_1_week_rows(self, table):
         """Thêm 7 dòng vào bảng 3.1, với cột đầu tiên là thứ trong tuần."""
         days = ["Hai,\n", "Ba,\n", "Tư,\n", "Năm,\n", "Sáu,\n", "Bảy,\n", "CN,\n"]
@@ -883,135 +875,369 @@ class PrintWordWizard(models.TransientModel):
                 for para in cell.paragraphs:
                     para.alignment = WD_ALIGN_PARAGRAPH.LEFT
 
+    def replace_placeholder_with_text(self, doc, placeholder, replacement_text):
+        """Thay thế placeholder trong cả paragraphs và tables, xử lý trường hợp placeholder bị split"""
+        found = False
+
+        def replace_in_paragraph(paragraph):
+            """Helper function để thay thế trong một paragraph"""
+            nonlocal found
+
+            # Ghép tất cả runs lại để tìm placeholder
+            full_text = ''.join(run.text for run in paragraph.runs)
+
+            # Kiểm tra có chứa placeholder không
+            if placeholder in full_text:
+                found = True
+
+                # Thay thế placeholder
+                new_text = full_text.replace(placeholder, str(replacement_text))
+
+                if paragraph.runs:
+                    # Lưu format của run đầu tiên (hoặc run có format chính)
+                    first_run = paragraph.runs[0]
+
+                    saved_format = {
+                        'name': first_run.font.name,
+                        'size': first_run.font.size,
+                        'bold': first_run.font.bold,
+                        'italic': first_run.font.italic,
+                        'underline': first_run.font.underline,
+                    }
+
+                    # Lưu màu chữ (có thể None)
+                    try:
+                        if first_run.font.color and first_run.font.color.rgb:
+                            saved_format['color'] = first_run.font.color.rgb
+                        else:
+                            saved_format['color'] = None
+                    except:
+                        saved_format['color'] = None
+
+                    # Xóa tất cả runs hiện tại
+                    while len(paragraph.runs) > 0:
+                        paragraph._element.remove(paragraph.runs[0]._element)
+
+                    # Tạo run mới với text đã thay thế
+                    new_run = paragraph.add_run(new_text)
+
+                    # Khôi phục format
+                    if saved_format['name']:
+                        new_run.font.name = saved_format['name']
+                    if saved_format['size']:
+                        new_run.font.size = saved_format['size']
+                    new_run.font.bold = saved_format['bold']
+                    new_run.font.italic = saved_format['italic']
+                    new_run.font.underline = saved_format['underline']
+                    if saved_format['color']:
+                        new_run.font.color.rgb = saved_format['color']
+
+        # Thay thế trong tất cả paragraphs
+        for paragraph in doc.paragraphs:
+            replace_in_paragraph(paragraph)
+
+        # Thay thế trong tất cả tables
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for paragraph in cell.paragraphs:
+                        replace_in_paragraph(paragraph)
+
+        return found
+
+    def print_table(self, doc, table_index):
+        """
+        In ra thông tin của table
+
+        Args:
+            doc: Document object
+            table_index: Vị trí table (0-based, table_index=1 là table thứ 2)
+        """
+        if table_index >= len(doc.tables):
+            print(f"Table index {table_index} không tồn tại!")
+            print(f"Document chỉ có {len(doc.tables)} tables")
+            return False
+
+        table = doc.tables[table_index]
+
+        print("=" * 80)
+        print(f"TABLE INDEX: {table_index}")
+        print(f"Số dòng: {len(table.rows)}")
+        print(f"Số cột: {len(table.columns)}")
+        print("=" * 80)
+
+        # In ra từng dòng và cell
+        for row_idx, row in enumerate(table.rows):
+            print(f"\n--- Dòng {row_idx} ---")
+            for col_idx, cell in enumerate(row.cells):
+                cell_text = cell.text.strip()
+                print(f"  Cell[{row_idx}][{col_idx}]: {cell_text}")
+
+        print("=" * 80)
+        return True
 
     # ==================== Main Action ====================
 
     def action_print_word(self):
-        """Export training plan to Word document with multiple tables."""
-        active_ids = self.env.context.get("active_ids", [])
-        records = self.env['training.plan'].browse(active_ids)
+        if self.report_type == 'week':
+            self.mau_in = 'template3'
+        elif self.report_type == 'month':
+            self.mau_in = 'template2'
+        elif self.report_type == 'year':
+            self.mau_in = 'template1'
 
-        if self.mau_in == 'template1':
-            # Data definitions
-            rows_data_table_1 = [
-                ("1.1", "Bắt đầu huấn luyện", "start_date"),
-                ("1.2", "Kết thúc huấn luyện", "end_date"),
-                ("1.3", "Tổng số thời gian", "total_hours"),
-                ("1.4", "Số tuần huấn luyện", ""),
-                ("1.5", "Số ngày huấn luyện", ""),
-                ("1.6", "Số ngày nghỉ", ""),
-                ("a", "Nghỉ thứ 7 + CN", ""),
-                ("b", "Nghỉ lễ, Tết", ""),
+        template_path = get_module_resource(
+            'army_results_manager', 'static', 'src', 'word', f'{self.mau_in}.docx'
+        )
+        doc = Document(template_path)
+
+        if self.report_type == 'week':
+            self.replace_placeholder_with_text(doc, "{{week}}", self.week)
+            self.replace_placeholder_with_text(doc, "{{month}}", self.month)
+
+            # Lấy dữ liệu training days
+            TrainingDay = self.env['training.day']
+            domain = [
+                ('year', '=', self.year),
+                ('month_name', '=', f'Tháng {self.month}'),
+                ('week_name', '=', f'Tuần {self.week}'),
             ]
 
-            rows_data_table_2 = [
-                ("a", "Tổng số thời gian huấn luyện", "total_hours"),
-                ("b", "Huấn luyện chung", "total_hours_type_common"),
-                ("", "Giáo dục chính trị, nghị quyết, pháp luật", ""),
-                ("", "Huấn luyện quân sự chung", ""),
-                ("c", "Huấn luyện riêng", "total_hours_type_private"),
-                ("", "Huấn luyện các bài bắn theo Quy chế, Điều lệ", ""),
-                ("", "Huấn luyện thể lực", ""),
-                ("d", "Học tiếng Anh ngoại khoá buổi tối (thứ 3, 5 hàng tuần)", ""),
+            records = TrainingDay.search(domain, order='day asc')
+
+            if not records:
+                raise UserError('Không tìm thấy dữ liệu!')
+
+            table_index = 1
+            if table_index >= len(doc.tables):
+                raise UserError('Không tìm thấy table!')
+
+            table = doc.tables[table_index]
+
+            # Mapping weekday
+            weekday_map = {
+                '2': 'Hai',
+                '3': 'Ba',
+                '4': 'Tư',
+                '5': 'Năm',
+                '6': 'Sáu',
+                '7': 'Bảy',
+                'cn': 'Chủ nhật'
+            }
+
+            grouped_records = {}
+
+            for record in records:
+                weekday_text = weekday_map.get(record.weekday, record.weekday)
+                day_str = record.day.strftime("%d/%m/%Y")
+                key = (weekday_text, day_str)
+
+                # Khởi tạo cấu trúc cho key nếu chưa tồn tại
+                if key not in grouped_records:
+                    grouped_records[key] = {'missions': defaultdict(lambda: {'lessons': [], 'hours': [], 'times': []})}
+
+                # Lưu lesson, hours và times theo từng mission
+                mission_data = grouped_records[key]['missions'][record.mission_name]
+
+                if record.lesson_name and record.lesson_name not in mission_data['lessons']:
+                    mission_data['lessons'].append(record.lesson_name)
+
+                # Lưu hours cho từng record
+                if record.total_hours and record.total_hours not in mission_data['hours']:
+                    mission_data['hours'].append(record.total_hours)
+
+                # Lưu thời gian
+                for time_rec in record.time_ids:
+                    if time_rec.start_time and time_rec.end_time:
+                        # Chuyển đổi trực tiếp
+                        start_h = int(time_rec.start_time)
+                        start_m = int((time_rec.start_time - start_h) * 60)
+                        end_h = int(time_rec.end_time)
+                        end_m = int((time_rec.end_time - end_h) * 60)
+
+                        time_str = f"{start_h:02d}:{start_m:02d} - {end_h:02d}:{end_m:02d}"
+                        if time_str not in mission_data['times']:
+                            mission_data['times'].append(time_str)
+
+            # Điền vào bảng - TỰ ĐỘNG THÊM HÀNG
+            for (weekday, day_str), data in grouped_records.items():
+                # Thêm 3 hàng mới cho mỗi ngày
+                new_row1 = table.add_row()
+                new_row2 = table.add_row()
+                new_row3 = table.add_row()
+
+                # Merge cells nếu cần (tùy chọn)
+                # new_row1.cells[0].merge(new_row2.cells[0])  # Merge weekday cell
+
+                # Điền weekday vào hàng đầu tiên
+                new_row1.cells[0].text = weekday
+                new_row1.cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+                # Điền ngày tháng năm vào hàng thứ hai
+                new_row2.cells[0].text = day_str
+                new_row2.cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+                # Điền missions và lessons vào cell[1]
+                cell = new_row1.cells[1]
+                cell.text = ""
+
+                # Điền hours vào cell[2]
+                cell_hours = new_row1.cells[2]
+                cell_hours.text = ""
+
+                # Điền time vào cell[3]
+                cell_time = new_row1.cells[3]
+                cell_time.text = ""
+
+                first_mission = True
+                first_hour = True
+                first_time = True
+
+                for mission_name, mission_data in data['missions'].items():
+                    # Thêm mission với dấu -
+                    if first_mission:
+                        p = cell.paragraphs[0]
+                        first_mission = False
+                    else:
+                        p = cell.add_paragraph()
+                    p.text = f"- {mission_name}"
+
+                    # Thêm tất cả lessons với dấu +
+                    for lesson in mission_data['lessons']:
+                        p = cell.add_paragraph()
+                        p.text = f"  + {lesson}"
+
+                    # Thêm hours cho mission này
+                    for hour in mission_data['hours']:
+                        if first_hour:
+                            p_hour = cell_hours.paragraphs[0]
+                            first_hour = False
+                        else:
+                            p_hour = cell_hours.add_paragraph()
+                        p_hour.text = str(hour) if hour else "0"
+                        p_hour.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+                    # Thêm times cho mission này
+                    for time_str in mission_data['times']:
+                        if first_time:
+                            p_time = cell_time.paragraphs[0]
+                            first_time = False
+                        else:
+                            p_time = cell_time.add_paragraph()
+                        p_time.text = time_str
+                        p_time.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        elif self.report_type == 'month':
+            self.replace_placeholder_with_text(doc, "{{year}}", self.year)
+            self.replace_placeholder_with_text(doc, "{{month}}", self.month)
+            self.print_table(doc, 0)
+            letters = string.ascii_lowercase
+
+            def get_lower_letter(index):
+                """Chuyển index thành chữ cái: 0->a, 25->z, 26->aa, 27->ab..."""
+                result = ""
+                while index >= 0:
+                    result = chr(index % 26 + 97) + result
+                    index = index // 26 - 1
+                return result
+
+            TrainingDay = self.env['training.day']
+            domain = [
+                ('year', '=', self.year),
+                ('month_name', '=', f'Tháng {self.month}'),
             ]
+            records = TrainingDay.search(domain)
+            print(records)
+            if not records:
+                raise UserError('Không tìm thấy dữ liệu!')
 
-            # Load template and replace tables
-            template_path = get_module_resource(
-                'army_results_manager', 'static', 'src', 'word', f'{self.mau_in}.docx'
-            )
-            doc = Document(template_path)
-
-            self.replace_placeholder_with_table(doc, "{{table_1}}", records, rows_data_table_1)
-            self.replace_placeholder_with_table(doc, "{{table_2}}", records, rows_data_table_2, note=" ")
-            self.replace_table_3_aasam(doc, "{{table_3}}", records)
-            self.replace_table_4(doc, "{{table_4}}", records)
-
-            # Export Word file
-            file_data = BytesIO()
-            doc.save(file_data)
-            file_data.seek(0)
-            data = base64.b64encode(file_data.read())
-
-            attachment = self.env['ir.attachment'].create({
-                'name': f'{self.mau_in}.docx',
-                'type': 'binary',
-                'datas': data,
-                'res_model': self._name,
-                'res_id': self.id,
-                'mimetype': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-            })
-
-            return {
-                'type': 'ir.actions.act_url',
-                'url': f'/web/content/{attachment.id}?download=true',
-                'target': 'new',
+            subject_hours = {
+                'CT': 'chinh_tri_hours',
+                'GDPL': 'phap_luat_hours',
+                'HC': 'hau_can_hours',
+                'KT': 'ky_thuat_hours',
+                'DL': 'dieu_lenh_hours',
+                'KTCD': 'cdbb_hours',
+                'BS': 'ban_sung_hours',
+                'TLCM': 'tl_chuyen_mon_hours',
+                'TLC': 'tl_chung_hours'
             }
 
-        elif self.mau_in == 'template2':
-            # Data definitions
-            # Load template and replace tables
-            template_path = get_module_resource('army_results_manager', 'static', 'src', 'word', f'{self.mau_in}.docx')
-            doc = Document(template_path)
+            # Khởi tạo dictionary để lưu tổng giờ
+            hours_dict = {key: 0 for key in subject_hours.values()}
 
-            self.replace_placeholder_with_table_template2(doc, "{{table_1}}", records)
-            self.replace_placeholder_with_table_template2(doc, "{{table_2}}", records, note=" ")
-            self.replace_table_3_aasam(doc, "{{table_3}}", records)
-            self.replace_table_4(doc, "{{table_4}}", records)
+            # Group và tính tổng giờ trong 1 vòng lặp
+            grouped_by_plan = defaultdict(lambda: {'records': [], 'total_hours': 0})
+            for record in records:
+                grouped_by_plan[record.plan_name]['records'].append(record)
+                grouped_by_plan[record.plan_name]['total_hours'] += (record.total_hours or 0)
 
-            # Export Word file
-            file_data = BytesIO()
-            doc.save(file_data)
-            file_data.seek(0)
-            data = base64.b64encode(file_data.read())
+                if record.subject_code in subject_hours:
+                    var_name = subject_hours[record.subject_code]
+                    hours_dict[var_name] += (record.total_hours or 0)
 
-            attachment = self.env['ir.attachment'].create({
-                'name': f'{self.mau_in}.docx',
-                'type': 'binary',
-                'datas': data,
-                'res_model': self._name,
-                'res_id': self.id,
-                'mimetype': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-            })
+            chinh_tri_hours = hours_dict['chinh_tri_hours']
+            phap_luat_hours = hours_dict['phap_luat_hours']
+            hau_can_hours = hours_dict['hau_can_hours']
+            ky_thuat_hours = hours_dict['ky_thuat_hours']
+            dieu_lenh_hours = hours_dict['dieu_lenh_hours']
+            cdbb_hours = hours_dict['cdbb_hours']
+            ban_sung_hours = hours_dict['ban_sung_hours']
+            tl_chuyen_mon_hours = hours_dict['tl_chuyen_mon_hours']
+            tl_chung_hours = hours_dict['tl_chung_hours']
 
-            return {
-                'type': 'ir.actions.act_url',
-                'url': f'/web/content/{attachment.id}?download=true',
-                'target': 'new',
-            }
+            # Lấy table và điền dữ liệu
+            table = doc.tables[0]
+            row_index = 2
 
-        elif self.mau_in == 'template3':
-            # Data definitions
-            active_ids = self.env.context.get("active_ids", [])
-            records = self.env['training.plan'].browse(active_ids)
-            # Load template and replace tables
-            template_path = get_module_resource('army_results_manager', 'static', 'src', 'word', f'{self.mau_in}.docx')
-            doc = Document(template_path)
+            for letter_index, (plan_name, data) in enumerate(grouped_by_plan.items()):
+                # Thêm hàng nếu cần
+                while row_index >= len(table.rows):
+                    table.add_row()
 
-            self.replace_table_3_1(doc, "{{table31}}", records)
+                row = table.rows[row_index]
 
-            # Export Word file
-            file_data = BytesIO()
-            doc.save(file_data)
-            file_data.seek(0)
-            data = base64.b64encode(file_data.read())
+                # Điền chữ cái
+                row.cells[0].text = letters[letter_index] if letter_index < 26 else get_lower_letter(letter_index)
+                row.cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-            attachment = self.env['ir.attachment'].create({
-                'name': f'{self.mau_in}.docx',
-                'type': 'binary',
-                'datas': data,
-                'res_model': self._name,
-                'res_id': self.id,
-                'mimetype': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-            })
+                # Điền dữ liệu
+                row.cells[1].text = plan_name or ""
+                row.cells[2].text = str(data['total_hours'])
+                row.cells[3].text = str(chinh_tri_hours)
+                row.cells[4].text = str(phap_luat_hours)
+                row.cells[5].text = str(hau_can_hours)
+                row.cells[6].text = str(ky_thuat_hours)
+                row.cells[7].text = str(dieu_lenh_hours)
+                row.cells[8].text = str(cdbb_hours)
+                row.cells[9].text = str(ban_sung_hours)
+                row.cells[10].text = str(tl_chuyen_mon_hours)
+                row.cells[11].text = str(tl_chung_hours)
 
-            return {
-                'type': 'ir.actions.act_url',
-                'url': f'/web/content/{attachment.id}?download=true',
-                'target': 'new',
-            }
+                # Căn giữa các ô từ 2 đến 11
+                for i in range(2, 12):
+                    row.cells[i].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-        elif self.mau_in == 'template4':
-            return True
+                row.cells[12].text = "HL thể lực =35% tổng số thời gian"
 
-        else:
-            return True
+                row_index += 1
+
+        file_data = BytesIO()
+        doc.save(file_data)
+        file_data.seek(0)
+        data = base64.b64encode(file_data.read())
+
+        attachment = self.env['ir.attachment'].create({
+            'name': f'{self.mau_in}.docx',
+            'type': 'binary',
+            'datas': data,
+            'res_model': self._name,
+            'res_id': self.id,
+            'mimetype': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        })
+
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/web/content/{attachment.id}?download=true',
+            'target': 'new',
+        }
