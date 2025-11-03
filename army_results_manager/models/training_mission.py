@@ -25,7 +25,7 @@ class TrainingMission(models.Model):
         string="Không tính vào thời gian huấn luyện chính khóa",
         default=False
     )
-    subject_id = fields.Many2one('training.subject', string="Môn học")
+    subject_id = fields.Many2one('training.subject', string="Môn học", required=True)
 
     @api.depends('course_id.student_ids')
     def _compute_student_ids(self):
@@ -68,7 +68,7 @@ class TrainingMissionLine(models.Model):
     mission_id = fields.Many2one('training.mission', string='Nhiệm vụ', readonly=True)
     name = fields.Char(string="Tên bài học", required=True)
     total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True)
-    day_ids = fields.One2many('training.day', 'mission_line_id', string='Thời gian huấn luyện')
+    day_ids = fields.One2many('training.day', 'mission_line_id', string='Thời gian huấn luyện', ondelete='cascade')
     student_ids = fields.Many2many('hr.employee', string='Học viên', compute='_compute_student_ids', store=True)
     title = fields.Char(string='Chủ đề')
 

@@ -26,7 +26,6 @@ class TrainingResult(models.Model):
         # Lấy key 1 lần duy nhất
         openai_api_key = self.env['ir.config_parameter'].sudo().get_param('openai.api_key')
         if not openai_api_key:
-            self.write({'note': "Chưa cấu hình OpenAI API Key."})
             return
 
         # Khởi tạo client 1 lần duy nhất

@@ -14,6 +14,11 @@
                         <field name="lesson_name"/>
                         <field name="subject_code"/>
                         <field name="plan_name"/>
+                        <field name="course_name"/>
+                        <field name="type_training"/>
+                        <field name="week_name"/>
+                        <field name="weekday"/>
+                        <field name="type_plan"/>
                         <field name="student_ids" widget="many2many_tags"/>
                     </group>
                     <notebook>

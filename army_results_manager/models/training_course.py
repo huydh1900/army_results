@@ -12,7 +12,7 @@ class TrainingCourse(models.Model):
     total_hours = fields.Float(string='Tổng số giờ', compute='_compute_total_hours', store=True)
     plan_id = fields.Many2one('training.plan', ondelete='cascade')
     mission_ids = fields.One2many('training.mission', 'course_id', string='Danh sách nội dung huấn luyện')
-    student_ids = fields.Many2many('hr.employee', string='Học viên', domain="[('role', '=', 'student')]")
+    student_ids = fields.Many2many('hr.employee', string='Học viên', required=True, domain="[('role', '=', 'student')]")
     student_count = fields.Integer(
         string='Số học viên',
         compute='_compute_student_count'
@@ -23,7 +23,6 @@ class TrainingCourse(models.Model):
     measure = fields.Char(string="Biện pháp tiến hành")
     year = fields.Char(related='plan_id.year', store=True)
     is_common = fields.Boolean('Là môn chung', default=False)
-
 
     def action_open_result_training(self):
         self.ensure_one()
@@ -40,7 +39,8 @@ class TrainingCourse(models.Model):
     def _compute_total_hours(self):
         for rec in self:
             if rec.mission_ids:
-                rec.total_hours = sum(line.total_hours or 0.0 for line in rec.mission_ids if not line.exclude_main_training)
+                rec.total_hours = sum(
+                    line.total_hours or 0.0 for line in rec.mission_ids if not line.exclude_main_training)
             else:
                 rec.total_hours = 0
 

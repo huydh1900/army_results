@@ -6,9 +6,10 @@ from datetime import date, timedelta
 class TrainingPlan(models.Model):
     _name = "training.plan"
     _rec_name = 'name'
+    _inherit = ['mail.thread']
     _description = "Kế hoạch huấn luyện"
 
-    plan_code = fields.Char(string='Mã kế hoạch', required=True)
+    plan_code = fields.Char(string='Mã kế hoạch', required=True, tracking=True)
     name = fields.Char(string='Tên kế hoạch', required=True)
     description = fields.Text(string="Mô tả")
     type = fields.Selection([
@@ -30,7 +31,7 @@ class TrainingPlan(models.Model):
     training_content = fields.Char(string='Nội dung huấn luyện')
     reason_modify = fields.Text(string='Lý do chỉnh sửa')
     course_ids = fields.One2many('training.course', 'plan_id')
-    year = fields.Char(string='Năm')
+    year = fields.Char(string='Năm', default=lambda self: str(date.today().year), required=True)
     total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', readonly=0, store=True)
     camera_ids = fields.Many2many('camera.device', string="Camera giám sát")
     camera_count = fields.Integer(compute='_compute_camera_count')

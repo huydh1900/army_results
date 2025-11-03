@@ -1,13 +1,32 @@
 <odoo>
-
     <record id="view_training_day_comment_tree" model="ir.ui.view">
         <field name="name">training.day.comment.tree</field>
         <field name="model">training.day.comment</field>
         <field name="arch" type="xml">
             <tree editable="bottom" create="0" delete="0">
-<!--                <field name="student_ids" readonly="True"/>-->
+                <field name="student_id" readonly="1"/>
+                <field name="score"/>
+                <field name="link_video"/>
                 <field name="comment"/>
+                <button name="action_open_comment"
+                        string="Nhận xét"
+                        type="object"
+                        class="btn-primary"/>
             </tree>
+        </field>
+    </record>
+
+    <record id="view_training_day_comment_form" model="ir.ui.view">
+        <field name="name">training.day.comment.form</field>
+        <field name="model">training.day.comment</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="student_id"/>
+                    <field name="strength"/>
+                    <field name="weakness"/>
+                </group>
+            </form>
         </field>
     </record>
 </odoo>

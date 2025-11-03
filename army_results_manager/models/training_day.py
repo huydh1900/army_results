@@ -21,11 +21,21 @@ class TrainingDay(models.Model):
     week_name = fields.Char(string="Tên tuần", compute='_compute_name', store=True)
     day_name = fields.Char(string="Tên ngày", compute='_compute_name', store=True)
     mission_name = fields.Char(related='mission_line_id.mission_id.name', store=True)
+    mission_id = fields.Many2one(related='mission_line_id.mission_id', store=True)
     lesson_name = fields.Char(related='mission_line_id.name', store=True)
     plan_name = fields.Char(related='mission_line_id.mission_id.course_id.plan_id.name', store=True)
+    course_name = fields.Char(related='mission_line_id.mission_id.course_id.name', store=True)
+    course_id = fields.Many2one(related='mission_line_id.mission_id.course_id', store=True)
     subject_code = fields.Char(related='mission_line_id.mission_id.subject_id.code', store=True)
+    type_training = fields.Selection(related='mission_line_id.mission_id.subject_id.type_training', store=True)
     weekday = fields.Char(string="Thứ", compute='_compute_name', store=True)
     total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True)
+    plan_id = fields.Many2one(
+        'training.plan',
+        related='mission_line_id.mission_id.course_id.plan_id',
+        store=True
+    )
+    type_plan = fields.Selection(related='mission_line_id.mission_id.course_id.plan_id.type', store=True)
 
     @api.model
     def create(self, vals):
@@ -45,7 +55,7 @@ class TrainingDay(models.Model):
             self.env['training.day.comment'].create(comments)
         return record
 
-    @api.depends('month', 'week')
+    @api.depends('month', 'week', 'mission_line_id', 'day')
     def _compute_name(self):
         weekday_map = {
             0: 'Thứ Hai',
@@ -116,29 +126,41 @@ class TrainingDayComment(models.Model):
 
     day_id = fields.Many2one('training.day', string='Ngày huấn luyện', ondelete='cascade')
     student_id = fields.Many2one('hr.employee', string="Học viên", required=True)
-    comment = fields.Text(string='Nhận xét')
+    comment = fields.Text(string='Nhận xét', compute='_compute_comment')
     day_date = fields.Date(related='day_id.day', store=True, string='Ngày')
     day_date_char = fields.Char(string='Ngày', compute='_compute_day_date_char', store=True)
     course_name = fields.Char(related='day_id.mission_line_id.mission_id.course_id.name', store=True)
     mission_name = fields.Char()
     lesson_name = fields.Char()
     year = fields.Char()
+    score = fields.Char(string="Điểm số")
+    strength = fields.Text(string='Điểm mạnh')
+    weakness = fields.Text(string='Điểm yếu')
+    link_video = fields.Char(string='Link video huấn luyện')
 
-    @api.depends('day_date')
-    def _compute_day_date_char(self):
+    @api.depends('strength', 'weakness')
+    def _compute_comment(self):
         for rec in self:
-            if rec.day_date:
-                rec.day_date_char = rec.day_date.strftime("%d/%m/%Y")
-            else:
-                rec.day_date_vn = ''
+            parts = []
+            if rec.strength:
+                parts.append(rec.strength.strip())
+            if rec.weakness:
+                parts.append(rec.weakness.strip())
+            rec.comment = '\n'.join(parts) if parts else ''
 
-    @api.depends('day_id.day', 'employee_id.name')
-    def name_get(self):
-        result = []
-        for rec in self:
-            vn_date = ''
-            if rec.day_id.day:
-                vn_date = datetime.strftime(rec.day_id.day, "%d-%m-%Y")
-            name = f"{vn_date} - {rec.employee_id.name or ''}"
-            result.append((rec.id, name))
-        return result
+    def action_open_comment(self):
+        """Mở form nhận xét học viên."""
+        self.ensure_one()
+        view_id = self.env.ref('army_results_manager.view_training_day_comment_form').id
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Nhận xét học viên',
+            'res_model': 'training.day.comment',
+            'view_mode': 'form',
+            'view_id': view_id,
+            'res_id': self.id,
+            'target': 'new',
+            'context': {'default_student_id': self.student_id.id},
+        }
+

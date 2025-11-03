@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-from odoo import models, fields
+from odoo import models, fields, api
 from odoo.modules.module import get_module_resource
 from io import BytesIO
 import base64
 import string
-from docx.shared import Pt
 from docx import Document
-from docx.shared import Cm
-from docx.oxml import OxmlElement
-from docx.oxml.ns import qn
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_ALIGN_VERTICAL
-from docx.shared import Inches
 from datetime import date
 from odoo.exceptions import UserError
 from collections import defaultdict
+from docx.shared import Cm
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+from docx.shared import Inches
+from docx.shared import Pt
 
 
 class PrintWordWizard(models.TransientModel):
@@ -49,6 +49,11 @@ class PrintWordWizard(models.TransientModel):
     ], string="Tuần")
 
     # ==================== Helper Functions ====================
+
+    @api.onchange('report_type')
+    def _onchange_report_type(self):
+        if self.report_type:
+            self.week = self.month = False
 
     @staticmethod
     def set_column_width(cell, width_cm):
@@ -945,6 +950,64 @@ class PrintWordWizard(models.TransientModel):
 
         return found
 
+    def int_to_roman(self, num):
+        """Chuyển số nguyên sang số La Mã"""
+        val = [
+            1000, 900, 500, 400,
+            100, 90, 50, 40,
+            10, 9, 5, 4,
+            1
+        ]
+        syms = [
+            "M", "CM", "D", "CD",
+            "C", "XC", "L", "XL",
+            "X", "IX", "V", "IV",
+            "I"
+        ]
+        roman_num = ''
+        i = 0
+        while num > 0:
+            for _ in range(num // val[i]):
+                roman_num += syms[i]
+                num -= val[i]
+            i += 1
+        return roman_num
+
+    def _format_hours(self, hours):
+        """Định dạng số giờ: 0 để trống, số thực có .0 thì chuyển thành số nguyên"""
+        if not hours:
+            return ""
+
+        # Chuyển đổi sang số nếu có thể
+        try:
+            hours_float = float(hours)
+            if hours_float == 0:
+                return ""
+            # Nếu là số nguyên thì trả về dạng nguyên, ngược lại giữ nguyên
+            if hours_float.is_integer():
+                return str(int(hours_float))
+            return str(hours_float)
+        except (ValueError, TypeError):
+            return str(hours) if hours else ""
+
+    def _ensure_table_rows(self, table, required_index):
+        """Đảm bảo table có đủ rows đến required_index"""
+        while required_index >= len(table.rows):
+            table.add_row()
+
+    def _get_mission_month(self, mission):
+        """Lấy tháng từ mission.mission_line_ids.day_ids.month"""
+        months = set()
+        for line in mission.mission_line_ids:
+            for day in line.day_ids:
+                if day.month:
+                    months.add(day.month)
+
+        if months:
+            # Trả về tháng đầu tiên (có thể điều chỉnh logic theo nhu cầu)
+            return sorted(months)[0]
+        return None
+
     def print_table(self, doc, table_index):
         """
         In ra thông tin của table
@@ -1025,6 +1088,7 @@ class PrintWordWizard(models.TransientModel):
                 'cn': 'Chủ nhật'
             }
 
+            # NHÓM THEO COURSE_NAME VÀ NGÀY
             grouped_records = {}
 
             for record in records:
@@ -1034,19 +1098,25 @@ class PrintWordWizard(models.TransientModel):
 
                 # Khởi tạo cấu trúc cho key nếu chưa tồn tại
                 if key not in grouped_records:
-                    grouped_records[key] = {'missions': defaultdict(lambda: {'lessons': [], 'hours': [], 'times': []})}
+                    grouped_records[key] = {}
 
-                # Lưu lesson, hours và times theo từng mission
-                mission_data = grouped_records[key]['missions'][record.mission_name]
+                # Nhóm theo course_name
+                course_name = record.course_name or "Không có tên khóa"
+                if course_name not in grouped_records[key]:
+                    grouped_records[key][course_name] = {
+                        'lessons': [],  # Danh sách bài học
+                        'total_hours': 0,  # Tổng số giờ
+                        'times': []  # Danh sách thời gian
+                    }
 
-                if record.lesson_name and record.lesson_name not in mission_data['lessons']:
-                    mission_data['lessons'].append(record.lesson_name)
+                # Thêm bài học nếu chưa có
+                if record.lesson_name and record.lesson_name not in grouped_records[key][course_name]['lessons']:
+                    grouped_records[key][course_name]['lessons'].append(record.lesson_name)
 
-                # Lưu hours cho từng record
-                if record.total_hours and record.total_hours not in mission_data['hours']:
-                    mission_data['hours'].append(record.total_hours)
+                # Cộng dồn tổng giờ
+                grouped_records[key][course_name]['total_hours'] += (record.total_hours or 0)
 
-                # Lưu thời gian
+                # Thêm thời gian
                 for time_rec in record.time_ids:
                     if time_rec.start_time and time_rec.end_time:
                         # Chuyển đổi trực tiếp
@@ -1056,82 +1126,54 @@ class PrintWordWizard(models.TransientModel):
                         end_m = int((time_rec.end_time - end_h) * 60)
 
                         time_str = f"{start_h:02d}:{start_m:02d} - {end_h:02d}:{end_m:02d}"
-                        if time_str not in mission_data['times']:
-                            mission_data['times'].append(time_str)
+                        if time_str not in grouped_records[key][course_name]['times']:
+                            grouped_records[key][course_name]['times'].append(time_str)
 
-            # Điền vào bảng - TỰ ĐỘNG THÊM HÀNG
-            for (weekday, day_str), data in grouped_records.items():
-                # Thêm 3 hàng mới cho mỗi ngày
-                new_row1 = table.add_row()
-                new_row2 = table.add_row()
-                new_row3 = table.add_row()
+            # Điền vào bảng - CHỈ 1 HÀNG CHO MỖI NGÀY
+            for (weekday, day_str), courses_data in grouped_records.items():
+                # Thêm 1 hàng mới cho mỗi ngày
+                new_row = table.add_row()
 
-                # Merge cells nếu cần (tùy chọn)
-                # new_row1.cells[0].merge(new_row2.cells[0])  # Merge weekday cell
+                # Điền weekday và ngày vào cùng 1 cell
+                new_row.cells[0].text = f"{weekday}\n{day_str}"
+                new_row.cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-                # Điền weekday vào hàng đầu tiên
-                new_row1.cells[0].text = weekday
-                new_row1.cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-                # Điền ngày tháng năm vào hàng thứ hai
-                new_row2.cells[0].text = day_str
-                new_row2.cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-                # Điền missions và lessons vào cell[1]
-                cell = new_row1.cells[1]
-                cell.text = ""
+                # Điền course_name và lessons vào cell[1]
+                cell_content = new_row.cells[1]
+                cell_content.text = ""
 
                 # Điền hours vào cell[2]
-                cell_hours = new_row1.cells[2]
+                cell_hours = new_row.cells[2]
                 cell_hours.text = ""
 
                 # Điền time vào cell[3]
-                cell_time = new_row1.cells[3]
+                cell_time = new_row.cells[3]
                 cell_time.text = ""
 
-                first_mission = True
-                first_hour = True
-                first_time = True
-
-                for mission_name, mission_data in data['missions'].items():
-                    # Thêm mission với dấu -
-                    if first_mission:
-                        p = cell.paragraphs[0]
-                        first_mission = False
-                    else:
-                        p = cell.add_paragraph()
-                    p.text = f"- {mission_name}"
+                for course_name, course_data in courses_data.items():
+                    # Thêm course_name với dấu :
+                    p_course = cell_content.add_paragraph()
+                    p_course.text = f"{course_name}:"
 
                     # Thêm tất cả lessons với dấu +
-                    for lesson in mission_data['lessons']:
-                        p = cell.add_paragraph()
-                        p.text = f"  + {lesson}"
+                    for lesson in course_data['lessons']:
+                        p_lesson = cell_content.add_paragraph()
+                        p_lesson.text = f"  + {lesson}"
 
-                    # Thêm hours cho mission này
-                    for hour in mission_data['hours']:
-                        if first_hour:
-                            p_hour = cell_hours.paragraphs[0]
-                            first_hour = False
-                        else:
-                            p_hour = cell_hours.add_paragraph()
-                        p_hour.text = str(hour) if hour else "0"
-                        p_hour.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    # Thêm tổng hours cho course này
+                    p_hour = cell_hours.add_paragraph()
+                    p_hour.text = f"{course_data['total_hours']:g}" if course_data['total_hours'] else "0"
+                    p_hour.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-                    # Thêm times cho mission này
-                    for time_str in mission_data['times']:
-                        if first_time:
-                            p_time = cell_time.paragraphs[0]
-                            first_time = False
-                        else:
-                            p_time = cell_time.add_paragraph()
+                    # Thêm times cho course này
+                    for time_str in course_data['times']:
+                        p_time = cell_time.add_paragraph()
                         p_time.text = time_str
                         p_time.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
         elif self.report_type == 'month':
             self.replace_placeholder_with_text(doc, "{{year}}", self.year)
             self.replace_placeholder_with_text(doc, "{{month}}", self.month)
-            self.print_table(doc, 0)
-            letters = string.ascii_lowercase
 
             def get_lower_letter(index):
                 """Chuyển index thành chữ cái: 0->a, 25->z, 26->aa, 27->ab..."""
@@ -1146,11 +1188,12 @@ class PrintWordWizard(models.TransientModel):
                 ('year', '=', self.year),
                 ('month_name', '=', f'Tháng {self.month}'),
             ]
+
             records = TrainingDay.search(domain)
-            print(records)
             if not records:
                 raise UserError('Không tìm thấy dữ liệu!')
 
+            # Table 1
             subject_hours = {
                 'CT': 'chinh_tri_hours',
                 'GDPL': 'phap_luat_hours',
@@ -1163,32 +1206,51 @@ class PrintWordWizard(models.TransientModel):
                 'TLC': 'tl_chung_hours'
             }
 
-            # Khởi tạo dictionary để lưu tổng giờ
-            hours_dict = {key: 0 for key in subject_hours.values()}
-
             # Group và tính tổng giờ trong 1 vòng lặp
-            grouped_by_plan = defaultdict(lambda: {'records': [], 'total_hours': 0})
-            for record in records:
-                grouped_by_plan[record.plan_name]['records'].append(record)
-                grouped_by_plan[record.plan_name]['total_hours'] += (record.total_hours or 0)
+            grouped_by_plan = defaultdict(lambda: {
+                'records': [],
+                'total_hours': 0,
+                'chinh_tri_hours': 0,
+                'phap_luat_hours': 0,
+                'hau_can_hours': 0,
+                'ky_thuat_hours': 0,
+                'dieu_lenh_hours': 0,
+                'cdbb_hours': 0,
+                'ban_sung_hours': 0,
+                'tl_chuyen_mon_hours': 0,
+                'tl_chung_hours': 0
+            })
 
+            grouped_by_course_common = defaultdict(lambda: {'records': [], 'total_hours': 0})
+            grouped_by_course_private = defaultdict(lambda: {'records': [], 'total_hours': 0})
+
+            course_number = 1
+            total_common_hours = 0
+
+            for record in records:
+                plan_name = record.plan_name
+                grouped_by_plan[plan_name]['records'].append(record)
+                grouped_by_plan[plan_name]['total_hours'] += (record.total_hours or 0)
+
+                # Tính tổng giờ theo môn học cho từng plan
                 if record.subject_code in subject_hours:
                     var_name = subject_hours[record.subject_code]
-                    hours_dict[var_name] += (record.total_hours or 0)
+                    grouped_by_plan[plan_name][var_name] += (record.total_hours or 0)
 
-            chinh_tri_hours = hours_dict['chinh_tri_hours']
-            phap_luat_hours = hours_dict['phap_luat_hours']
-            hau_can_hours = hours_dict['hau_can_hours']
-            ky_thuat_hours = hours_dict['ky_thuat_hours']
-            dieu_lenh_hours = hours_dict['dieu_lenh_hours']
-            cdbb_hours = hours_dict['cdbb_hours']
-            ban_sung_hours = hours_dict['ban_sung_hours']
-            tl_chuyen_mon_hours = hours_dict['tl_chuyen_mon_hours']
-            tl_chung_hours = hours_dict['tl_chung_hours']
+                if record.type_training == 'common_training':
+                    grouped_by_course_common[record.course_name]['records'].append(record)
+                    grouped_by_course_common[record.course_name]['total_hours'] += (record.total_hours or 0)
+                    total_common_hours += (record.total_hours or 0)
+
+                elif record.type_training == 'private_training':
+                    grouped_by_course_private[record.course_name]['records'].append(record)
+                    grouped_by_course_private[record.course_name]['total_hours'] += (record.total_hours or 0)
 
             # Lấy table và điền dữ liệu
             table = doc.tables[0]
             row_index = 2
+
+            letters = string.ascii_lowercase
 
             for letter_index, (plan_name, data) in enumerate(grouped_by_plan.items()):
                 # Thêm hàng nếu cần
@@ -1201,34 +1263,869 @@ class PrintWordWizard(models.TransientModel):
                 row.cells[0].text = letters[letter_index] if letter_index < 26 else get_lower_letter(letter_index)
                 row.cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-                # Điền dữ liệu
+                # Điền dữ liệu - MỖI PLAN CÓ GIÁ TRỊ RIÊNG
                 row.cells[1].text = plan_name or ""
-                row.cells[2].text = str(data['total_hours'])
-                row.cells[3].text = str(chinh_tri_hours)
-                row.cells[4].text = str(phap_luat_hours)
-                row.cells[5].text = str(hau_can_hours)
-                row.cells[6].text = str(ky_thuat_hours)
-                row.cells[7].text = str(dieu_lenh_hours)
-                row.cells[8].text = str(cdbb_hours)
-                row.cells[9].text = str(ban_sung_hours)
-                row.cells[10].text = str(tl_chuyen_mon_hours)
-                row.cells[11].text = str(tl_chung_hours)
+                row.cells[2].text = f"{data['total_hours']:g}" if data['total_hours'] else ""
+                row.cells[3].text = f"{data['chinh_tri_hours']:g}" if data['chinh_tri_hours'] else ""
+                row.cells[4].text = f"{data['phap_luat_hours']:g}" if data['phap_luat_hours'] else ""
+                row.cells[5].text = f"{data['hau_can_hours']:g}" if data['hau_can_hours'] else ""
+                row.cells[6].text = f"{data['ky_thuat_hours']:g}" if data['ky_thuat_hours'] else ""
+                row.cells[7].text = f"{data['dieu_lenh_hours']:g}" if data['dieu_lenh_hours'] else ""
+                row.cells[8].text = f"{data['cdbb_hours']:g}" if data['cdbb_hours'] else ""
+                row.cells[9].text = f"{data['ban_sung_hours']:g}" if data['ban_sung_hours'] else ""
+                row.cells[10].text = f"{data['tl_chuyen_mon_hours']:g}" if data['tl_chuyen_mon_hours'] else ""
+                row.cells[11].text = f"{data['tl_chung_hours']:g}" if data['tl_chung_hours'] else ""
 
                 # Căn giữa các ô từ 2 đến 11
                 for i in range(2, 12):
                     row.cells[i].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
                 row.cells[12].text = "HL thể lực =35% tổng số thời gian"
-
                 row_index += 1
+
+            # Table 2
+
+            def get_column_index(week_name, weekday):
+                """Tính column index dựa trên tuần và thứ"""
+                week_number = int(week_name.replace('Tuần', '').strip())
+                weekday_map = {
+                    'Thứ Hai': 2, 'Thứ Ba': 3, 'Thứ Tư': 4, 'Thứ Năm': 5, 'Thứ Sáu': 6, 'Thứ Bảy': 7,
+                    'Thứ 2': 2, 'Thứ 3': 3, 'Thứ 4': 4, 'Thứ 5': 5, 'Thứ 6': 6, 'Thứ 7': 7,
+                }
+
+                weekday_number = weekday_map.get(weekday.strip())
+
+                if weekday_number is None or weekday_number < 2 or weekday_number > 6:
+                    return None
+
+                weekday_offset = weekday_number - 2
+                column_index = 5 + (week_number - 1) * 5 + weekday_offset
+
+                return column_index
+
+            def set_cell_alignment(cell, h_align=WD_ALIGN_PARAGRAPH.CENTER, v_align=WD_ALIGN_VERTICAL.CENTER):
+                """Helper function để set alignment cho cell"""
+                cell.paragraphs[0].alignment = h_align
+                cell.vertical_alignment = v_align
+
+            table_2 = doc.tables[1]
+
+            row_index_2 = 4
+
+            # Set tổng giờ chung
+
+            table_2.rows[3].cells[4].text = f"{total_common_hours:g}" if total_common_hours else ""
+
+            set_cell_alignment(table_2.rows[3].cells[4])
+
+            lesson_letter_index = 0  # Biến riêng cho letter của lessons
+
+            # Hàm xử lý dữ liệu cho các course (chung và riêng)
+
+            def process_course_data(course_data, is_common=True):
+                nonlocal course_number, row_index_2, lesson_letter_index
+
+                for course_name, data in course_data.items():
+                    # NHÓM CÁC LESSON THEO lesson_name VÀ TÍNH TỔNG HOURS
+                    grouped_lessons = defaultdict(lambda: {'total_hours': 0, 'week_data': []})
+
+                    for record in data['records']:
+                        lesson_name = record.lesson_name or ""
+                        grouped_lessons[lesson_name]['total_hours'] += (record.total_hours or 0)
+
+                        # Lưu thông tin tuần và thứ cho mỗi lesson
+                        if record.week_name and record.weekday:
+                            grouped_lessons[lesson_name]['week_data'].append({
+                                'week_name': record.week_name,
+                                'weekday': record.weekday,
+                                'hours': record.total_hours or 0
+                            })
+
+                    # Thêm hàng cho course
+                    while row_index_2 >= len(table_2.rows):
+                        table_2.add_row()
+
+                    row = table_2.rows[row_index_2]
+
+                    # Điền dữ liệu course
+                    row.cells[0].text = str(course_number)
+                    row.cells[1].text = course_name or ""
+                    row.cells[4].text = f"{data['total_hours']:g}" if data['total_hours'] else ""
+                    row.cells[26].text = "HL theo đội hình Trung tâm, ôn luyện theo đội hình Đoàn"
+
+                    set_cell_alignment(row.cells[0])
+
+                    # Căn giữa các ô từ 4 đến 11
+                    for i in range(4, 12):
+                        set_cell_alignment(row.cells[i])
+
+                    course_number += 1
+                    row_index_2 += 1
+
+                    # Duyệt qua các lesson đã được nhóm
+
+                    for lesson_name, lesson_data in grouped_lessons.items():
+                        while row_index_2 >= len(table_2.rows):
+                            table_2.add_row()
+
+                        lesson_row = table_2.rows[row_index_2]
+                        # Sử dụng lesson_letter_index riêng, bắt đầu từ 'a' cho mỗi course
+                        lesson_row.cells[0].text = letters[
+                            lesson_letter_index] if lesson_letter_index < 26 else get_lower_letter(lesson_letter_index)
+                        lesson_row.cells[1].text = lesson_name or ""
+                        lesson_row.cells[4].text = f"{lesson_data['total_hours']:g}" if lesson_data[
+                            'total_hours'] else ""
+
+                        # Điền giờ vào cột tuần/thứ tương ứng cho từng lesson
+                        for week_info in lesson_data['week_data']:
+                            col_index = get_column_index(week_info['week_name'], week_info['weekday'])
+                            if col_index is not None and col_index < len(lesson_row.cells):
+                                # Cộng dồn nếu đã có giá trị
+                                current_value = lesson_row.cells[col_index].text.strip()
+
+                                if current_value:
+                                    try:
+                                        current_hours = float(current_value)
+                                        total_hours = current_hours + week_info['hours']
+                                        lesson_row.cells[col_index].text = f"{total_hours:g}"
+                                    except ValueError:
+                                        lesson_row.cells[col_index].text = f"{week_info['hours']:g}"
+                                else:
+                                    lesson_row.cells[col_index].text = f"{week_info['hours']:g}"
+
+                            elif col_index is not None:
+                                print(
+                                    f"Warning: Column index {col_index} out of range. Table has {len(lesson_row.cells)} columns.")
+                                print(f"Week: {week_info['week_name']}, Weekday: {week_info['weekday']}")
+
+                        set_cell_alignment(lesson_row.cells[0])
+
+                        # Căn giữa các ô
+                        for i in range(4, min(12, len(lesson_row.cells))):
+                            lesson_row.cells[i].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+                        lesson_letter_index += 1  # Tăng letter index cho lesson
+                        row_index_2 += 1
+
+                    # Reset letter index về 'a' cho course tiếp theo
+                    lesson_letter_index = 0
+
+            # Xử lý các môn chung
+            process_course_data(grouped_by_course_common, is_common=True)
+
+            # Lưu lại vị trí kết thúc của môn chung để tính tổng
+            end_common_row = row_index_2
+
+            # Tính tổng cho các cột từ 5 đến 25 ở hàng 3 (chỉ trong phạm vi môn chung)
+            for col_index in range(5, 26):
+                total = 0
+
+                # Duyệt qua các hàng từ 4 đến end_common_row (không bao gồm end_common_row)
+                for row_idx in range(4, end_common_row):
+                    cell_text = table_2.rows[row_idx].cells[col_index].text.strip()
+
+                    if cell_text:
+                        try:
+                            total += float(cell_text)
+                        except ValueError:
+                            pass  # Bỏ qua nếu không phải số
+
+                # Ghi tổng vào hàng 3
+                if total > 0:
+                    table_2.rows[3].cells[col_index].text = f"{total:g}"
+
+                    set_cell_alignment(table_2.rows[3].cells[col_index])
+
+            # Thêm dòng "B. HUẤN LUYỆN RIÊNG" vào cuối table
+
+            while row_index_2 >= len(table_2.rows):
+                table_2.add_row()
+
+            private_header_row = table_2.rows[row_index_2]
+
+            private_header_row.cells[0].text = "B"
+
+            private_header_row.cells[1].text = "HUẤN LUYỆN RIÊNG"
+
+            private_header_row.cells[1].merge(private_header_row.cells[3])
+
+            set_cell_alignment(private_header_row.cells[0])
+
+            row_index_2 += 1
+
+            # Xử lý các môn riêng
+            course_number = 1
+
+            process_course_data(grouped_by_course_private, is_common=False)
+
+            # self.print_table(doc, 1)
+
+        elif self.report_type == 'year':
+
+            self.replace_placeholder_with_text(doc, "{{year}}", self.year)
+
+            rows_data_table_1 = [
+                ("1.1", "Bắt đầu huấn luyện", "start_date"),
+                ("1.2", "Kết thúc huấn luyện", "end_date"),
+                ("1.3", "Tổng số thời gian", "total_hours"),
+                ("1.4", "Số tuần huấn luyện", ""),
+                ("1.5", "Số ngày huấn luyện", ""),
+                ("1.6", "Số ngày nghỉ", ""),
+                ("a", "Nghỉ thứ 7 + CN", ""),
+                ("b", "Nghỉ lễ, Tết", ""),
+            ]
+
+            rows_data_table_2 = [
+                ("a", "Tổng số thời gian huấn luyện", "total_hours"),
+                ("b", "Huấn luyện chung", "total_hours_type_common"),
+                ("", "Giáo dục chính trị, nghị quyết, pháp luật", ""),
+                ("", "Huấn luyện quân sự chung", ""),
+                ("c", "Huấn luyện riêng", "total_hours_type_private"),
+                ("", "Huấn luyện các bài bắn theo Quy chế, Điều lệ", ""),
+                ("", "Huấn luyện thể lực", ""),
+                ("d", "Học tiếng Anh ngoại khoá buổi tối (thứ 3, 5 hàng tuần)", ""),
+            ]
+
+            TrainingDay = self.env['training.day']
+            domain = [('year', '=', self.year)]
+            records = TrainingDay.search(domain)
+
+            if not records:
+                raise UserError('Không tìm thấy dữ liệu!')
+
+            table_index = 0
+
+            if table_index >= len(doc.tables):
+                raise UserError('Không tìm thấy table!')
+
+            table = doc.tables[table_index]
+
+            # Lấy set của tất cả plan_id (unique plans)
+            plan_ids_set = set()
+
+            for record in records:
+                if record.plan_id:
+                    plan_ids_set.add(record.plan_id.id)
+
+            # Chuyển sang list và lấy plan objects
+
+            plan_ids = list(plan_ids_set)
+            Plan = self.env['training.plan']
+            plans = Plan.browse(plan_ids)
+
+            self.replace_placeholder_with_table(doc, "{{table_1}}", plans, rows_data_table_1)
+            self.replace_placeholder_with_table(doc, "{{table_2}}", plans, rows_data_table_2, note=" ")
+            self.replace_table_3_aasam(doc, "{{table_3}}", plans)
+
+            def set_cell_alignment(cell, h_align=WD_ALIGN_PARAGRAPH.CENTER, v_align=WD_ALIGN_VERTICAL.CENTER):
+                """Helper function để set alignment cho cell"""
+                cell.paragraphs[0].alignment = h_align
+                cell.vertical_alignment = v_align
+
+            # Xử lý table thứ 4 si quan
+            records_si_quan = records.filtered(lambda m: m.type_plan == 'officer')
+            if len(doc.tables) > 4:
+                table_4 = doc.tables[4]
+
+                # Bắt đầu từ row 2
+                row_index = 2
+                plan_counter = 1
+
+                # Tối ưu: cache các hàm
+                format_hours = self._format_hours
+                ensure_rows = self._ensure_table_rows
+                get_mission_month = self._get_mission_month
+                int_to_roman = self.int_to_roman
+
+                # NHÓM TRỰC TIẾP THEO PLAN VÀ COURSE - SỬA LỖI TÍNH GIỜ
+                plans_data = {}
+
+                for record in records_si_quan:
+                    plan = record.plan_id
+                    course = record.course_id
+                    mission = record.mission_id
+
+                    if not plan or not mission:
+                        continue
+
+                    # Khởi tạo cấu trúc dữ liệu cho plan
+                    if plan not in plans_data:
+                        plans_data[plan] = {
+                            'common_courses': {},
+                            'private_courses': {},
+                            'total_hours': 0,
+                            'processed_missions': set()  # THEO DÕI MISSION ĐÃ XỬ LÝ
+                        }
+
+                    # Tạo khóa duy nhất cho mission trong plan
+                    mission_key = (mission.id, course.id if course else None)
+
+                    # Nếu mission đã được xử lý trong plan này, bỏ qua
+                    if mission_key in plans_data[plan]['processed_missions']:
+                        continue
+
+                    # Đánh dấu mission đã xử lý
+                    plans_data[plan]['processed_missions'].add(mission_key)
+
+                    # Xác định loại training
+                    courses_dict = plans_data[plan]['common_courses'] if record.type_training == 'common_training' else \
+                    plans_data[plan]['private_courses']
+
+                    # Khởi tạo course
+                    if course not in courses_dict:
+                        courses_dict[course] = {
+                            'missions': {},
+                            'total_hours': 0,
+                            'subject_obj': course
+                        }
+
+                    # Xử lý mission - CHỈ TÍNH 1 LẦN
+                    mission_name = mission.name or ""
+                    mission_month = get_mission_month(mission) if mission else 0
+                    mission_hours = mission.total_hours or 0
+
+                    # LUÔN TẠO MISSION MỚI - KHÔNG CỘNG DỒN
+                    courses_dict[course]['missions'][mission_name] = {
+                        'total_hours': mission_hours,  # CHỈ LẤY GIỜ TỪ MISSION, KHÔNG CỘNG DỒN
+                        'month': mission_month,
+                        'mission_obj': mission
+                    }
+
+                    # Cập nhật tổng giờ - CHỈ CỘNG 1 LẦN
+                    courses_dict[course]['total_hours'] += mission_hours
+                    plans_data[plan]['total_hours'] += mission_hours
+
+                # DEBUG: In ra để kiểm tra
+                print("=== DEBUG PLANS DATA ===")
+                for plan, plan_data in plans_data.items():
+                    print(f"Plan: {plan.name}, Total hours: {plan_data['total_hours']}")
+                    print("Common courses:")
+                    for course, course_data in plan_data['common_courses'].items():
+                        course_name = course.name if course else "No Course"
+                        print(f"  - {course_name}: {course_data['total_hours']} hours")
+                        for mission_name, mission_data in course_data['missions'].items():
+                            print(f"    * {mission_name}: {mission_data['total_hours']} hours")
+                    print("Private courses:")
+                    for course, course_data in plan_data['private_courses'].items():
+                        course_name = course.name if course else "No Course"
+                        print(f"  - {course_name}: {course_data['total_hours']} hours")
+                        for mission_name, mission_data in course_data['missions'].items():
+                            print(f"    * {mission_name}: {mission_data['total_hours']} hours")
+                print("========================")
+
+                # DUYỆT QUA CÁC PLAN ĐÃ ĐƯỢC NHÓM
+                for plan, plan_data in plans_data.items():
+                    common_courses = plan_data['common_courses']
+                    private_courses = plan_data['private_courses']
+                    total_plan_hours = plan_data['total_hours']
+
+                    # DÒNG PLAN (I, II, III,...)
+                    roman_numeral = int_to_roman(plan_counter)
+                    ensure_rows(table_4, row_index)
+                    row = table_4.rows[row_index]
+                    row.cells[1].merge(row.cells[3])
+                    row.cells[0].text = roman_numeral
+                    set_cell_alignment(row.cells[0])
+                    row.cells[1].text = plan.name or ""
+                    row.cells[4].text = format_hours(total_plan_hours)
+                    set_cell_alignment(row.cells[4])
+                    row_index += 1
+
+                    # PHẦN 1: HUẤN LUYỆN CHUNG
+                    if common_courses:
+                        # Dòng "1. Huấn luyện chung các đối tượng"
+                        ensure_rows(table_4, row_index)
+                        row = table_4.rows[row_index]
+                        row.cells[1].merge(row.cells[3])
+                        row.cells[0].text = "1"
+                        set_cell_alignment(row.cells[0])
+                        row.cells[1].text = "Huấn luyện chung các đối tượng"
+                        row_index += 1
+
+                        # ĐIỀN CÁC COURSE CỦA HUẤN LUYỆN CHUNG (1.1, 1.2,...)
+                        common_subject_counter = 1
+                        for course, course_data in common_courses.items():
+                            course_name = course.name or "" if course else ""
+
+                            ensure_rows(table_4, row_index)
+                            row = table_4.rows[row_index]
+
+                            # Merge cells cho course
+                            row.cells[1].merge(row.cells[3])
+                            row.cells[0].text = f"1.{common_subject_counter}"
+                            set_cell_alignment(row.cells[0])
+                            row.cells[1].text = course_name
+
+                            # Điền tổng giờ
+                            row.cells[4].text = format_hours(course_data['total_hours'])
+                            set_cell_alignment(row.cells[4])
+
+                            # Điền giờ theo tháng nếu có
+                            mission_month = None
+                            for mission_data in course_data['missions'].values():
+                                if mission_data['month'] and 1 <= mission_data['month'] <= 12:
+                                    mission_month = mission_data['month']
+                                    break
+
+                            if mission_month:
+                                col_idx = 4 + mission_month
+                                if col_idx < len(row.cells):
+                                    row.cells[col_idx].text = format_hours(course_data['total_hours'])
+                                    set_cell_alignment(row.cells[col_idx])
+
+                            row_index += 1
+
+                            # ĐIỀN CÁC MISSION CỦA COURSE (a, b, c,...)
+                            mission_counter = 0
+                            mission_start_row = None
+
+                            for mission_name, mission_data in course_data['missions'].items():
+                                ensure_rows(table_4, row_index)
+
+                                if mission_start_row is None:
+                                    mission_start_row = row_index
+
+                                mission_row = table_4.rows[row_index]
+
+                                # Đánh số mission (a, b, c, ...)
+                                mission_row.cells[0].text = chr(97 + mission_counter)
+                                set_cell_alignment(mission_row.cells[0])
+                                mission_row.cells[1].text = mission_name
+
+                                # Chỉ điền thông tin phân loại cho mission đầu tiên
+                                if mission_counter == 0:
+                                    subject_obj = course_data['subject_obj']
+                                    participant_text = subject_obj.participant_category_id.name or "" if subject_obj and subject_obj.participant_category_id else ""
+                                    responsible_text = subject_obj.responsible_level_id.name or "" if subject_obj and subject_obj.responsible_level_id else ""
+
+                                    mission_row.cells[2].text = participant_text
+                                    mission_row.cells[3].text = responsible_text
+                                    set_cell_alignment(mission_row.cells[2])
+                                    set_cell_alignment(mission_row.cells[3])
+
+                                # Điền giờ theo tháng cho mission
+                                mission_month = mission_data['month']
+                                if mission_month and 1 <= mission_month <= 12:
+                                    col_idx = 4 + mission_month
+                                    if col_idx < len(mission_row.cells):
+                                        mission_row.cells[col_idx].text = format_hours(mission_data['total_hours'])
+                                        set_cell_alignment(mission_row.cells[col_idx])
+
+                                mission_counter += 1
+                                row_index += 1
+
+                            # Merge cột phân loại nếu có nhiều mission
+                            if mission_counter > 1 and mission_start_row is not None:
+                                mission_end_row = row_index - 1
+                                table_4.rows[mission_start_row].cells[2].merge(table_4.rows[mission_end_row].cells[2])
+                                table_4.rows[mission_start_row].cells[3].merge(table_4.rows[mission_end_row].cells[3])
+
+                            common_subject_counter += 1
+
+                    # PHẦN 2: HUẤN LUYỆN RIÊNG
+                    if private_courses:
+                        # Dòng "2. Huấn luyện riêng các đối tượng"
+                        ensure_rows(table_4, row_index)
+                        row = table_4.rows[row_index]
+                        row.cells[1].merge(row.cells[3])
+                        row.cells[0].text = "2"
+                        set_cell_alignment(row.cells[0])
+                        row.cells[1].text = "Huấn luyện riêng các đối tượng"
+                        row_index += 1
+
+                        # ĐIỀN CÁC COURSE CỦA HUẤN LUYỆN RIÊNG (2.1, 2.2,...)
+                        private_subject_counter = 1
+                        for course, course_data in private_courses.items():
+                            course_name = course.name or "" if course else ""
+
+                            ensure_rows(table_4, row_index)
+                            row = table_4.rows[row_index]
+
+                            # Merge cells cho course
+                            row.cells[1].merge(row.cells[3])
+                            row.cells[0].text = f"2.{private_subject_counter}"
+                            set_cell_alignment(row.cells[0])
+                            row.cells[1].text = course_name
+
+                            # Điền tổng giờ
+                            row.cells[4].text = format_hours(course_data['total_hours'])
+                            set_cell_alignment(row.cells[4])
+
+                            # Điền giờ theo tháng nếu có
+                            mission_month = None
+                            for mission_data in course_data['missions'].values():
+                                if mission_data['month'] and 1 <= mission_data['month'] <= 12:
+                                    mission_month = mission_data['month']
+                                    break
+
+                            if mission_month:
+                                col_idx = 4 + mission_month
+                                if col_idx < len(row.cells):
+                                    row.cells[col_idx].text = format_hours(course_data['total_hours'])
+                                    set_cell_alignment(row.cells[col_idx])
+
+                            row_index += 1
+
+                            # ĐIỀN CÁC MISSION CỦA COURSE (a, b, c,...)
+                            mission_counter = 0
+                            mission_start_row = None
+
+                            for mission_name, mission_data in course_data['missions'].items():
+                                ensure_rows(table_4, row_index)
+
+                                if mission_start_row is None:
+                                    mission_start_row = row_index
+
+                                mission_row = table_4.rows[row_index]
+
+                                # Đánh số mission (a, b, c, ...)
+                                mission_row.cells[0].text = chr(97 + mission_counter)
+                                set_cell_alignment(mission_row.cells[0])
+                                mission_row.cells[1].text = mission_name
+
+                                # Chỉ điền thông tin phân loại cho mission đầu tiên
+                                if mission_counter == 0:
+                                    subject_obj = course_data['subject_obj']
+                                    participant_text = subject_obj.participant_category_id.name or "" if subject_obj and subject_obj.participant_category_id else ""
+                                    responsible_text = subject_obj.responsible_level_id.name or "" if subject_obj and subject_obj.responsible_level_id else ""
+
+                                    mission_row.cells[2].text = participant_text
+                                    mission_row.cells[3].text = responsible_text
+                                    set_cell_alignment(mission_row.cells[2])
+                                    set_cell_alignment(mission_row.cells[3])
+
+                                # Điền giờ theo tháng cho mission
+                                mission_month = mission_data['month']
+                                if mission_month and 1 <= mission_month <= 12:
+                                    col_idx = 4 + mission_month
+                                    if col_idx < len(mission_row.cells):
+                                        mission_row.cells[col_idx].text = format_hours(mission_data['total_hours'])
+                                        set_cell_alignment(mission_row.cells[col_idx])
+
+                                mission_counter += 1
+                                row_index += 1
+
+                            # Merge cột phân loại nếu có nhiều mission
+                            if mission_counter > 1 and mission_start_row is not None:
+                                mission_end_row = row_index - 1
+                                table_4.rows[mission_start_row].cells[2].merge(table_4.rows[mission_end_row].cells[2])
+                                table_4.rows[mission_start_row].cells[3].merge(table_4.rows[mission_end_row].cells[3])
+
+                            private_subject_counter += 1
+
+                    plan_counter += 1
+
+            records_phan_doi = records.filtered(lambda m: m.type_plan == 'squad')
+            if len(doc.tables) > 5:
+                table_5 = doc.tables[5]
+
+                # Bắt đầu từ row 2
+                row_index = 2
+                plan_counter = 1
+
+                # Tối ưu: cache các hàm
+                format_hours = self._format_hours
+                ensure_rows = self._ensure_table_rows
+                get_mission_month = self._get_mission_month
+                int_to_roman = self.int_to_roman
+
+                # NHÓM TRỰC TIẾP THEO PLAN VÀ COURSE - SỬA LỖI TÍNH GIỜ
+                plans_data = {}
+
+                for record in records_phan_doi:
+                    plan = record.plan_id
+                    course = record.course_id
+                    mission = record.mission_id
+
+                    if not plan or not mission:
+                        continue
+
+                    # Khởi tạo cấu trúc dữ liệu cho plan
+                    if plan not in plans_data:
+                        plans_data[plan] = {
+                            'common_courses': {},
+                            'private_courses': {},
+                            'total_hours': 0,
+                            'processed_missions': set()  # THEO DÕI MISSION ĐÃ XỬ LÝ
+                        }
+
+                    # Tạo khóa duy nhất cho mission trong plan
+                    mission_key = (mission.id, course.id if course else None)
+
+                    # Nếu mission đã được xử lý trong plan này, bỏ qua
+                    if mission_key in plans_data[plan]['processed_missions']:
+                        continue
+
+                    # Đánh dấu mission đã xử lý
+                    plans_data[plan]['processed_missions'].add(mission_key)
+
+                    # Xác định loại training
+                    courses_dict = plans_data[plan]['common_courses'] if record.type_training == 'common_training' else \
+                        plans_data[plan]['private_courses']
+
+                    # Khởi tạo course
+                    if course not in courses_dict:
+                        courses_dict[course] = {
+                            'missions': {},
+                            'total_hours': 0,
+                            'subject_obj': course
+                        }
+
+                    # Xử lý mission - CHỈ TÍNH 1 LẦN
+                    mission_name = mission.name or ""
+                    mission_month = get_mission_month(mission) if mission else 0
+                    mission_hours = mission.total_hours or 0
+
+                    # LUÔN TẠO MISSION MỚI - KHÔNG CỘNG DỒN
+                    courses_dict[course]['missions'][mission_name] = {
+                        'total_hours': mission_hours,  # CHỈ LẤY GIỜ TỪ MISSION, KHÔNG CỘNG DỒN
+                        'month': mission_month,
+                        'mission_obj': mission
+                    }
+
+                    # Cập nhật tổng giờ - CHỈ CỘNG 1 LẦN
+                    courses_dict[course]['total_hours'] += mission_hours
+                    plans_data[plan]['total_hours'] += mission_hours
+
+                # DEBUG: In ra để kiểm tra
+                print("=== DEBUG PLANS DATA ===")
+                for plan, plan_data in plans_data.items():
+                    print(f"Plan: {plan.name}, Total hours: {plan_data['total_hours']}")
+                    print("Common courses:")
+                    for course, course_data in plan_data['common_courses'].items():
+                        course_name = course.name if course else "No Course"
+                        print(f"  - {course_name}: {course_data['total_hours']} hours")
+                        for mission_name, mission_data in course_data['missions'].items():
+                            print(f"    * {mission_name}: {mission_data['total_hours']} hours")
+                    print("Private courses:")
+                    for course, course_data in plan_data['private_courses'].items():
+                        course_name = course.name if course else "No Course"
+                        print(f"  - {course_name}: {course_data['total_hours']} hours")
+                        for mission_name, mission_data in course_data['missions'].items():
+                            print(f"    * {mission_name}: {mission_data['total_hours']} hours")
+                print("========================")
+
+                # DUYỆT QUA CÁC PLAN ĐÃ ĐƯỢC NHÓM
+                for plan, plan_data in plans_data.items():
+                    common_courses = plan_data['common_courses']
+                    private_courses = plan_data['private_courses']
+                    total_plan_hours = plan_data['total_hours']
+
+                    # DÒNG PLAN (I, II, III,...)
+                    roman_numeral = int_to_roman(plan_counter)
+                    ensure_rows(table_5, row_index)
+                    row = table_5.rows[row_index]
+                    row.cells[1].merge(row.cells[3])
+                    row.cells[0].text = roman_numeral
+                    set_cell_alignment(row.cells[0])
+                    row.cells[1].text = plan.name or ""
+                    row.cells[4].text = format_hours(total_plan_hours)
+                    set_cell_alignment(row.cells[4])
+                    row_index += 1
+
+                    # PHẦN 1: HUẤN LUYỆN CHUNG
+                    if common_courses:
+                        # Dòng "1. Huấn luyện chung các đối tượng"
+                        ensure_rows(table_5, row_index)
+                        row = table_5.rows[row_index]
+                        row.cells[1].merge(row.cells[3])
+                        row.cells[0].text = "1"
+                        set_cell_alignment(row.cells[0])
+                        row.cells[1].text = "Huấn luyện chung các đối tượng"
+                        row_index += 1
+
+                        # ĐIỀN CÁC COURSE CỦA HUẤN LUYỆN CHUNG (1.1, 1.2,...)
+                        common_subject_counter = 1
+                        for course, course_data in common_courses.items():
+                            course_name = course.name or "" if course else ""
+
+                            ensure_rows(table_5, row_index)
+                            row = table_5.rows[row_index]
+
+                            # Merge cells cho course
+                            row.cells[1].merge(row.cells[3])
+                            row.cells[0].text = f"1.{common_subject_counter}"
+                            set_cell_alignment(row.cells[0])
+                            row.cells[1].text = course_name
+
+                            # Điền tổng giờ
+                            row.cells[4].text = format_hours(course_data['total_hours'])
+                            set_cell_alignment(row.cells[4])
+
+                            # Điền giờ theo tháng nếu có
+                            mission_month = None
+                            for mission_data in course_data['missions'].values():
+                                if mission_data['month'] and 1 <= mission_data['month'] <= 12:
+                                    mission_month = mission_data['month']
+                                    break
+
+                            if mission_month:
+                                col_idx = 4 + mission_month
+                                if col_idx < len(row.cells):
+                                    row.cells[col_idx].text = format_hours(course_data['total_hours'])
+                                    set_cell_alignment(row.cells[col_idx])
+
+                            row_index += 1
+
+                            # ĐIỀN CÁC MISSION CỦA COURSE (a, b, c,...)
+                            mission_counter = 0
+                            mission_start_row = None
+
+                            for mission_name, mission_data in course_data['missions'].items():
+                                ensure_rows(table_5, row_index)
+
+                                if mission_start_row is None:
+                                    mission_start_row = row_index
+
+                                mission_row = table_5.rows[row_index]
+
+                                # Đánh số mission (a, b, c, ...)
+                                mission_row.cells[0].text = chr(97 + mission_counter)
+                                set_cell_alignment(mission_row.cells[0])
+                                mission_row.cells[1].text = mission_name
+
+                                # Chỉ điền thông tin phân loại cho mission đầu tiên
+                                if mission_counter == 0:
+                                    subject_obj = course_data['subject_obj']
+                                    participant_text = subject_obj.participant_category_id.name or "" if subject_obj and subject_obj.participant_category_id else ""
+                                    responsible_text = subject_obj.responsible_level_id.name or "" if subject_obj and subject_obj.responsible_level_id else ""
+
+                                    mission_row.cells[2].text = participant_text
+                                    mission_row.cells[3].text = responsible_text
+                                    set_cell_alignment(mission_row.cells[2])
+                                    set_cell_alignment(mission_row.cells[3])
+
+                                # Điền giờ theo tháng cho mission
+                                mission_month = mission_data['month']
+                                if mission_month and 1 <= mission_month <= 12:
+                                    col_idx = 4 + mission_month
+                                    if col_idx < len(mission_row.cells):
+                                        mission_row.cells[col_idx].text = format_hours(mission_data['total_hours'])
+                                        set_cell_alignment(mission_row.cells[col_idx])
+
+                                mission_counter += 1
+                                row_index += 1
+
+                            # Merge cột phân loại nếu có nhiều mission
+                            if mission_counter > 1 and mission_start_row is not None:
+                                mission_end_row = row_index - 1
+                                table_5.rows[mission_start_row].cells[2].merge(table_5.rows[mission_end_row].cells[2])
+                                table_5.rows[mission_start_row].cells[3].merge(table_5.rows[mission_end_row].cells[3])
+
+                            common_subject_counter += 1
+
+                    # PHẦN 2: HUẤN LUYỆN RIÊNG
+                    if private_courses:
+                        # Dòng "2. Huấn luyện riêng các đối tượng"
+                        ensure_rows(table_5, row_index)
+                        row = table_5.rows[row_index]
+                        row.cells[1].merge(row.cells[3])
+                        row.cells[0].text = "2"
+                        set_cell_alignment(row.cells[0])
+                        row.cells[1].text = "Huấn luyện riêng các đối tượng"
+                        row_index += 1
+
+                        # ĐIỀN CÁC COURSE CỦA HUẤN LUYỆN RIÊNG (2.1, 2.2,...)
+                        private_subject_counter = 1
+                        for course, course_data in private_courses.items():
+                            course_name = course.name or "" if course else ""
+
+                            ensure_rows(table_5, row_index)
+                            row = table_5.rows[row_index]
+
+                            # Merge cells cho course
+                            row.cells[1].merge(row.cells[3])
+                            row.cells[0].text = f"2.{private_subject_counter}"
+                            set_cell_alignment(row.cells[0])
+                            row.cells[1].text = course_name
+
+                            # Điền tổng giờ
+                            row.cells[4].text = format_hours(course_data['total_hours'])
+                            set_cell_alignment(row.cells[4])
+
+                            # Điền giờ theo tháng nếu có
+                            mission_month = None
+                            for mission_data in course_data['missions'].values():
+                                if mission_data['month'] and 1 <= mission_data['month'] <= 12:
+                                    mission_month = mission_data['month']
+                                    break
+
+                            if mission_month:
+                                col_idx = 4 + mission_month
+                                if col_idx < len(row.cells):
+                                    row.cells[col_idx].text = format_hours(course_data['total_hours'])
+                                    set_cell_alignment(row.cells[col_idx])
+
+                            row_index += 1
+
+                            # ĐIỀN CÁC MISSION CỦA COURSE (a, b, c,...)
+                            mission_counter = 0
+                            mission_start_row = None
+
+                            for mission_name, mission_data in course_data['missions'].items():
+                                ensure_rows(table_5, row_index)
+
+                                if mission_start_row is None:
+                                    mission_start_row = row_index
+
+                                mission_row = table_5.rows[row_index]
+
+                                # Đánh số mission (a, b, c, ...)
+                                mission_row.cells[0].text = chr(97 + mission_counter)
+                                set_cell_alignment(mission_row.cells[0])
+                                mission_row.cells[1].text = mission_name
+
+                                # Chỉ điền thông tin phân loại cho mission đầu tiên
+                                if mission_counter == 0:
+                                    subject_obj = course_data['subject_obj']
+                                    participant_text = subject_obj.participant_category_id.name or "" if subject_obj and subject_obj.participant_category_id else ""
+                                    responsible_text = subject_obj.responsible_level_id.name or "" if subject_obj and subject_obj.responsible_level_id else ""
+
+                                    mission_row.cells[2].text = participant_text
+                                    mission_row.cells[3].text = responsible_text
+                                    set_cell_alignment(mission_row.cells[2])
+                                    set_cell_alignment(mission_row.cells[3])
+
+                                # Điền giờ theo tháng cho mission
+                                mission_month = mission_data['month']
+                                if mission_month and 1 <= mission_month <= 12:
+                                    col_idx = 4 + mission_month
+                                    if col_idx < len(mission_row.cells):
+                                        mission_row.cells[col_idx].text = format_hours(mission_data['total_hours'])
+                                        set_cell_alignment(mission_row.cells[col_idx])
+
+                                mission_counter += 1
+                                row_index += 1
+
+                            # Merge cột phân loại nếu có nhiều mission
+                            if mission_counter > 1 and mission_start_row is not None:
+                                mission_end_row = row_index - 1
+                                table_5.rows[mission_start_row].cells[2].merge(table_5.rows[mission_end_row].cells[2])
+                                table_5.rows[mission_start_row].cells[3].merge(table_5.rows[mission_end_row].cells[3])
+
+                            private_subject_counter += 1
+
+                    plan_counter += 1
+
+
 
         file_data = BytesIO()
         doc.save(file_data)
         file_data.seek(0)
         data = base64.b64encode(file_data.read())
 
+        if hasattr(self, 'week') and self.week:
+            # Có tuần: Báo cáo huấn luyện tuần X tháng Y năm Z
+            report_name = f'Bao_cao_huan_luyen_tuan_{self.week}_thang_{self.month}_nam_{self.year}.docx'
+        elif hasattr(self, 'month') and self.month:
+            # Có tháng: Báo cáo huấn luyện tháng X năm Y
+            report_name = f'Bao_cao_huan_luyen_thang_{self.month}_nam_{self.year}.docx'
+        else:
+            # Chỉ có năm: Báo cáo huấn luyện năm X
+            report_name = f'Bao_cao_huan_luyen_nam_{self.year}.docx'
+
         attachment = self.env['ir.attachment'].create({
-            'name': f'{self.mau_in}.docx',
+            'name': report_name,
             'type': 'binary',
             'datas': data,
             'res_model': self._name,
