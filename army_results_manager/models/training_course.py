@@ -17,6 +17,10 @@ class TrainingCourse(models.Model):
         string='Số học viên',
         compute='_compute_student_count'
     )
+    state = fields.Selection([
+        ('draft', 'Soạn thảo'),
+        ('approved', 'Đã duyệt'),
+    ], string="Trạng thái", default="draft")
     participants_ids = fields.Many2many('hr.department', string="Đối tượng tham gia")
     participant_category_id = fields.Many2one('training.category', string='Thành phần tham gia')
     responsible_level_id = fields.Many2one('training.category', string='Cấp phụ trách')

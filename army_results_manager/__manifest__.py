@@ -17,7 +17,6 @@
     'version': '0.1',
 
     'depends': ['web', 'base', 'hr', 'web_unsplash'],
-
     # always loaded
     'data': [
         "security/training_result_security.xml",

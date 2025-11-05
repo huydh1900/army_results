@@ -63,24 +63,24 @@
                     </div>
                     <group>
                         <group>
-                            <field name="plan_code"/>
-                            <field name="name"/>
-                            <field name="type"/>
-                            <field name="location_id"/>
-                            <field name="description"/>
-                            <field name="training_content"/>
+                            <field name="plan_code" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="name" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="type" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="location_id" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="description" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="training_content" attrs="{'readonly': [('state', '=', 'approved')]}"/>
                         </group>
                         <group>
-                            <field name="start_date"/>
-                            <field name="end_date"/>
-                            <field name="year"/>
-                            <field name="participants_ids" widget="many2many_tags"/>
-                            <field name="total_hours"/>
+                            <field name="start_date" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="end_date" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="year" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="participants_ids" widget="many2many_tags" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="total_hours" attrs="{'readonly': [('state', '=', 'approved')]}"/>
                         </group>
                     </group>
                     <notebook>
                         <page string="Huấn luyện chung">
-                            <field name="common_subject_ids">
+                            <field name="common_subject_ids" attrs="{'readonly': [('state', '=', 'approved')]}">
                                 <tree editable="bottom">
                                     <field name="name"/>
                                     <field name="start_date"/>
@@ -90,12 +90,13 @@
                                             type="object"
                                             class="oe_stat_button"
                                             title="Chi tiết"
-                                            icon="fa-eye"/>
+                                            icon="fa-eye"
+                                            attrs="{'invisible': [('parent.state', '=', 'approved')]}"/>
                                 </tree>
                             </field>
                         </page>
                         <page string="Huấn luyện riêng">
-                            <field name="specific_subject_ids">
+                            <field name="specific_subject_ids" attrs="{'readonly': [('state', '=', 'approved')]}">
                                 <tree editable="bottom">
                                     <field name="name"/>
                                     <field name="start_date"/>
@@ -105,6 +106,7 @@
                                             type="object"
                                             class="oe_stat_button"
                                             title="Chi tiết"
+                                            attrs="{'invisible': [('parent.state', '=', 'approved')]}"
                                             icon="fa-eye"/>
                                 </tree>
                             </field>

@@ -129,23 +129,14 @@ class TrainingPlan(models.Model):
             result.append({'state': state, 'label': label, 'value': count})
         return result
 
-    @api.model
-    def action_open_training_chart(self):
-        """Trả action để render biểu đồ"""
-        data = self.env["training.plan"].get_training_state_summary()
-        return {
-            "type": "ir.actions.client",
-            "tag": "training_bar_chart",
-            "context": {"chart_data": data},
-        }
-
     def action_post(self):
         for rec in self:
             rec.state = "posted"
 
     def action_approve(self):
         for rec in self:
-            rec.state = "approved"
+            rec.write({'state': 'approved'})
+            (rec.common_subject_ids + rec.specific_subject_ids).write({'state': 'approved'})
 
     def action_open_modify_wizard(self):
         return {
@@ -161,11 +152,3 @@ class TrainingPlan(models.Model):
         for rec in self:
             rec.state = "cancel"
 
-    def action_print_word(self):
-        return {
-            "type": "ir.actions.act_window",
-            "name": "Báo cáo tổng hợp huấn luyện",
-            "res_model": "print.word.wizard",
-            "view_mode": "form",
-            "target": "new",
-        }

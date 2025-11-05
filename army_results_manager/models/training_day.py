@@ -39,7 +39,7 @@ class TrainingDay(models.Model):
 
     @api.model
     def create(self, vals):
-        record = super(TrainingDay, self).create(vals)
+        record = super().create(vals)
         # Khi tạo xong training.day, tự sinh nhận xét cho học viên
         if record.student_ids:
             comments = [

@@ -2,7 +2,11 @@
     <data noupdate="0">
 
         <!-- Root Menu -->
-        <menuitem id="menu_military_root" name="Quản lý huấn luyện bộ đội"/>
+        <menuitem id="menu_military_root" name="Quản lý huấn luyện bộ đội"
+                  web_icon="army_results_manager,static/src/img/icon.png"/>
+
+        <menuitem id="base.menu_administration"
+                  web_icon="army_results_manager,static/src/img/setting.png"/>
 
         <record id="base.menu_management" model="ir.ui.menu">
             <field name="groups_id" eval="[(6, 0, [ref('base.group_no_one')])]"/>
@@ -20,6 +24,7 @@
         <record id="action_training_course" model="ir.actions.act_window">
             <field name="name">Khóa huấn luyện</field>
             <field name="res_model">training.course</field>
+            <field name="domain">[('state', '=', 'approved')]</field>
             <field name="view_mode">tree,form</field>
         </record>
 
