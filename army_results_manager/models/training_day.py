@@ -136,7 +136,7 @@ class TrainingDayComment(models.Model):
     score = fields.Char(string="Điểm số")
     strength = fields.Text(string='Điểm mạnh')
     weakness = fields.Text(string='Điểm yếu')
-    link_video = fields.Char(string='Link video huấn luyện')
+    video = fields.Binary(string="Video", attachment=True)
 
     @api.depends('strength', 'weakness')
     def _compute_comment(self):

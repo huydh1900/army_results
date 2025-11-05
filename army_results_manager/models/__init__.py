@@ -11,7 +11,6 @@ from . import hr_department
 from . import hr_employee
 from . import training_plan
 from . import training_course
-from . import training_comment
 from . import data_source
 from . import collected_data
 from . import camera_device

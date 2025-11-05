@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates>
-   <t t-name="button_report.ListView.Buttons" t-inherit="web.ListView.Buttons">
-       <xpath expr="//*[@class='btn btn-primary o_list_button_add']" position="after">
-           <button type="button" class="btn btn-primary" style="margin-left: 10px;"  t-on-click="OnOpenWizard">
-               In Báo cáo
-           </button>
-       </xpath>
-   </t>
+    <t t-name="button_report.ListView.Buttons" t-inherit="web.ListView.Buttons">
+        <xpath expr="//div[contains(@class, 'o_list_buttons')]" position="inside">
+            <button type="button" class="btn btn-primary" style="margin-left: 10px;" t-on-click="OnOpenWizard">In Báo
+                cáo
+            </button>
+        </xpath>
+    </t>
 </templates>

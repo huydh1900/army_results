@@ -16,7 +16,7 @@
     'category': 'Uncategorized',
     'version': '0.1',
 
-    'depends': ['web', 'base', 'hr', 'web_unsplash'],
+    'depends': ['web', 'base', 'hr', 'web_unsplash', 'web_widget_video'],
     # always loaded
     'data': [
         "security/training_result_security.xml",
@@ -28,6 +28,7 @@
         'views/webclient_templates.xml',
         'views/support_contact_views.xml',
         'views/training_day_comment_views.xml',
+        'views/res_users_views.xml',
         'views/training_day_views.xml',
         'views/auth_totp_templates.xml',
         'views/res_config_settings.xml',

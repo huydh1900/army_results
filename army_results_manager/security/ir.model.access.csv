@@ -8,7 +8,6 @@ access_training_category,access_training_category,model_training_category,,1,1,1
 access_training_day,access_training_day,model_training_day,,1,1,1,1
 access_training_day_comment,access_training_day_comment,model_training_day_comment,,1,1,1,1
 access_training_result,access_training_result,model_training_result,,1,1,1,1
-access_training_comment,access_training_comment,model_training_comment,,1,1,1,1
 access_support_contact,access_support_contact,model_support_contact,,1,1,1,1
 access_training_warning_log,access_training_warning_log,model_training_warning_log,,1,1,1,1
 access_training_mission,access_training_mission,model_training_mission,,1,1,1,1
@@ -20,4 +19,4 @@ access_training_mission_line,access_training_mission_line,model_training_mission
 access_training_mission_student,access.training.mission.student,model_training_mission,army_results_manager.group_training_student,1,0,0,0
 access_training_mission_manager,access.training.mission.manager,model_training_mission,army_results_manager.group_training_commander,1,1,1,1
 access_data_source,access_data_source,model_data_source,base.group_user,1,1,1,1
-access_collected_data,access_collected_data,model_collected_data,base.group_user,1,1,1,1
+access_collected_data,access_collected_data,model_collected_data,base.group_user,1,1,0,1

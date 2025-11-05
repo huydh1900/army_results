@@ -6,7 +6,6 @@
             <tree editable="bottom" create="0" delete="0">
                 <field name="student_id" readonly="1"/>
                 <field name="score"/>
-                <field name="link_video"/>
                 <field name="comment"/>
                 <button name="action_open_comment"
                         string="Nhận xét"
@@ -22,9 +21,10 @@
         <field name="arch" type="xml">
             <form>
                 <group>
-                    <field name="student_id"/>
+                    <field name="student_id" readonly="True"/>
                     <field name="strength"/>
                     <field name="weakness"/>
+                    <field name="video" widget="video" filename="filename"/>
                 </group>
             </form>
         </field>

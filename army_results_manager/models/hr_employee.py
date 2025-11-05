@@ -15,7 +15,6 @@ class HrEmployeePrivate(models.Model):
     job_id = fields.Many2one(tracking=True, string='Chức vụ')
     identification_id = fields.Char(string='Số hiệu sĩ quan', groups="hr.group_hr_user", tracking=True)
     result_ids = fields.One2many('training.result', 'employee_id')
-    comment_ids = fields.One2many('training.comment', 'employee_id')
     day_ids = fields.Many2many('training.day')
     classification = fields.Selection(
         [
