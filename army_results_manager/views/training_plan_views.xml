@@ -74,8 +74,9 @@
                             <field name="start_date" attrs="{'readonly': [('state', '=', 'approved')]}"/>
                             <field name="end_date" attrs="{'readonly': [('state', '=', 'approved')]}"/>
                             <field name="year" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="total_hours"/>
                             <field name="participants_ids" widget="many2many_tags" attrs="{'readonly': [('state', '=', 'approved')]}"/>
-                            <field name="total_hours" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="student_ids" widget="many2many_tags" attrs="{'readonly': [('state', '=', 'approved')]}"/>
                         </group>
                     </group>
                     <notebook>
@@ -90,8 +91,7 @@
                                             type="object"
                                             class="oe_stat_button"
                                             title="Chi tiết"
-                                            icon="fa-eye"
-                                            attrs="{'invisible': [('parent.state', '=', 'approved')]}"/>
+                                            icon="fa-eye"/>
                                 </tree>
                             </field>
                         </page>
@@ -106,7 +106,6 @@
                                             type="object"
                                             class="oe_stat_button"
                                             title="Chi tiết"
-                                            attrs="{'invisible': [('parent.state', '=', 'approved')]}"
                                             icon="fa-eye"/>
                                 </tree>
                             </field>

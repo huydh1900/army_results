@@ -71,6 +71,7 @@
             <field name="res_model">hr.employee</field>
             <field name="view_mode">tree,form</field>
             <field name="domain">[('role', '=', 'commanding_officer')]</field>
+            <field name="context">{'default_role': 'commanding_officer'}</field>
         </record>
 
         <record id="action_training_officer" model="ir.actions.act_window">
@@ -78,6 +79,7 @@
             <field name="res_model">hr.employee</field>
             <field name="view_mode">tree,form</field>
             <field name="domain">[('role', '=', 'training_officer')]</field>
+            <field name="context">{'default_role': 'training_officer'}</field>
         </record>
 
         <record id="action_student" model="ir.actions.act_window">
@@ -85,6 +87,7 @@
             <field name="res_model">hr.employee</field>
             <field name="view_mode">tree,form</field>
             <field name="domain">[('role', '=', 'student')]</field>
+            <field name="context">{'default_role': 'student'}</field>
         </record>
 
         <record id="action_training_plan" model="ir.actions.act_window">

@@ -11,7 +11,7 @@ class HrEmployeePrivate(models.Model):
         ('commanding_officer', 'Cán bộ chỉ huy'),
         ('training_officer', 'Cán bộ phụ trách huấn luyện'),
         ('student', 'Học viên'),
-    ], string="Vai trò")
+    ], string="Vai trò", readonly=True)
     job_id = fields.Many2one(tracking=True, string='Chức vụ')
     identification_id = fields.Char(string='Số hiệu sĩ quan', groups="hr.group_hr_user", tracking=True)
     result_ids = fields.One2many('training.result', 'employee_id')
@@ -103,11 +103,5 @@ class HrEmployeePrivate(models.Model):
 
         return res
 
-
-class Employee(models.Model):
-    _inherit = "hr.employee"
-
-    is_training_officer = fields.Boolean(
-        string="Cán bộ chỉ huy",
-        default=False,
-    )
+    def action_related_contacts(self):
+        return

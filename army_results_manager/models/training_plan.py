@@ -9,7 +9,7 @@ class TrainingPlan(models.Model):
     _inherit = ['mail.thread']
     _description = "Kế hoạch huấn luyện"
 
-    plan_code = fields.Char(string='Mã kế hoạch', required=True, tracking=True)
+    plan_code = fields.Char(string='Mã kế hoạch', required=True)
     name = fields.Char(string='Tên kế hoạch', required=True)
     description = fields.Text(string="Mô tả")
     type = fields.Selection([
@@ -26,13 +26,14 @@ class TrainingPlan(models.Model):
         ('posted', 'Chờ duyệt'),
         ('approved', 'Đã duyệt'),
         ('cancel', 'Hủy'),
-    ], string="Trạng thái", default="draft")
+    ], string="Trạng thái", default="draft", tracking=True)
     location_id = fields.Many2one('training.location', string='Địa điểm')
+    student_ids = fields.Many2many('hr.employee', string='Học viên', required=True, domain="[('role', '=', 'student')]")
     training_content = fields.Char(string='Nội dung huấn luyện')
-    reason_modify = fields.Text(string='Lý do chỉnh sửa')
+    reason_modify = fields.Text(string='Lý do chỉnh sửa', tracking=True)
     course_ids = fields.One2many('training.course', 'plan_id')
     year = fields.Char(string='Năm', default=lambda self: str(date.today().year), required=True)
-    total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', readonly=0, store=True)
+    total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True)
     camera_ids = fields.Many2many('camera.device', string="Camera giám sát")
     camera_count = fields.Integer(compute='_compute_camera_count')
     common_subject_ids = fields.One2many(

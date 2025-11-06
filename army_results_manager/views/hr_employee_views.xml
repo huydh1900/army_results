@@ -66,6 +66,11 @@
             <field name="work_phone" position="attributes">
                 <attribute name="invisible">1</attribute>
             </field>
+
+            <xpath expr="//header/button[1]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
             <field name="coach_id" position="attributes">
                 <attribute name="invisible">1</attribute>
             </field>
@@ -75,6 +80,7 @@
             <field name="km_home_work" position="attributes">
                 <attribute name="invisible">1</attribute>
             </field>
+
             <field name="category_ids" position="attributes">
                 <attribute name="invisible">1</attribute>
             </field>
@@ -158,6 +164,35 @@
             <xpath expr="//form/sheet/notebook/page[@name='hr_settings']" position="attributes">
                 <attribute name="string">Thiết lập tài khoản</attribute>
             </xpath>
+        </field>
+    </record>
+
+    <record id="view_employee_form_inherit_vn" model="ir.ui.view">
+        <field name="name">hr.employee.form.inherit.vn</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="attributes">
+                <attribute name="string">Tên chiến sĩ</attribute>
+                <attribute name="placeholder">Tên chiến sĩ</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='job_title']" position="attributes">
+                <attribute name="string">Chức vụ</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='work_email']" position="attributes">
+                <attribute name="string">Email cơ quan</attribute>
+            </xpath>
+
+            <xpath expr="//group[@name='active_group']" position="attributes">
+                <attribute name="string">Trạng thái</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='user_id' and ancestor::group[@name='active_group']]" position="attributes">
+                <attribute name="string">Người dùng liên quan</attribute>
+            </xpath>
+
         </field>
     </record>
 

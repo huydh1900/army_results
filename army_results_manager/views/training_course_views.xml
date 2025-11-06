@@ -36,7 +36,8 @@
                     <group>
                         <field name="name"/>
                         <field name="participants_ids" widget="many2many_tags"/>
-                        <field name="student_ids" widget="many2many_tags"/>
+                        <field name="student_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        <field name="training_officer_ids" widget="many2many_tags" options="{'no_create': True}"/>
                         <field name="participant_category_id"/>
                         <field name="responsible_level_id"/>
                         <field name="measure"/>

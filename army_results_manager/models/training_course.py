@@ -12,7 +12,6 @@ class TrainingCourse(models.Model):
     total_hours = fields.Float(string='Tổng số giờ', compute='_compute_total_hours', store=True)
     plan_id = fields.Many2one('training.plan', ondelete='cascade')
     mission_ids = fields.One2many('training.mission', 'course_id', string='Danh sách nội dung huấn luyện')
-    student_ids = fields.Many2many('hr.employee', string='Học viên', required=True, domain="[('role', '=', 'student')]")
     student_count = fields.Integer(
         string='Số học viên',
         compute='_compute_student_count'
@@ -27,6 +26,40 @@ class TrainingCourse(models.Model):
     measure = fields.Char(string="Biện pháp tiến hành")
     year = fields.Char(related='plan_id.year', store=True)
     is_common = fields.Boolean('Là môn chung', default=False)
+    student_ids = fields.Many2many(
+        'hr.employee',
+        'course_id',
+        'employee_id',
+        'training_course_student_rel',
+        string='Học viên',
+        domain="[('role', '=', 'student')]",
+        compute='_compute_student_ids',
+        inverse='_inverse_student_ids',
+        store=True,
+    )
+    training_officer_ids = fields.Many2many(
+        'hr.employee',
+        'training_course_officer_rel',
+        'course_id',
+        'employee_id',
+        string='Cán bộ phụ trách huấn luyện',
+        domain="[('role', '=', 'training_officer')]")
+
+    @api.depends('is_common', 'plan_id.student_ids')
+    def _compute_student_ids(self):
+        for rec in self:
+            if rec.is_common and rec.plan_id:
+                # Môn chung: lấy từ kế hoạch
+                rec.student_ids = rec.plan_id.student_ids
+            else:
+                # Môn riêng: giữ nguyên dữ liệu đã nhập
+                rec.student_ids = rec.student_ids
+
+    def _inverse_student_ids(self):
+        """Cho phép chỉnh sửa student_ids nếu không phải môn chung."""
+        for rec in self:
+            if not rec.is_common:
+                pass  # cho phép lưu như bình thường
 
     def action_open_result_training(self):
         self.ensure_one()
@@ -51,7 +84,7 @@ class TrainingCourse(models.Model):
     @api.model
     def get_list_course(self):
         data = []
-        courses = self.search([])
+        courses = self.search([('state', '=', 'approved')])
         for course in courses:
             total_mission = len(course.mission_ids)
             done_mission = len(course.mission_ids.filtered(lambda m: m.state == 'done'))
@@ -66,13 +99,15 @@ class TrainingCourse(models.Model):
 
     def _compute_student_count(self):
         for rec in self:
-            rec.student_count = self.env['hr.employee'].search_count([
-                ('role', '=', 'student'),
-                ('result_ids.training_course_id', '=', rec.id),
-            ])
+            rec.student_count = len(rec.student_ids)
 
     def action_detail(self):
         self.ensure_one()
+        if self.plan_id.state == 'approved':
+            context = {'edit': False}
+        else:
+            context = {'edit': True}
+
         return {
             'type': 'ir.actions.act_window',
             'name': 'Khóa huấn luyện',
@@ -80,6 +115,7 @@ class TrainingCourse(models.Model):
             'view_mode': 'form',
             'res_id': self.id,
             'target': 'current',
+            'context': context,
         }
 
     def write(self, vals):
@@ -127,12 +163,9 @@ class TrainingCourse(models.Model):
             'res_model': 'hr.employee',
             'view_mode': 'tree,form',
             'domain': [
-                ('role', '=', 'student'),
-                ('result_ids.training_course_id', '=', self.id),
+                ('id', 'in', self.student_ids.ids),
             ],
             'context': {
-                'default_role': 'student',
-                'default_course': self.id,
                 'create': False,
                 'delete': False,
             },
