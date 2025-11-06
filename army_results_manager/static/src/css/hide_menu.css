@@ -1,0 +1,13 @@
+/* Ẩn tất cả menu items trừ logout */
+.o_user_menu .dropdown-item[data-menu="documentation"],
+.o_user_menu .dropdown-item[data-menu="support"],
+.o_user_menu .dropdown-item[data-menu="shortcuts"],
+.o_user_menu .dropdown-item[data-menu="settings"],
+.o_user_menu .dropdown-item[data-menu="account"] {
+    display: none !important;
+}
+
+/* Ẩn các separator/divider */
+.o_user_menu .dropdown-divider {
+    display: none !important;
+}
