@@ -9,6 +9,10 @@
             <field name="work_phone" position="attributes">
                 <attribute name="invisible">1</attribute>
             </field>
+            <xpath expr="//header/button[1]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
             <field name="name" position="attributes">
                 <attribute name="string">Họ và tên</attribute>
             </field>
@@ -195,5 +199,6 @@
 
         </field>
     </record>
+
 
 </odoo>

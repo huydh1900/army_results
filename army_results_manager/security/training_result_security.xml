@@ -1,22 +1,35 @@
 <odoo>
+
+    <record model="ir.module.category" id="module_role">
+        <field name="name">Vai trò</field>
+        <field name="sequence">1</field>
+    </record>
+
     <!-- Nhóm Học viên -->
     <record id="group_training_student" model="res.groups">
         <field name="name">Học viên</field>
-        <field name="category_id" ref="base.module_category_human_resources"/>
+        <field name="category_id" ref="army_results_manager.module_role"/>
     </record>
 
     <!-- Nhóm CB phụ trách huấn luyện -->
     <record id="group_training_commander_assistant" model="res.groups">
         <field name="name">CB Phụ trách huấn luyện</field>
-        <field name="category_id" ref="base.module_category_human_resources"/>
+        <field name="category_id" ref="army_results_manager.module_role"/>
         <field name="implied_ids" eval="[(4, ref('army_results_manager.group_training_student'))]"/>
+    </record>
+
+    <!-- Nhóm CB Nhập liệu -->
+    <record id="group_data_entry_officer" model="res.groups">
+        <field name="name">CB Nhập liệu</field>
+        <field name="category_id" ref="army_results_manager.module_role"/>
+        <field name="implied_ids" eval="[(4, ref('army_results_manager.group_training_commander_assistant'))]"/>
     </record>
 
     <!-- Nhóm CB Chỉ huy -->
     <record id="group_training_commander" model="res.groups">
         <field name="name">CB Chỉ huy</field>
-        <field name="category_id" ref="base.module_category_human_resources"/>
-        <field name="implied_ids" eval="[(4, ref('army_results_manager.group_training_commander_assistant'))]"/>
+        <field name="category_id" ref="army_results_manager.module_role"/>
+        <field name="implied_ids" eval="[(4, ref('army_results_manager.group_data_entry_officer'))]"/>
     </record>
 
     <!--     Rule cho Học viên: chỉ xem kết quả của chính mình-->
@@ -31,15 +44,48 @@
         <field name="perm_unlink">0</field>
     </record>
 
+    <!--    Học viên chỉ được xem kết quả giai đoạn của chính mình-->
+    <record id="training_day_comment_rule_student" model="ir.rule">
+        <field name="name">Training Day Comment: Student can only see own</field>
+        <field name="model_id" ref="army_results_manager.model_training_day_comment"/>
+        <field name="groups" eval="[(4, ref('army_results_manager.group_training_student'))]"/>
+        <field name="domain_force">[('student_id.user_id', '=', user.id)]</field>
+        <field name="perm_read">1</field>
+        <field name="perm_write">0</field>
+        <field name="perm_create">0</field>
+        <field name="perm_unlink">0</field>
+    </record>
+
+    <record id="training_day_comment_rule_cbhl" model="ir.rule">
+        <field name="name">CBHL: Xem all</field>
+        <field name="model_id" ref="army_results_manager.model_training_day_comment"/>
+        <field name="groups" eval="[(4, ref('army_results_manager.group_training_commander_assistant'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <record id="hr_employee_rule_student" model="ir.rule">
+        <field name="name">Học viên xem thông tin của chính mình</field>
+        <field name="model_id" ref="army_results_manager.model_hr_employee"/>
+        <field name="groups" eval="[(4, ref('army_results_manager.group_training_student'))]"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="perm_read">1</field>
+        <field name="perm_write">0</field>
+        <field name="perm_create">0</field>
+        <field name="perm_unlink">0</field>
+    </record>
+
+    <record id="hr_employee_rule_cbhl" model="ir.rule">
+        <field name="name">CBHL: Xem thông tin của tất cả học viên</field>
+        <field name="model_id" ref="army_results_manager.model_hr_employee"/>
+        <field name="groups" eval="[(4, ref('army_results_manager.group_training_commander_assistant'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
     <record id="training_result_rule_commander_assistant" model="ir.rule">
         <field name="name">Commander Assistant: See all result</field>
         <field name="model_id" ref="army_results_manager.model_training_result"/>
         <field name="groups" eval="[(4, ref('army_results_manager.group_training_commander_assistant'))]"/>
         <field name="domain_force">[(1, '=', 1)]</field>
-        <field name="perm_read">1</field>
-        <field name="perm_write">0</field>
-        <field name="perm_create">0</field>
-        <field name="perm_unlink">0</field>
     </record>
 
 </odoo>

@@ -122,11 +122,12 @@ class TrainingDay(models.Model):
 
 class TrainingDayComment(models.Model):
     _name = 'training.day.comment'
+    _rec_name = 'student_id'
     _description = 'Nhận xét học viên theo ngày'
 
     day_id = fields.Many2one('training.day', string='Ngày huấn luyện', ondelete='cascade')
     student_id = fields.Many2one('hr.employee', string="Học viên", required=True)
-    comment = fields.Text(string='Nhận xét', compute='_compute_comment')
+    comment = fields.Text(string='Nhận xét', compute='_compute_comment', store=True)
     day_date = fields.Date(related='day_id.day', store=True, string='Ngày')
     day_date_char = fields.Char(string='Ngày', compute='_compute_day_date_char', store=True)
     course_name = fields.Char(related='day_id.mission_line_id.mission_id.course_id.name', store=True)
