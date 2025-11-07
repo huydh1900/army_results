@@ -46,6 +46,7 @@
         'views/menu_view.xml',
         'views/data_collect_views.xml',
         'data/ir_cron_data.xml',
+
     ],
 
     "assets": {
