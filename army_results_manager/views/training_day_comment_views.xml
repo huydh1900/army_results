@@ -10,6 +10,7 @@
                 <button name="action_open_comment"
                         string="Nhận xét"
                         type="object"
+                        groups="army_results_manager.group_training_commander_assistant"
                         class="btn-primary"/>
             </tree>
         </field>
@@ -33,6 +34,7 @@
             <form>
                 <group>
                     <field name="student_id" readonly="True"/>
+                    <field name="score"/>
                     <field name="strength"/>
                     <field name="weakness"/>
                     <field name="video" widget="video" filename="filename"/>
