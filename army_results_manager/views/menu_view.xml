@@ -20,6 +20,10 @@
             <field name="groups_id" eval="[(6, 0, [ref('base.group_no_one')])]"/>
         </record>
 
+        <record id="base.menu_action_res_company_form" model="ir.ui.menu">
+            <field name="groups_id" eval="[(6, 0, [ref('base.group_no_one')])]"/>
+        </record>
+
         <!-- Actions -->
         <record id="action_training_course" model="ir.actions.act_window">
             <field name="name">Khóa huấn luyện</field>
@@ -244,12 +248,6 @@
                   parent="menu_training_result"
                   action="action_training_mission_result"
                   sequence="2"/>
-
-        <menuitem id="menu_setting"
-                  name="Cấu hình"
-                  parent="menu_military_root"
-                  groups="army_results_manager.group_training_commander_assistant"
-                  sequence="8"/>
 
         <menuitem id="menu_training_subject"
                   name="Môn học"
