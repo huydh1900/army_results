@@ -19,16 +19,20 @@
             </field>
         </record>
 
-        <record id="res_users_hide_create_employee" model="ir.ui.view">
-            <field name="name">res.users.form.hide.create.employee</field>
+
+        <record id="army_view_users_form_inherit" model="ir.ui.view">
+            <field name="name">army.view.users.form.inherit</field>
             <field name="model">res.users</field>
             <field name="inherit_id" ref="base.view_users_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//button[@name='action_create_employee']" position="attributes">
-                    <attribute name="invisible">1</attribute>
-                </xpath>
-                <xpath expr="//button[@name='action_reset_password']" position="replace"/>
-                <xpath expr="//button[@name='action_reset_password']" position="replace"/>
+                <page name="preferences" position="after">
+                    <page name="Chữ ký">
+                        <group>
+                            <field name="signature_file" filename="signature_filename" widget="binary" string="File chữ ký"/>
+                            <field name="signature_filename" invisible="1"/>
+                        </group>
+                    </page>
+                </page>
             </field>
         </record>
 
@@ -42,3 +46,16 @@
 
     </data>
 </odoo>
+
+<!--<<<<<<< fix/conflict_1811-->
+<!--        <record id="res_users_hide_create_employee" model="ir.ui.view">-->
+<!--            <field name="name">res.users.form.hide.create.employee</field>-->
+<!--            <field name="model">res.users</field>-->
+<!--            <field name="inherit_id" ref="base.view_users_form"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <xpath expr="//button[@name='action_create_employee']" position="attributes">-->
+<!--                    <attribute name="invisible">1</attribute>-->
+<!--                </xpath>-->
+<!--                <xpath expr="//button[@name='action_reset_password']" position="replace"/>-->
+<!--                <xpath expr="//button[@name='action_reset_password']" position="replace"/>-->
+<!--=======-->
