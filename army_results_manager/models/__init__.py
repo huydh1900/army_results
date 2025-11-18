@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from . import training_subject
+from . import res_users
 from . import training_time
 from . import training_result
 from . import training_category
@@ -11,6 +12,7 @@ from . import hr_department
 from . import hr_employee
 from . import training_plan
 from . import training_course
+from . import groups_view
 from . import data_source
 from . import collected_data
 from . import camera_device

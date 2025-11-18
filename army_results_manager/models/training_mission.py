@@ -11,8 +11,6 @@ class TrainingMission(models.Model):
     participants_ids = fields.Many2many('hr.department', string="Đối tượng tham gia")
     material_ids = fields.One2many('training.material', 'mission_id', string="Tài liệu / Video")
     course_id = fields.Many2one('training.course', ondelete='cascade')
-    start_date = fields.Datetime(related='course_id.start_date', string="Thời gian bắt đầu", store=True)
-    end_date = fields.Datetime(related='course_id.end_date', string="Thời gian kết thúc", store=True)
     student_ids = fields.Many2many('hr.employee', string='Học viên', compute='_compute_student_ids', store=True)
     state = fields.Selection([
         ('draft', 'Dự thảo'),
@@ -26,6 +24,20 @@ class TrainingMission(models.Model):
         default=False
     )
     subject_id = fields.Many2one('training.subject', string="Môn học", required=True)
+    training_officer_ids_domain = fields.Binary(compute='_compute_training_officer_ids_domain')
+    training_officer_ids = fields.Many2many(
+        'hr.employee',
+        'training_mission_rel',
+        'mission_id',
+        'employee_id',
+        string='Giảng viên',
+        required=True,
+    )
+
+    @api.depends('course_id.training_officer_ids', 'course_id')
+    def _compute_training_officer_ids_domain(self):
+        for rec in self:
+            rec.training_officer_ids_domain = rec.course_id.training_officer_ids.ids
 
     @api.depends('course_id.student_ids')
     def _compute_student_ids(self):
@@ -49,16 +61,16 @@ class TrainingMission(models.Model):
             rec.total_hours = sum(line.total_hours or 0.0 for line in rec.mission_line_ids)
 
     def action_in_progress(self):
-        self.write({'state': 'in_progress'})
+        self.sudo().write({'state': 'in_progress'})
 
     def action_done(self):
-        self.write({'state': 'done'})
+        self.sudo().write({'state': 'done'})
 
     def action_cancel(self):
-        self.write({'state': 'cancel'})
+        self.sudo().write({'state': 'cancel'})
 
     def action_reset_draft(self):
-        self.write({'state': 'draft'})
+        self.sudo().write({'state': 'draft'})
 
 
 class TrainingMissionLine(models.Model):
@@ -71,6 +83,21 @@ class TrainingMissionLine(models.Model):
     day_ids = fields.One2many('training.day', 'mission_line_id', string='Thời gian huấn luyện', ondelete='cascade')
     student_ids = fields.Many2many('hr.employee', string='Học viên', compute='_compute_student_ids', store=True)
     title = fields.Char(string='Chủ đề')
+    training_officer_ids_domain = fields.Binary(compute='_compute_training_officer_ids_domain')
+    training_officer_ids = fields.Many2many(
+        'hr.employee',
+        'training_mission_line_rel',
+        'mission_line_id',
+        'employee_id',
+        string='Giảng viên',
+        required=True,
+    )
+
+    @api.depends('mission_id.training_officer_ids', 'mission_id')
+    def _compute_training_officer_ids_domain(self):
+        for rec in self:
+            rec.training_officer_ids_domain = rec.mission_id.training_officer_ids.ids
+
 
     @api.depends('day_ids', 'day_ids.total_hours')
     def _compute_total_hours(self):

@@ -3,3 +3,4 @@
 
 from . import modify_reason_wizard
 from . import print_word_wizard
+from . import approved_wizard

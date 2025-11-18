@@ -1,7 +1,6 @@
 .o_user_menu .dropdown-item[data-menu="documentation"],
 .o_user_menu .dropdown-item[data-menu="support"],
 .o_user_menu .dropdown-item[data-menu="shortcuts"],
-.o_user_menu .dropdown-item[data-menu="settings"],
 .o_user_menu .dropdown-item[data-menu="account"] {
     display: none !important;
 }

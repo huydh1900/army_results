@@ -1,18 +1,17 @@
+from datetime import date
+
 from odoo import models, fields, api
-from datetime import datetime
 
 
 class TrainingDay(models.Model):
     _name = 'training.day'
     _description = 'Thời gian huấn luyện theo tháng'
+    _order = 'day asc'
 
     time_ids = fields.One2many('training.time', 'time_id')
     comment_ids = fields.One2many('training.day.comment', 'day_id', string="Nhận xét học viên")
-
     mission_line_id = fields.Many2one('training.mission.line', string='Nhiệm vụ huấn luyện')
-
     student_ids = fields.Many2many('hr.employee', string='Học viên', compute='_compute_student_ids', store=True)
-
     month = fields.Integer(string="Tháng", readonly=True)
     day = fields.Date(string="Ngày")
     week = fields.Integer(string="Tuần", readonly=True)
@@ -20,40 +19,99 @@ class TrainingDay(models.Model):
     month_name = fields.Char(string="Tên tháng", compute='_compute_name', store=True)
     week_name = fields.Char(string="Tên tuần", compute='_compute_name', store=True)
     day_name = fields.Char(string="Tên ngày", compute='_compute_name', store=True)
-    mission_name = fields.Char(related='mission_line_id.mission_id.name', store=True)
+    state = fields.Selection([
+        ('draft', 'Soạn thảo'),
+        ('to_modify', 'Cần chỉnh sửa'),
+        ('posted', 'Chờ duyệt'),
+        ('approved', 'Đã duyệt'),
+        ('cancel', 'Hủy'),
+    ], string="Trạng thái", default="draft", tracking=True)
     mission_id = fields.Many2one(related='mission_line_id.mission_id', store=True)
+    mission_name = fields.Char(related='mission_id.name', store=True)
     lesson_name = fields.Char(related='mission_line_id.name', store=True)
-    plan_name = fields.Char(related='mission_line_id.mission_id.course_id.plan_id.name', store=True)
-    course_name = fields.Char(related='mission_line_id.mission_id.course_id.name', store=True)
     course_id = fields.Many2one(related='mission_line_id.mission_id.course_id', store=True)
+    course_name = fields.Char(related='course_id.name', store=True)
     subject_code = fields.Char(related='mission_line_id.mission_id.subject_id.code', store=True)
     type_training = fields.Selection(related='mission_line_id.mission_id.subject_id.type_training', store=True)
     weekday = fields.Char(string="Thứ", compute='_compute_name', store=True)
-    total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True)
+    total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True, group_operator=False)
     plan_id = fields.Many2one(
         'training.plan',
         related='mission_line_id.mission_id.course_id.plan_id',
         store=True
     )
-    type_plan = fields.Selection(related='mission_line_id.mission_id.course_id.plan_id.type', store=True)
+    plan_name = fields.Char(related='plan_id.name', store=True)
+    type_plan = fields.Selection(related='plan_id.type', store=True)
+    training_officer_ids = fields.Many2many(
+        'hr.employee',
+        'training_day_rel',
+        'day_id',
+        'employee_id',
+        string='Giảng viên',
+        related='mission_line_id.training_officer_ids',
+    )
+    reason_modify = fields.Text(string='Lý do chỉnh sửa')
+    approver_id = fields.Many2one(related='plan_id.approver_id', store=True)
+
+    def action_open_modify_wizard(self):
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Nhập lý do chỉnh sửa",
+            "res_model": "modify.reason.wizard",
+            "view_mode": "form",
+            "target": "new",
+            "context": {"active_id": self.id},
+        }
 
     @api.model
-    def create(self, vals):
-        record = super().create(vals)
-        # Khi tạo xong training.day, tự sinh nhận xét cho học viên
-        if record.student_ids:
-            comments = [
-                {
-                    'day_id': record.id,
+    def action_approve_by_domain(self, domain):
+        """Duyệt tất cả bản ghi trong domain và tự động cập nhật plan nếu toàn bộ ngày đã duyệt."""
+        records = self.search(domain)
+        if not records:
+            return
+
+        records.write({'state': 'approved'})
+
+        # Tạo nhận xét cho tất cả học viên theo ngày
+        comment_vals = []
+        for rec in records:
+            for student in rec.student_ids:
+                # 1. Lấy hoặc tạo TrainingResult cho học viên trong khóa đó
+                result = self.env['training.result'].search([
+                    ('employee_id', '=', student.id),
+                    ('training_course_id', '=', rec.mission_line_id.mission_id.course_id.id)
+                ], limit=1)
+
+                if not result:
+                    result = self.env['training.result'].create({
+                        'employee_id': student.id,
+                        'training_course_id': rec.mission_line_id.mission_id.course_id.id,
+                    })
+                comment_vals.append({
+                    'day_id': rec.id,
+                    'day_date': rec.day.strftime('%d-%m-%Y'),
+                    'result_id': result.id,
                     'student_id': student.id,
-                    'mission_name': record.mission_name,
-                    'lesson_name': record.lesson_name,
-                    'year': record.year,
-                }
-                for student in record.student_ids
-            ]
-            self.env['training.day.comment'].create(comments)
-        return record
+                    'mission_name': rec.mission_name,
+                    'lesson_name': rec.lesson_name,
+                    'year': rec.year,
+                })
+
+        if comment_vals:
+            self.env['training.day.comment'].create(comment_vals)
+
+        # Lấy tất cả plan_id liên quan
+        plan_ids = records.mapped('plan_id').filtered(lambda p: p)
+
+        for plan in plan_ids:
+            # Lấy toàn bộ ngày thuộc plan đó
+            all_days = self.search([('plan_id', '=', plan.id)])
+            # Lấy những ngày đã duyệt
+            approved_days = all_days.filtered(lambda d: d.state == 'approved')
+
+            # Nếu tất cả ngày đã duyệt → cập nhật plan
+            if len(all_days) == len(approved_days):
+                plan.write({'state': 'approved'})
 
     @api.depends('month', 'week', 'mission_line_id', 'day')
     def _compute_name(self):
@@ -128,11 +186,11 @@ class TrainingDayComment(models.Model):
     day_id = fields.Many2one('training.day', string='Ngày huấn luyện', ondelete='cascade')
     student_id = fields.Many2one('hr.employee', string="Học viên", required=True)
     comment = fields.Text(string='Nhận xét', compute='_compute_comment', store=True)
-    day_date = fields.Date(related='day_id.day', store=True, string='Ngày')
-    day_date_char = fields.Char(string='Ngày', compute='_compute_day_date_char', store=True)
+    day_date = fields.Char(string='Ngày')
+    result_id = fields.Many2one('training.result', ondelete='cascade')
     course_name = fields.Char(related='day_id.mission_line_id.mission_id.course_id.name', store=True)
     mission_name = fields.Char()
-    lesson_name = fields.Char()
+    lesson_name = fields.Char(string='Tên bài học')
     year = fields.Char()
     score = fields.Char(string="Điểm số")
     strength = fields.Text(string='Điểm mạnh')
@@ -164,4 +222,3 @@ class TrainingDayComment(models.Model):
             'target': 'new',
             'context': {'default_student_id': self.student_id.id},
         }
-

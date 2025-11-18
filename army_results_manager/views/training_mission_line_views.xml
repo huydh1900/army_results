@@ -23,17 +23,23 @@
                             <field name="name"/>
                         </group>
                         <group>
+                            <field name="training_officer_ids_domain" invisible="1"/>
+                            <field name="training_officer_ids" widget="many2many_tags"
+                                   domain="[('id', 'in', training_officer_ids_domain)]"/>
                             <field name="total_hours"/>
                         </group>
                     </group>
                     <notebook>
                         <page string="Ngày huấn luyện">
                             <field name="day_ids">
-                                <tree editable="bottom">
+                                <tree editable="bottom" default_order="day asc">
                                     <field name="day"/>
                                     <field name="week" force_save="1"/>
                                     <field name="month" force_save="1"/>
                                     <field name="total_hours"/>
+                                    <field name="state" widget="badge"
+                                           decoration-muted="state == 'draft'"
+                                           decoration-success="state == 'approved'"/>
                                     <button name="action_detail"
                                             type="object"
                                             class="oe_stat_button"

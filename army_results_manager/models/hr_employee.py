@@ -1,5 +1,7 @@
 from odoo import api, fields, models, _
 from statistics import mean
+from numpy.lib.utils import safe_eval
+
 
 class HrEmployeePrivate(models.Model):
     _inherit = ['hr.employee']
@@ -15,7 +17,7 @@ class HrEmployeePrivate(models.Model):
     job_id = fields.Many2one(tracking=True, string='Chức vụ')
     identification_id = fields.Char(string='Số hiệu sĩ quan', groups="hr.group_hr_user", tracking=True)
     result_ids = fields.One2many('training.result', 'employee_id')
-    day_ids = fields.Many2many('training.day')
+    day_comment_ids = fields.Many2many('training.day.comment')
     classification = fields.Selection(
         [
             ("pass", "Đạt"),
@@ -26,6 +28,34 @@ class HrEmployeePrivate(models.Model):
         ],
         string="Xếp loại", compute="_compute_classification", store=True,
     )
+
+    @api.model
+    def get_action_student(self):
+        action = self.env.ref('army_results_manager.action_student').sudo().read()[0]
+        user = self.env.user
+        employee = self.env['hr.employee'].sudo().search([('user_id', '=', user.id)], limit=1)
+
+        ctx = safe_eval(action['context']) if isinstance(action['context'], str) else dict(action['context'])
+
+        if employee and employee.role == 'student':
+            ctx.update({
+                'edit': False,
+                'create': False,
+                'delete': False,
+            })
+            action.update({
+                'view_mode': 'form',
+                'views': [(False, 'form')],
+                'res_id': employee.id,
+                'context': ctx,
+            })
+        else:
+            action.update({
+                'view_mode': 'tree,form',
+                'context': ctx,
+            })
+
+        return action
 
     @api.model
     def count_student_summary(self):

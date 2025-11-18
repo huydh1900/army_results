@@ -19,6 +19,7 @@
             </field>
         </record>
 
+
         <record id="army_view_users_form_inherit" model="ir.ui.view">
             <field name="name">army.view.users.form.inherit</field>
             <field name="model">res.users</field>
@@ -35,5 +36,26 @@
             </field>
         </record>
 
+        <record id="auth_signup.action_send_password_reset_instructions" model="ir.actions.server">
+            <field name="groups_id" eval="[(6, 0, [ref('base.group_no_one')])]"/>
+        </record>
+
+        <record id="privacy_lookup.ir_action_server_action_privacy_lookup_user" model="ir.actions.server">
+            <field name="groups_id" eval="[(6, 0, [ref('base.group_no_one')])]"/>
+        </record>
+
     </data>
 </odoo>
+
+<!--<<<<<<< fix/conflict_1811-->
+<!--        <record id="res_users_hide_create_employee" model="ir.ui.view">-->
+<!--            <field name="name">res.users.form.hide.create.employee</field>-->
+<!--            <field name="model">res.users</field>-->
+<!--            <field name="inherit_id" ref="base.view_users_form"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <xpath expr="//button[@name='action_create_employee']" position="attributes">-->
+<!--                    <attribute name="invisible">1</attribute>-->
+<!--                </xpath>-->
+<!--                <xpath expr="//button[@name='action_reset_password']" position="replace"/>-->
+<!--                <xpath expr="//button[@name='action_reset_password']" position="replace"/>-->
+<!--=======-->

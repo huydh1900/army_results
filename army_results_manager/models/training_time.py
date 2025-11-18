@@ -6,7 +6,7 @@ class TrainingTime(models.Model):
     _description = 'Thời gian huấn luyện'
     _rec_name = 'time_id'
 
-    time_id = fields.Many2one('training.day')
+    time_id = fields.Many2one('training.day', string='Ngày')
     start_time = fields.Float(
         string="Thời gian bắt đầu",
         required=True,
@@ -25,8 +25,8 @@ class TrainingTime(models.Model):
         readonly=True
     )
 
-    start_time_str = fields.Char(string='Giờ bắt đầu (Text)', compute='_compute_time_str', store=True)
-    end_time_str = fields.Char(string='Giờ kết thúc (Text)', compute='_compute_time_str', store=True)
+    start_time_str = fields.Char(string='Giờ bắt đầu', compute='_compute_time_str', store=True)
+    end_time_str = fields.Char(string='Giờ kết thúc', compute='_compute_time_str', store=True)
     time_range = fields.Char(string='Khoảng thời gian', compute='_compute_time_str', store=True)
 
     @api.depends('start_time', 'end_time')

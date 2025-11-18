@@ -1,0 +1,18 @@
+<odoo>
+    <!--    Cán bộ chỉ huy chỉ xem và duyệt những ngày kế hoạch mà họ được gắn tên-->
+    <record id="training_day_rule_training_commander" model="ir.rule">
+        <field name="name">CBCH: Xem và duyệt những kế hoạch gắn tên họ</field>
+        <field name="model_id" ref="army_results_manager.model_training_day"/>
+        <field name="groups" eval="[(4, ref('army_results_manager.group_training_commander'))]"/>
+        <field name="domain_force">[('approver_id.user_id', '=', user.id)]</field>
+        <field name="perm_read">1</field>
+        <field name="perm_write">1</field>
+    </record>
+
+    <record id="training_day_rule_admin" model="ir.rule">
+        <field name="name">Admin: Xem all day kế hoạch</field>
+        <field name="model_id" ref="army_results_manager.model_training_day"/>
+        <field name="groups" eval="[(4, ref('army_results_manager.group_admin'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+</odoo>

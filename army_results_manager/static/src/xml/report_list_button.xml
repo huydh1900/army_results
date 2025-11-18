@@ -2,9 +2,17 @@
 <templates>
     <t t-name="button_report.ListView.Buttons" t-inherit="web.ListView.Buttons">
         <xpath expr="//div[contains(@class, 'o_list_buttons')]" position="inside">
-            <button type="button" class="btn btn-primary" style="margin-left: 10px;" t-on-click="OnOpenWizard">In Báo
-                cáo
-            </button>
+            <t t-if="this.props.context['default_action'] == 'report'">
+                <button type="button" class="btn btn-primary" t-on-click="OnOpenWizard">In
+                    Báo cáo
+                </button>
+            </t>
+
+            <!--            <t t-if="this.props.context['default_action'] == 'draft'">-->
+            <!--                <button type="button" class="btn btn-primary" t-on-click="OnOpenApproved">-->
+            <!--                    Duyệt kế hoạch-->
+            <!--                </button>-->
+            <!--            </t>-->
         </xpath>
     </t>
 </templates>

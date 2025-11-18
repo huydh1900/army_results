@@ -28,7 +28,7 @@ class TrainingPlan(models.Model):
         ('cancel', 'Hủy'),
     ], string="Trạng thái", default="draft", tracking=True)
     location_id = fields.Many2one('training.location', string='Địa điểm')
-    student_ids = fields.Many2many('hr.employee', string='Học viên', required=True, domain="[('role', '=', 'student')]")
+    student_ids = fields.Many2many('hr.employee', string='Học viên', domain="[('role', '=', 'student')]")
     training_content = fields.Char(string='Nội dung huấn luyện')
     reason_modify = fields.Text(string='Lý do chỉnh sửa', tracking=True)
     course_ids = fields.One2many('training.course', 'plan_id')
@@ -51,7 +51,34 @@ class TrainingPlan(models.Model):
         domain=[('is_common', '=', False)],
         string='Môn huấn luyện riêng'
     )
+    approver_id = fields.Many2one('hr.employee', string='Cán bộ phê duyệt', domain=[('role', '=', 'commanding_officer')])
 
+    def action_open_training_day(self):
+        self.ensure_one()
+        tree_view_id = self.env.ref("army_results_manager.view_training_day_in_plan_tree").id
+        form_view_id = self.env.ref("army_results_manager.view_training_day_form").id
+
+        views = [
+            (tree_view_id, 'tree'),
+            (form_view_id, 'form'),
+        ]
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Chi tiết bài học",
+            "views": views,
+            "res_model": "training.day",
+            "domain": [('plan_id', '=', self.id)],
+            "target": "current",
+        }
+
+    def unlink(self):
+        user = self.env.user
+        # Nếu user thuộc nhóm Cán bộ nhập liệu
+        if user.has_group('army_results_manager.group_data_entry_officer'):
+            for rec in self:
+                if rec.state == 'approved':
+                    raise UserError('Bạn không được phép xóa kế hoạch đã duyệt!')
+        return super().unlink()
 
     @api.model
     def cron_generate_daily_warning(self):
@@ -131,25 +158,19 @@ class TrainingPlan(models.Model):
         return result
 
     def action_post(self):
-        for rec in self:
-            rec.state = "posted"
-
-    def action_approve(self):
-        for rec in self:
-            rec.write({'state': 'approved'})
-            (rec.common_subject_ids + rec.specific_subject_ids).write({'state': 'approved'})
-
-    def action_open_modify_wizard(self):
-        return {
-            "type": "ir.actions.act_window",
-            "name": "Nhập lý do chỉnh sửa",
-            "res_model": "modify.reason.wizard",
-            "view_mode": "form",
-            "target": "new",
-            "context": {"active_id": self.id},
-        }
+        if not self.approver_id:
+            raise UserError('Bạn phải điền người phê duyệt trước khi bấm Gửi duyệt!')
+        elif not self.student_ids:
+            raise UserError('Bạn phải điền học viên trước khi bấm Gửi duyệt!')
+        self.write({'state': 'posted'})
+        self.env['training.day'].search([
+            ('plan_id', '=', self.id),
+            ('state', '!=', 'approved'),
+        ]).write({'state': 'posted'})
 
     def action_cancel(self):
-        for rec in self:
-            rec.state = "cancel"
-
+        self.write({'state': 'cancel'})
+        self.env['training.day'].search([
+            ('plan_id', '=', self.id),
+            ('state', '!=', 'approved'),
+        ]).write({'state': 'cancel'})

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="web.ListRenderer.GroupRow" t-inherit-mode="extension" owl="1">
+        <xpath expr="//t[@t-esc='group.count']" position="replace">
+            (<t t-esc="group.count"/>)
+            <t t-if="group.groupByField['name'] === 'week_name' and this.props.list.model.rootParams.context['default_action'] == 'draft'">
+                <button type="button" class="btn btn-primary" style="font-size:10px; margin-left: 10px"
+                        t-on-click="() => this.ApprovedTrainingDay(group)">Duyệt</button>
+            </t>
+        </xpath>
+    </t>
+</templates>

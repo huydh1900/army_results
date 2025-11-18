@@ -1,25 +1,57 @@
 <odoo>
 
+    <record id="view_training_day_gantt" model="ir.ui.view">
+        <field name="name">training.day.gantt</field>
+        <field name="model">training.day</field>
+        <field name="arch" type="xml">
+            <gantt
+                    date_start="day"
+                    date_stop="day"
+                    cell_create="false"
+                    create="false"
+                    edit="false"
+                    string="Lịch huấn luyện">
+                <field name="lesson_name"/>
+
+                <templates>
+                    <div t-name="gantt-popover" class="container-fluid">
+                        <li>
+                            <strong>Tên bài học:
+                                <t t-out="lesson_name"/>
+                            </strong>
+                        </li>
+                    </div>
+                </templates>
+            </gantt>
+
+        </field>
+    </record>
+
     <record id="view_training_day_form" model="ir.ui.view">
         <field name="name">training.day.form</field>
         <field name="model">training.day</field>
         <field name="arch" type="xml">
             <form string="Ngày huấn luyện">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
                 <sheet>
                     <group>
-                        <field name="day"/>
-                        <field name="total_hours"/>
-                        <field name="year"/>
-                        <field name="mission_name"/>
-                        <field name="lesson_name"/>
-                        <field name="subject_code"/>
-                        <field name="plan_name"/>
-                        <field name="course_name"/>
-                        <field name="type_training"/>
-                        <field name="week_name"/>
-                        <field name="weekday"/>
-                        <field name="type_plan"/>
-                        <field name="student_ids" widget="many2many_tags"/>
+                        <group>
+                            <field name="day" readonly="True"/>
+                            <field name="type_plan"/>
+                            <field name="type_training"/>
+                            <field name="training_officer_ids" widget="many2many_tags"/>
+                            <field name="student_ids" widget="many2many_tags"/>
+                        </group>
+                        <group>
+                            <field name="plan_name"/>
+                            <field name="mission_name"/>
+                            <field name="lesson_name"/>
+                            <field name="subject_code"/>
+                            <field name="course_name"/>
+                            <field name="total_hours"/>
+                        </group>
                     </group>
                     <notebook>
                         <page string="Thời gian huấn luyện">
@@ -31,13 +63,8 @@
                                 </tree>
                             </field>
                         </page>
-                        <page string="Nhận xét học viên">
-                            <field name="comment_ids">
-                                <tree editable="bottom">
-                                    <field name="student_id"/>
-                                    <field name="comment"/>
-                                </tree>
-                            </field>
+                        <page string="Lý do chỉnh sửa">
+                            <field name="reason_modify"/>
                         </page>
                     </notebook>
                 </sheet>
@@ -49,10 +76,49 @@
         <field name="name">training.day.tree.report</field>
         <field name="model">training.day</field>
         <field name="arch" type="xml">
-            <tree string="Báo cáo" create="0" export_xlsx="0">
+            <tree string="Báo cáo" create="0" export_xlsx="0" default_order="month,week,day">
                 <field name="day"/>
                 <field name="total_hours"/>
+                <field name="state" widget="badge"
+                       decoration-muted="state == 'draft'"
+                       decoration-success="state == 'approved'"
+                       decoration-warning="state == 'to_modify'"/>
             </tree>
+        </field>
+    </record>
+
+    <record id="view_training_day_in_plan_tree" model="ir.ui.view">
+        <field name="name">training.day.in.plan.tree</field>
+        <field name="model">training.day</field>
+        <field name="arch" type="xml">
+            <tree string="Báo cáo" create="0" export_xlsx="0" default_order="month,week,day">
+                <field name="day"/>
+                <field name="lesson_name"/>
+                <field name="total_hours"/>
+                <field name="state" widget="badge"
+                       decoration-muted="state == 'draft'"
+                       decoration-success="state == 'approved'"
+                       decoration-warning="state == 'to_modify'"/>
+                <button name="action_open_modify_wizard"
+                        string="Yêu cầu chỉnh sửa"
+                        type="object"
+                        states="posted"
+                        class="btn-warning"
+                        groups="army_results_manager.group_admin,army_results_manager.group_training_commander"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="training_day_view_search" model="ir.ui.view">
+        <field name="name">training.day.view.search</field>
+        <field name="model">training.day</field>
+        <field name="arch" type="xml">
+            <search>
+                <filter name="group_year" string="Nhóm theo năm" context="{'group_by':'year'}"/>
+                <filter name="group_month" string="Nhóm theo tháng" context="{'group_by':'month_name'}"/>
+                <filter name="group_week" string="Nhóm theo tuần" context="{'group_by':'week'}"/>
+                <filter name="group_weekday" string="Nhóm theo thứ" context="{'group_by':'weekday'}"/>
+            </search>
         </field>
     </record>
 

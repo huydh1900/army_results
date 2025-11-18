@@ -38,14 +38,12 @@
                 </button>
                 <xpath expr="//form/sheet/div/button[@name='%(hr.act_employee_from_department)d']" position="replace">
                     <button class="oe_stat_button" type="object" name="action_view_commanding_officer"
-                            icon="fa-users"
-                            invisible="context.get('menu', False)">
+                            icon="fa-users">
                         <field string="CB chỉ huy" name="commanding_officer_count" widget="statinfo"/>
                     </button>
 
                     <button class="oe_stat_button" type="object" name="action_view_training_officer"
-                            icon="fa-users"
-                            invisible="context.get('menu', False)">
+                            icon="fa-users">
                         <field string="CB phụ trách huấn luyện" name="training_officer_count" widget="statinfo"/>
                     </button>
 
