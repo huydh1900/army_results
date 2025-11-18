@@ -29,25 +29,14 @@
                             string="Gửi duyệt"
                             type="object"
                             states="draft,to_modify"
+                            groups="army_results_manager.group_data_entry_officer,army_results_manager.group_admin"
                             class="btn-primary"/>
-
-                    <button name="action_approve"
-                            string="Phê duyệt"
-                            type="object"
-                            states="posted,to_modify"
-                            groups="army_results_manager.group_training_commander"
-                            class="btn-success"/>
-
-                    <button name="action_open_modify_wizard"
-                            string="Yêu cầu chỉnh sửa"
-                            type="object"
-                            states="posted"
-                            class="btn-warning"/>
 
                     <button name="action_cancel"
                             string="Hủy"
                             type="object"
-                            states="draft,posted,to_modify"
+                            states="posted,to_modify"
+                            groups="army_results_manager.group_data_entry_officer,army_results_manager.group_admin"
                             class="btn-danger"/>
                 </header>
 
@@ -57,26 +46,38 @@
                                 type="object"
                                 class="oe_stat_button"
                                 icon="fa-video-camera"
+                                attrs="{'invisible': [('state', '=', 'draft')]}"
                                 string="Mở camera">
                             <field name="camera_count" widget="statinfo" string="Camera"/>
+                        </button>
+                        <button name="action_open_training_day"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-calendar"
+                                attrs="{'invisible': [('state', '=', 'draft')]}"
+                                string="Chi tiết bài học">
                         </button>
                     </div>
                     <group>
                         <group>
-                            <field name="plan_code" attrs="{'readonly': [('state', '=', 'approved')]}"/>
-                            <field name="name" attrs="{'readonly': [('state', '=', 'approved')]}"/>
-                            <field name="type" attrs="{'readonly': [('state', '=', 'approved')]}"/>
-                            <field name="location_id" attrs="{'readonly': [('state', '=', 'approved')]}"/>
-                            <field name="description" attrs="{'readonly': [('state', '=', 'approved')]}"/>
-                            <field name="training_content" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="plan_code" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
+                            <field name="name" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
+                            <field name="type" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
+                            <field name="location_id" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
+                            <field name="description" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
+                            <field name="training_content" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                         </group>
                         <group>
-                            <field name="start_date" attrs="{'readonly': [('state', '=', 'approved')]}"/>
-                            <field name="end_date" attrs="{'readonly': [('state', '=', 'approved')]}"/>
-                            <field name="year" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="start_date" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
+                            <field name="end_date" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
+                            <field name="year" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
+                            <field name="approver_id" attrs="{'readonly': [('state', '=', 'approved')]}"
+                                   options='{"no_create": True, "no_open": True}'/>
                             <field name="total_hours"/>
-                            <field name="participants_ids" widget="many2many_tags" attrs="{'readonly': [('state', '=', 'approved')]}"/>
-                            <field name="student_ids" widget="many2many_tags" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="participants_ids" widget="many2many_tags"
+                                   attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
+                            <field name="student_ids" widget="many2many_tags"
+                                   attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                         </group>
                     </group>
                     <notebook>
@@ -84,8 +85,6 @@
                             <field name="common_subject_ids" attrs="{'readonly': [('state', '=', 'approved')]}">
                                 <tree editable="bottom" no_open="1">
                                     <field name="name"/>
-                                    <field name="start_date"/>
-                                    <field name="end_date"/>
                                     <field name="total_hours"/>
                                     <button name="action_detail"
                                             type="object"
@@ -99,8 +98,6 @@
                             <field name="specific_subject_ids" attrs="{'readonly': [('state', '=', 'approved')]}">
                                 <tree editable="bottom" no_open="1">
                                     <field name="name"/>
-                                    <field name="start_date"/>
-                                    <field name="end_date"/>
                                     <field name="total_hours"/>
                                     <button name="action_detail"
                                             type="object"
@@ -111,7 +108,7 @@
                             </field>
                         </page>
                         <page string="Lý do chỉnh sửa">
-                            <field name="reason_modify"/>
+                            <field name="reason_modify" readonly="1"/>
                         </page>
                     </notebook>
                 </sheet>
@@ -128,9 +125,35 @@
         <field name="name">training.plan.gantt</field>
         <field name="model">training.plan</field>
         <field name="arch" type="xml">
-            <gantt date_start="start_date" date_stop="end_date" default_group_by="create_date" create="0">
+            <gantt date_start="start_date" date_stop="end_date"
+                   default_group_by="state"
+                   create="false"
+                   edit="false"
+                   string="Kế hoạch huấn luyện"
+                   decoration-info="state == 'approved'"
+                   color="state"
+            >
                 <field name="create_date"/>
+                <field name="state"/>
+                <field name="plan_code"/>
+                <field name="common_subject_ids"/>
                 <field name="description"/>
+                <templates>
+                    <div t-name="gantt-popover" class="container-fluid">
+                        <div class="row g-0">
+                            <div class="col">
+                                <ul class="ps-1 mb-0 list-unstyled">
+                                    <li>
+                                        <strong>Huấn luyện chung:</strong>
+                                        <t t-foreach="common_subject_ids" t-as="subject">
+                                            <t t-esc="subject.display_name"/>
+                                        </t>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </templates>
             </gantt>
         </field>
     </record>
@@ -146,9 +169,12 @@
                     color="participants_ids"
                     mode="month"
                     quick_add="false"
+                    create="false"
+                    delete="false"
             >
                 <field name="name"/>
                 <field name="participants_ids"/>
+                <field name="common_subject_ids"/>
             </calendar>
         </field>
     </record>

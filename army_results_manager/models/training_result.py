@@ -1,15 +1,17 @@
 from odoo import models, fields, api
 from openai import OpenAI
-
+from odoo.exceptions import UserError
 
 class TrainingResult(models.Model):
     _name = "training.result"
     _description = "Kết quả huấn luyện"
-    _rec_name = "employee_id"  # Hiển thị tên theo cán bộ
+    _rec_name = "training_course_id"
 
-    employee_id = fields.Many2one("hr.employee", string='Học viên')
-    training_course_id = fields.Many2one("training.course", string="Khóa huấn luyện")
-    score = fields.Float(string="Điểm số", digits=(6, 2), group_operator=None)
+    employee_id = fields.Many2one("hr.employee", string='Học viên', readonly=True)
+    training_course_id = fields.Many2one("training.course", string="Khóa huấn luyện", readonly=True)
+    year = fields.Char(related="training_course_id.year", readonly=True)
+    day_comment_ids = fields.One2many('training.day.comment', 'result_id')
+    score = fields.Char(string="Điểm số")
     result = fields.Selection(
         [
             ("pass", "Đạt"),
@@ -20,7 +22,7 @@ class TrainingResult(models.Model):
         ],
         string="Xếp loại",
     )
-    note = fields.Text(string='Nhận xét')
+    note = fields.Text(string='Nhận xét', tracking=True)
 
     def action_generate_note_by_ai(self):
         # Lấy key 1 lần duy nhất
@@ -57,7 +59,10 @@ class TrainingResult(models.Model):
     @api.onchange("score")
     def _onchange_score(self):
         for rec in self:
-            score = rec.score or 0
+            try:
+                score = float(rec.score)
+            except ValueError:
+                raise UserError("Điểm số nhập vào không cho phép là ký tự!")
             if score >= 8:
                 rec.result = "excellent"
             elif score >= 7:

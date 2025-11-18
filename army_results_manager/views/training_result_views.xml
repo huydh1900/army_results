@@ -4,7 +4,7 @@
         <field name="name">training.result.tree</field>
         <field name="model">training.result</field>
         <field name="arch" type="xml">
-            <tree string="Kết quả huấn luyện" create="false" editable="bottom">
+            <tree string="Kết quả huấn luyện" create="false">
                 <field name="employee_id" options='{"no_open":True}'/>
                 <field name="score"/>
                 <field name="result"/>
@@ -15,6 +15,35 @@
                         groups="army_results_manager.group_training_commander_assistant"
                         title="Tạo nhận xét bằng AI"/>
             </tree>
+        </field>
+    </record>
+
+    <record id="view_training_result_form" model="ir.ui.view">
+        <field name="name">training.result.form</field>
+        <field name="model">training.result</field>
+        <field name="arch" type="xml">
+            <form string="Kết quả huấn luyện" create="false">
+                <group>
+                    <field name="training_course_id" options='{"no_open":True}'/>
+                    <field name="year"/>
+                    <field name="employee_id" options='{"no_open":True}'/>
+                    <field name="score"/>
+                    <field name="result"/>
+                    <field name="note"/>
+                </group>
+                <notebook>
+                    <page string="Kết quả giai đoạn huấn luyện">
+                        <field name="day_comment_ids">
+                            <tree create="0" delete="0" editable="bottom">
+                                <field name="day_id" readonly="1"/>
+                                <field name="lesson_name" readonly="1"/>
+                                <field name="score" readonly="1"/>
+                                <field name="comment" readonly="1"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
+            </form>
         </field>
     </record>
 

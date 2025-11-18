@@ -26,8 +26,7 @@ class PrintWordWizard(models.TransientModel):
          ('template2', 'Phụ lục 2'),
          ('template3', 'Phụ lục 3'),
          ('template4', 'Phụ lục 4'),
-         ('template5', 'Phụ lục 5')],
-        string="Chọn mẫu phụ lục"
+         ('template5', 'Phụ lục 5')]
     )
     report_type = fields.Selection([
         ('week', 'Theo tuần'),

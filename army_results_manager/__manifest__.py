@@ -16,15 +16,18 @@
     'category': 'Uncategorized',
     'version': '0.1',
 
-    'depends': ['web', 'base', 'hr', 'web_unsplash', 'web_widget_video'],
+    'depends': ['auth_signup', 'web', 'base', 'hr', 'web_unsplash', 'web_widget_video'],
     # always loaded
     'data': [
         "security/training_result_security.xml",
+        "security/training_day_security.xml",
+        "security/training_plan_security.xml",
         "security/ir.model.access.csv",
         'views/remove_odoo_title.xml',
         'data/training_category_data.xml',
         'data/training_subject_data.xml',
         'wizard/print_word_wizard.xml',
+        'wizard/approved_wizard.xml',
         'views/webclient_templates.xml',
         'views/support_contact_views.xml',
         'views/training_day_comment_views.xml',
@@ -50,16 +53,15 @@
 
     "assets": {
         'web.assets_frontend': [
-            'army_results_manager/static/src/css/login.css',
+            # 'army_results_manager/static/src/css/login.css',
         ],
         "web.assets_backend": [
-            "army_results_manager/static/src/components/**/*.scss",
             "army_results_manager/static/lib/chart/chart.umd.min.js",
             "army_results_manager/static/src/components/**/*.xml",
             "army_results_manager/static/src/components/**/*.js",
             "army_results_manager/static/src/xml/*.xml",
             "army_results_manager/static/src/js/*.js",
-            "army_results_manager/static/src/css/*.css",
+            # "army_results_manager/static/src/css/*.css",
         ],
     },
 

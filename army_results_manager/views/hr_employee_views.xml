@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <record id="hr.hr_employee_print_badge" model="ir.actions.report">
+        <field name="groups_id" eval="[(6, 0, [ref('base.group_no_one')])]"/>
+    </record>
+
     <record id="view_employee_tree_inherit" model="ir.ui.view">
         <field name="name">hr.employee.tree</field>
         <field name="model">hr.employee</field>
@@ -41,7 +45,7 @@
                 <attribute name="invisible">1</attribute>
             </field>
             <field name="name" position="after">
-                <field name="role" invisible="context.get('menu', False)"/>
+                <field name="role"/>
                 <field name="job_id" string="Chức vụ"/>
             </field>
             <field name="work_email" position="attributes">
@@ -51,7 +55,7 @@
                 <field name="mobile_phone" string="SĐT"/>
             </field>
             <field name="department_id" position="replace">
-                <field name="department_id" string="Đơn vị công tác" invisible="context.get('menu', False)"/>
+                <field name="department_id" string="Đơn vị công tác"/>
             </field>
         </field>
     </record>
@@ -152,14 +156,6 @@
                         </tree>
                     </field>
                 </page>
-                <page string="Nhận xét" attrs="{'invisible': [('role','!=','student')]}">
-                    <field name="day_ids">
-                        <tree editable="bottom">
-                            <field name="day"/>
-                            <field name="comment_ids" widget="many2many_tags"/>
-                        </tree>
-                    </field>
-                </page>
             </xpath>
 
             <xpath expr="//form/sheet/notebook/page[@name='personal_information']" position="attributes">
@@ -200,5 +196,8 @@
         </field>
     </record>
 
+    <record id="hr.action_hr_employee_create_user" model="ir.actions.server">
+        <field name="groups_id" eval="[(6, 0, [ref('base.group_no_one')])]"/>
+    </record>
 
 </odoo>
