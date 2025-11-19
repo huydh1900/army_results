@@ -263,6 +263,7 @@
         <menuitem id="menu_training_result"
                   name="Kết quả huấn luyện"
                   parent="menu_military_root"
+                  groups="army_results_manager.group_admin"
                   sequence="6"/>
 
         <menuitem id="menu_setting"
@@ -355,7 +356,7 @@
                   name="Trợ giúp"
                   parent="menu_military_root"
                   action="action_view_support_contact"
-                  groups="army_results_manager.group_training_commander_assistant"
+                  groups="army_results_manager.group_admin,army_results_manager.group_training_commander_assistant"
                   sequence="8"/>
 
         <menuitem id="menu_data_source"

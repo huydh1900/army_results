@@ -1,5 +1,4 @@
-from datetime import date
-
+from odoo.exceptions import UserError
 from odoo import models, fields, api
 
 
@@ -52,6 +51,8 @@ class TrainingDay(models.Model):
     )
     reason_modify = fields.Text(string='Lý do chỉnh sửa')
     approver_id = fields.Many2one(related='plan_id.approver_id', store=True)
+    attachment_id = fields.Many2one('ir.attachment', string="Tài liệu PDF", domain=[('mimetype', '=', 'application/pdf')],required=True, ondelete='cascade')
+    datas = fields.Binary(related='attachment_id.datas', readonly=False)
 
     def action_open_modify_wizard(self):
         return {
@@ -62,6 +63,33 @@ class TrainingDay(models.Model):
             "target": "new",
             "context": {"active_id": self.id},
         }
+
+    @api.model
+    def action_sign_report(self, domain):
+        records = self.search(domain)
+        print(records)
+        # if records:
+        #     pdf = records[0].attachment_ids[0]
+        #     print(pdf.id)
+        #
+        # #  Tìm template gắn với attachment
+        #     template = self.env['sign.template'].search([
+        #         ('attachment_id', '=', pdf.id + 1)
+        #     ], limit=1)
+        #
+        #     if not template:
+        #         raise UserError("Template ký chưa được tạo. Hãy bấm 'Tạo mẫu ký' trước!")
+        #
+        #     request = self.env['sign.send.request'].create({
+        #         'template_id': template.id,
+        #         'filename': template.attachment_id.name,
+        #         'subject': f"Ký báo cáo {self.display_name}",
+        #         'signer_id': self.approver_id.id,
+        #     })
+        #
+        #     return request.sign_directly()
+
+
 
     @api.model
     def action_approve_by_domain(self, domain):
