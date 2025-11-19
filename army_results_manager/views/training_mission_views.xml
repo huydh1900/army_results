@@ -56,7 +56,7 @@
                             <field name="total_hours"/>
                             <field name="training_officer_ids_domain" invisible="1"/>
                             <field name="training_officer_ids" widget="many2many_tags"
-                                   domain="[('id', 'in', training_officer_ids_domain)]"/>
+                                   domain="[('id', 'in', training_officer_ids_domain)]" options="{'no_create':True}"/>
                             <field name="student_ids" widget="many2many_tags" readonly="1"/>
                         </group>
                     </group>

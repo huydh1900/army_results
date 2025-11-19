@@ -40,6 +40,7 @@ class TrainingCourse(models.Model):
         'training_course_officer_rel',
         'course_id',
         'employee_id',
+        required=True,
         string='Cán bộ phụ trách huấn luyện',
         domain="[('role', '=', 'training_officer')]")
 
