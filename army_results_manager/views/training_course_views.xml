@@ -14,7 +14,7 @@
         <field name="name">training.course.form</field>
         <field name="model">training.course</field>
         <field name="arch" type="xml">
-            <form string="Kế hoạch huấn luyện">
+            <form string="Kế hoạch huấn luyện" edit="0">
                 <div class="oe_button_box" name="button_box">
                     <button name="action_open_students"
                             type="object"

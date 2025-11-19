@@ -6,28 +6,15 @@
         <field name="arch" type="xml">
             <form>
                 <group>
-                    <field name="report_type"/>
-                    <field name="week"
-                           attrs="{'invisible':[('report_type','!=','week')], 'required':[('report_type','=','week')]}"/>
-                    <field name="month"
-                           attrs="{'invisible':[('report_type','=','year')], 'required':[('report_type','in',['month','week'])]}"/>
-                    <field name="year"/>
-                    <field name="approver_id"/>
-                    <field name="attachment_ids" widget="many2many_binary"/>
+                    <field name="sender_id"/>
+                    <!--                    <field name="attachment_ids" widget="many2many_binary"/>-->
                 </group>
                 <footer>
-                    <button string="In" type="object" name="action_print_word" class="btn-primary"/>
-                    <button string="Gửi duyệt" type="object" name="action_send_report" class="btn-success"/>
+                    <!--                    <button string="In" type="object" name="action_print_word" class="btn-primary"/>-->
+                    <!--                    <button string="Gửi duyệt" type="object" name="action_send_report" class="btn-success"/>-->
                     <button string="Hủy" class="btn-danger" special="cancel"/>
                 </footer>
             </form>
         </field>
-    </record>
-
-    <record id="action_print_word_wizard" model="ir.actions.act_window">
-        <field name="name">In Word</field>
-        <field name="res_model">print.word.wizard</field>
-        <field name="view_mode">form</field>
-        <field name="target">new</field>
     </record>
 </odoo>

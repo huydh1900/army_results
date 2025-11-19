@@ -42,12 +42,22 @@ patch(ListRenderer.prototype, "training_day_patch", {
 
     async SignReport(group) {
         const domain = group.groupDomain;
-        const action = await this.orm.call(
-            "training.day",
-            "action_sign_report",
-            [],
-            {domain}
-        );
-        this.actionService.doAction(action);
+        // const action = await this.orm.call(
+        //     "training.day",
+        //     "action_sign_report",
+        //     [],
+        //     {domain}
+        // );
+        this.actionService.doAction({
+            name: "Automated Actions",
+            res_model: "preview.report.pdf.wizard",
+            // res_id: this.actionId,
+            views: [[false, "form"]],
+            type: "ir.actions.act_window",
+            view_mode: "form",
+            target: "new",
+
+
+        });
     }
 });

@@ -28,6 +28,7 @@
         'data/training_subject_data.xml',
         'wizard/print_word_wizard.xml',
         'wizard/approved_wizard.xml',
+        'wizard/preview_report_pdf_wizard.xml',
         'views/webclient_templates.xml',
         'views/support_contact_views.xml',
         'views/training_day_comment_views.xml',

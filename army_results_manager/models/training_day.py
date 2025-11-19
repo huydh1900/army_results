@@ -65,9 +65,28 @@ class TrainingDay(models.Model):
         }
 
     @api.model
-    def action_sign_report(self, domain):
-        records = self.search(domain)
-        print(records)
+    def action_sign_report(self):
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Nhập lý do chỉnh sửa",
+            "res_model": "preview.report.pdf.wizard",
+            "view_mode": "form",
+            "target": "new",
+        }
+
+    # @api.model
+    # def action_sign_report(self, domain):
+    #     records = self.search(domain)
+    #     print(records)
+    #     return {
+    #         "type": "ir.actions.act_window",
+    #         "name": "Nhập lý do chỉnh sửa",
+    #         "res_model": "preview.report.pdf.wizard",
+    #         "view_mode": "form",
+    #         # "target": "current",
+    #         # "context": {"active_id": self.id},
+    #     }
+
         # if records:
         #     pdf = records[0].attachment_ids[0]
         #     print(pdf.id)
@@ -140,6 +159,9 @@ class TrainingDay(models.Model):
             # Nếu tất cả ngày đã duyệt → cập nhật plan
             if len(all_days) == len(approved_days):
                 plan.sudo().write({'state': 'approved'})
+                plan.course_ids.sudo().write({'state': 'approved'})
+
+
 
     @api.depends('month', 'week', 'mission_line_id', 'day')
     def _compute_name(self):

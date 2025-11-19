@@ -5,3 +5,5 @@ from odoo.exceptions import UserError
 class PreviewReportPdfWizard(models.TransientModel):
     _name = "preview.report.pdf.wizard"
     _description = "Preview report PDF Wizard"
+
+    sender_id = fields.Many2one('hr.employee', string="Người gửi")
