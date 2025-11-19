@@ -51,7 +51,7 @@ class TrainingDay(models.Model):
     )
     reason_modify = fields.Text(string='Lý do chỉnh sửa')
     approver_id = fields.Many2one(related='plan_id.approver_id', store=True)
-    attachment_id = fields.Many2one('ir.attachment', string="Tài liệu PDF", domain=[('mimetype', '=', 'application/pdf')],required=True, ondelete='cascade')
+    attachment_id = fields.Many2one('ir.attachment', string="Tài liệu PDF", domain=[('mimetype', '=', 'application/pdf')], ondelete='cascade')
     datas = fields.Binary(related='attachment_id.datas', readonly=False)
 
     def action_open_modify_wizard(self):
