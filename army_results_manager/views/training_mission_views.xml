@@ -34,7 +34,7 @@
                             groups="army_results_manager.group_admin,army_results_manager.group_training_commander_assistant"/>
 
                     <button name="action_cancel" type="object"
-                            string="Hủy" states="draft,in_progress" class="btn-secondary"
+                            string="Hủy" states="draft,in_progress" class="btn-danger"
                             groups="army_results_manager.group_admin,army_results_manager.group_training_commander_assistant"/>
 
                     <button name="action_reset_draft" type="object"
@@ -48,7 +48,7 @@
                             <field name="name"/>
                             <field name="subject_id" options="{'not_delete': True}"/>
                             <field name="description"/>
-                            <field name="create_uid" string="Người tạo" readonly="1"/>
+                            <field name="create_uid" string="Người tạo" readonly="1" options="{'no_open':True}"/>
                             <field name="create_date" widget="date" string="Ngày tạo" readonly="1"/>
                             <field name="exclude_main_training"/>
                         </group>

@@ -37,6 +37,7 @@
                             type="object"
                             states="posted,to_modify"
                             groups="army_results_manager.group_data_entry_officer,army_results_manager.group_admin"
+                            confirm="Bạn có chắc muốn Hủy kế hoạch này?"
                             class="btn-danger"/>
                 </header>
 
@@ -65,13 +66,14 @@
                             <field name="type" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                             <field name="location_id" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                             <field name="description" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
-                            <field name="training_content" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
+                            <field name="training_content"
+                                   attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                         </group>
                         <group>
                             <field name="start_date" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                             <field name="end_date" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                             <field name="year" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
-                            <field name="approver_id" attrs="{'readonly': [('state', '=', 'approved')]}"
+                            <field name="approver_id" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"
                                    options='{"no_create": True, "no_open": True}'/>
                             <field name="total_hours"/>
                             <field name="participants_ids" widget="many2many_tags"

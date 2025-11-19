@@ -21,6 +21,7 @@ access_training_course,access_training_course,model_training_course,base.group_u
 access_training_subject,access_training_subject,model_training_subject,base.group_user,1,1,1,1
 access_print_word_wizard,access_print_word_wizard,model_print_word_wizard,,1,1,1,1
 access_approved_wizard,access_approved_wizard,model_approved_wizard,,1,1,1,1
+access_preview_report_pdf_wizard,access_preview_report_pdf_wizard,model_preview_report_pdf_wizard,,1,1,1,1
 access_training_category,access_training_category,model_training_category,,1,1,1,1
 access_training_day,access_training_day,model_training_day,,1,1,1,1
 

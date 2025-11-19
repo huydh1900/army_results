@@ -280,7 +280,7 @@
         <menuitem id="menu_list_of_units"
                   name="Đơn vị"
                   parent="menu_unit_management_units"
-                  groups="army_results_manager.group_admin"
+                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer"
                   action="hr_department_kanban_action_inherit"/>
 
         <menuitem id="menu_commanding_officer"
