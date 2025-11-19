@@ -98,20 +98,20 @@ class TrainingDay(models.Model):
         if not records:
             return
 
-        records.write({'state': 'approved'})
+        records.sudo().write({'state': 'approved'})
 
         # Tạo nhận xét cho tất cả học viên theo ngày
         comment_vals = []
         for rec in records:
             for student in rec.student_ids:
                 # 1. Lấy hoặc tạo TrainingResult cho học viên trong khóa đó
-                result = self.env['training.result'].search([
+                result = self.sudo().env['training.result'].search([
                     ('employee_id', '=', student.id),
                     ('training_course_id', '=', rec.mission_line_id.mission_id.course_id.id)
                 ], limit=1)
 
                 if not result:
-                    result = self.env['training.result'].create({
+                    result = self.sudo().env['training.result'].create({
                         'employee_id': student.id,
                         'training_course_id': rec.mission_line_id.mission_id.course_id.id,
                     })
@@ -126,7 +126,7 @@ class TrainingDay(models.Model):
                 })
 
         if comment_vals:
-            self.env['training.day.comment'].create(comment_vals)
+            self.sudo().env['training.day.comment'].create(comment_vals)
 
         # Lấy tất cả plan_id liên quan
         plan_ids = records.mapped('plan_id').filtered(lambda p: p)
@@ -139,7 +139,7 @@ class TrainingDay(models.Model):
 
             # Nếu tất cả ngày đã duyệt → cập nhật plan
             if len(all_days) == len(approved_days):
-                plan.write({'state': 'approved'})
+                plan.sudo().write({'state': 'approved'})
 
     @api.depends('month', 'week', 'mission_line_id', 'day')
     def _compute_name(self):
