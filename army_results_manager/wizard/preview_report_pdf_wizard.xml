@@ -7,7 +7,7 @@
             <form>
                 <group>
                     <field name="sender_id"/>
-                    <!--                    <field name="attachment_ids" widget="many2many_binary"/>-->
+                    <field name="attachment_ids" widget="many2many_binary"/>
                 </group>
                 <footer>
                     <!--                    <button string="In" type="object" name="action_print_word" class="btn-primary"/>-->

@@ -51,8 +51,13 @@ class TrainingDay(models.Model):
     )
     reason_modify = fields.Text(string='Lý do chỉnh sửa')
     approver_id = fields.Many2one(related='plan_id.approver_id', store=True)
-    attachment_id = fields.Many2one('ir.attachment', string="Tài liệu PDF", domain=[('mimetype', '=', 'application/pdf')], ondelete='cascade')
-    datas = fields.Binary(related='attachment_id.datas', readonly=False)
+    attachment_ids = fields.Many2many(
+        'ir.attachment',
+        string='Tài liệu PDF',
+        domain=[('mimetype', '=', 'application/pdf')]
+    )
+
+    # datas = fields.Binary(related='attachment_id.datas', readonly=False)
 
     def action_open_modify_wizard(self):
         return {
@@ -74,41 +79,27 @@ class TrainingDay(models.Model):
             "target": "new",
         }
 
-    # @api.model
-    # def action_sign_report(self, domain):
-    #     records = self.search(domain)
-    #     print(records)
-    #     return {
-    #         "type": "ir.actions.act_window",
-    #         "name": "Nhập lý do chỉnh sửa",
-    #         "res_model": "preview.report.pdf.wizard",
-    #         "view_mode": "form",
-    #         # "target": "current",
-    #         # "context": {"active_id": self.id},
-    #     }
+    @api.model
+    def action_sign_report(self, domain):
+        records = self.search(domain)
+        print(records)
 
-        # if records:
-        #     pdf = records[0].attachment_ids[0]
-        #     print(pdf.id)
-        #
-        # #  Tìm template gắn với attachment
-        #     template = self.env['sign.template'].search([
-        #         ('attachment_id', '=', pdf.id + 1)
-        #     ], limit=1)
-        #
-        #     if not template:
-        #         raise UserError("Template ký chưa được tạo. Hãy bấm 'Tạo mẫu ký' trước!")
-        #
-        #     request = self.env['sign.send.request'].create({
-        #         'template_id': template.id,
-        #         'filename': template.attachment_id.name,
-        #         'subject': f"Ký báo cáo {self.display_name}",
-        #         'signer_id': self.approver_id.id,
-        #     })
-        #
-        #     return request.sign_directly()
-
-
+        if records:
+            pdf = records[0].attachment_ids[0]
+            print(pdf.id)
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Tài liệu PDF",
+            "res_model": "preview.report.pdf.wizard",
+            "views": [[False, "form"]],
+            "view_mode": "form",
+            "target": "new",
+            "context": {
+                "default_attachment_ids": pdf.ids,
+                # nếu muốn truyền cả active_id
+                "active_id": records[0].id,
+            },
+        }
 
     @api.model
     def action_approve_by_domain(self, domain):
@@ -160,8 +151,6 @@ class TrainingDay(models.Model):
             if len(all_days) == len(approved_days):
                 plan.sudo().write({'state': 'approved'})
                 plan.course_ids.sudo().write({'state': 'approved'})
-
-
 
     @api.depends('month', 'week', 'mission_line_id', 'day')
     def _compute_name(self):

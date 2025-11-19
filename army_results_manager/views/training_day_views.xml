@@ -77,7 +77,7 @@
         <field name="name">training.day.tree.report</field>
         <field name="model">training.day</field>
         <field name="arch" type="xml">
-            <tree string="Báo cáo" create="0" export_xlsx="0" default_order="month,week,day">
+            <tree string="Báo cáo" create="0" export_xlsx="0" delete="0" default_order="month,week,day">
                 <field name="day"/>
                 <field name="total_hours"/>
                 <field name="state" widget="badge"
@@ -92,11 +92,11 @@
         <field name="name">training.day.in.plan.tree</field>
         <field name="model">training.day</field>
         <field name="arch" type="xml">
-            <tree string="Báo cáo" create="0" export_xlsx="0" default_order="month,week,day">
+            <tree create="0" export_xlsx="0" delete="0" default_order="month,week,day">
                 <field name="day"/>
                 <field name="lesson_name"/>
                 <field name="total_hours"/>
-                <field name="attachment_id"/>
+                <field name="attachment_ids"/>
                 <field name="state" widget="badge"
                        decoration-muted="state == 'draft'"
                        decoration-success="state == 'approved'"
