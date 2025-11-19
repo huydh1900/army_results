@@ -51,6 +51,7 @@
                             <field name="subject_code"/>
                             <field name="course_name"/>
                             <field name="total_hours"/>
+<!--                            <field name="datas" widget="pdf_viewer"/>-->
                         </group>
                     </group>
                     <notebook>
@@ -95,6 +96,7 @@
                 <field name="day"/>
                 <field name="lesson_name"/>
                 <field name="total_hours"/>
+                <field name="attachment_id"/>
                 <field name="state" widget="badge"
                        decoration-muted="state == 'draft'"
                        decoration-success="state == 'approved'"

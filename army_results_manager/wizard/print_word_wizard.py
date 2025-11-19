@@ -47,7 +47,36 @@ class PrintWordWizard(models.TransientModel):
         ('3', 'Tuần 3'), ('4', 'Tuần 4'), ('5', 'Tuần 5'),
     ], string="Tuần")
 
+    approver_id = fields.Many2one('hr.employee', string='Cán bộ phê duyệt',
+                                  domain=[('role', '=', 'commanding_officer')])
+    attachment_ids = fields.Many2many(
+        'ir.attachment',
+        string='Tài liệu PDF',
+        domain=[('mimetype', '=', 'application/pdf')]
+    )
+
     # ==================== Helper Functions ====================
+    @api.onchange('attachment_ids')
+    def _onchange_attachment_ids(self):
+        if len(self.attachment_ids) > 1:
+            raise UserError('Bạn chỉ có thể gửi 1 báo cáo!')
+
+    def action_send_report(self):
+        TrainingDay = self.env['training.day']
+
+        if not self.approver_id:
+            raise UserError('Bạn phải chọn người phê duyệt trước khi bấm Gửi duyệt!')
+        elif not self.attachment_ids:
+            raise UserError('File Pdf không được trống!')
+        domain = [
+            ('year', '=', self.year),
+            ('month_name', '=', f'Tháng {self.month}'),
+            ('week_name', '=', f'Tuần {self.week}'),
+        ]
+        records = TrainingDay.search(domain)
+        records.write({'attachment_ids': [(6, 0, self.attachment_ids.ids)]})
+
+
 
     @api.onchange('report_type')
     def _onchange_report_type(self):

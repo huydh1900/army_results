@@ -54,7 +54,7 @@
 
     "assets": {
         'web.assets_frontend': [
-            # 'army_results_manager/static/src/css/login.css',
+            'army_results_manager/static/src/css/login.css',
         ],
         "web.assets_backend": [
             "army_results_manager/static/lib/chart/chart.umd.min.js",
@@ -62,7 +62,7 @@
             "army_results_manager/static/src/components/**/*.js",
             "army_results_manager/static/src/xml/*.xml",
             "army_results_manager/static/src/js/*.js",
-            # "army_results_manager/static/src/css/*.css",
+            "army_results_manager/static/src/css/*.css",
         ],
     },
 
