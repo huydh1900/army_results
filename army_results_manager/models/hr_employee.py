@@ -1,6 +1,6 @@
 from odoo import api, fields, models, _
 from statistics import mean
-from numpy.lib.utils import safe_eval
+from odoo.tools.safe_eval import safe_eval
 
 
 class HrEmployeePrivate(models.Model):
