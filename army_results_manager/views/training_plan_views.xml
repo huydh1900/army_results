@@ -55,7 +55,7 @@
                                 type="object"
                                 class="oe_stat_button"
                                 icon="fa-calendar"
-                                attrs="{'invisible': [('state', '=', 'draft')]}"
+                                attrs="{'invisible': [('count_rec_training_day', '=', 0)]}"
                                 string="Chi tiết bài học">
                         </button>
                     </div>
@@ -76,6 +76,7 @@
                             <field name="approver_id" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"
                                    options='{"no_create": True, "no_open": True}'/>
                             <field name="total_hours"/>
+                            <field name="count_rec_training_day" invisible="1"/>
                             <field name="participants_ids" widget="many2many_tags"
                                    attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                             <field name="student_ids" widget="many2many_tags"

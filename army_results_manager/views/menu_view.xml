@@ -269,7 +269,7 @@
         <menuitem id="menu_setting"
                   name="Cấu hình"
                   parent="menu_military_root"
-                  groups="army_results_manager.group_admin"
+                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer"
                   sequence="7"/>
 
         <menuitem id="menu_unit_management_units"
@@ -324,53 +324,53 @@
         <menuitem id="menu_training_subject"
                   name="Môn học"
                   parent="menu_setting"
-                  groups="army_results_manager.group_admin"
+                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer"
                   action="action_training_subject"/>
 
         <menuitem id="menu_training_category"
                   name="Cấp bậc"
                   parent="menu_setting"
-                  groups="army_results_manager.group_admin"
+                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer"
                   action="action_training_category"/>
 
         <menuitem id="menu_training_location"
                   name="Vị trí huấn luyện"
                   parent="menu_setting"
-                  groups="army_results_manager.group_admin"
+                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer"
                   action="action_view_training_location"/>
 
         <menuitem id="menu_data_collect_root"
                   name="Thu thập dữ liệu"
                   parent="menu_military_root"
-                  groups="army_results_manager.group_admin"
+                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer"
                   sequence="6"/>
 
         <menuitem id="menu_report_root"
                   name="Báo cáo"
                   parent="menu_military_root"
                   action="action_view_report"
-                  groups="army_results_manager.group_admin"
+                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer"
                   sequence="7"/>
 
         <menuitem id="menu_support_contact"
                   name="Trợ giúp"
                   parent="menu_military_root"
                   action="action_view_support_contact"
-                  groups="army_results_manager.group_admin,army_results_manager.group_training_commander_assistant,army_results_manager.group_training_commander"
+                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer,army_results_manager.group_training_commander_assistant,army_results_manager.group_training_commander"
                   sequence="8"/>
 
         <menuitem id="menu_data_source"
                   name="Nguồn thu thập"
                   parent="menu_data_collect_root"
                   action="action_army_data_source"
-                  groups="army_results_manager.group_admin"
+                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer"
                   sequence="1"/>
 
         <menuitem id="menu_collected_data"
                   name="Dữ liệu thu thập"
                   parent="menu_data_collect_root"
                   action="action_army_collected_data"
-                  groups="army_results_manager.group_admin"
+                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer"
                   sequence="2"/>
 
     </data>

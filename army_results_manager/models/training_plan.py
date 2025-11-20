@@ -51,7 +51,14 @@ class TrainingPlan(models.Model):
         domain=[('is_common', '=', False)],
         string='Môn huấn luyện riêng'
     )
-    approver_id = fields.Many2one('hr.employee', string='Cán bộ phê duyệt', domain=[('role', '=', 'commanding_officer')])
+    approver_id = fields.Many2one('hr.employee', string='Cán bộ phê duyệt',
+                                  domain=[('role', '=', 'commanding_officer')])
+    count_rec_training_day = fields.Integer(compute='_compute_count_rec_training_day')
+
+    def _compute_count_rec_training_day(self):
+        TrainingDay = self.env['training.day']
+        for rec in self:
+            rec.count_rec_training_day = TrainingDay.search_count([('plan_id', '=', rec.id)])
 
     def action_open_training_day(self):
         self.ensure_one()
@@ -78,7 +85,17 @@ class TrainingPlan(models.Model):
             for rec in self:
                 if rec.state == 'approved':
                     raise UserError('Bạn không được phép xóa kế hoạch đã duyệt!')
-        return super().unlink()
+
+        plan_ids = self.ids
+
+        # Xoá training days trước khi gọi super()
+        training_days = self.env['training.day'].search([('plan_id', 'in', plan_ids)])
+        training_days.unlink()
+
+        # Xoá kế hoạch
+        res = super().unlink()
+
+        return res
 
     @api.model
     def cron_generate_daily_warning(self):
@@ -162,6 +179,11 @@ class TrainingPlan(models.Model):
             raise UserError('Bạn phải điền người phê duyệt trước khi bấm Gửi duyệt!')
         elif not self.student_ids:
             raise UserError('Bạn phải điền học viên trước khi bấm Gửi duyệt!')
+
+        count_training_day = self.env['training.day'].search([('plan_id', '=', self.id)])
+        if len(count_training_day) == 0:
+            raise UserError('Phải có ít nhất 1 bài học trong Kế hoạch!')
+
         self.write({'state': 'posted'})
         self.env['training.day'].search([
             ('plan_id', '=', self.id),

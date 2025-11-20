@@ -8,7 +8,7 @@ class TrainingResult(models.Model):
     _rec_name = "training_course_id"
 
     employee_id = fields.Many2one("hr.employee", string='Học viên', readonly=True)
-    training_course_id = fields.Many2one("training.course", string="Khóa huấn luyện", readonly=True)
+    training_course_id = fields.Many2one("training.course", string="Khóa huấn luyện", readonly=True, ondelete='cascade')
     year = fields.Char(related="training_course_id.year", readonly=True)
     day_comment_ids = fields.One2many('training.day.comment', 'result_id')
     score = fields.Char(string="Điểm số")

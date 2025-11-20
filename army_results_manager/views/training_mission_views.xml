@@ -46,7 +46,7 @@
                     <group>
                         <group>
                             <field name="name"/>
-                            <field name="subject_id" options="{'not_delete': True}"/>
+                            <field name="subject_id" options="{'no_create':True, 'no_open':True}"/>
                             <field name="description"/>
                             <field name="create_uid" string="Người tạo" readonly="1" options="{'no_open':True}"/>
                             <field name="create_date" widget="date" string="Ngày tạo" readonly="1"/>
