@@ -8,6 +8,17 @@ class PreviewReportPdfWizard(models.TransientModel):
     sender_id = fields.Many2one('hr.employee', string="Người gửi", readonly=True)
     attachment_ids = fields.Many2many(
         'ir.attachment',
+        'preview_report_pdf_wizard_attachment_rel',
+        'wizard_id', 'attachment_id',
         string='Tài liệu PDF',
-        domain=[('mimetype', '=', 'application/pdf')], readonly=True
+        domain=[('mimetype', '=', 'application/pdf')],
+        readonly=True,
+    )
+
+    attachment_ids_approved = fields.Many2many(
+        'ir.attachment',
+        'preview_report_pdf_wizard_attachment_approved_rel',  #
+        'wizard_id', 'attachment_id',
+        string='Tài liệu PDF (Đã ký)',
+        domain=[('mimetype', '=', 'application/pdf')],
     )

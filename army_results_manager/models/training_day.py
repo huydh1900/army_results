@@ -57,8 +57,6 @@ class TrainingDay(models.Model):
         domain=[('mimetype', '=', 'application/pdf')]
     )
 
-    # datas = fields.Binary(related='attachment_id.datas', readonly=False)
-
     def action_open_modify_wizard(self):
         return {
             "type": "ir.actions.act_window",
@@ -70,23 +68,11 @@ class TrainingDay(models.Model):
         }
 
     @api.model
-    def action_sign_report(self):
-        return {
-            "type": "ir.actions.act_window",
-            "name": "Nhập lý do chỉnh sửa",
-            "res_model": "preview.report.pdf.wizard",
-            "view_mode": "form",
-            "target": "new",
-        }
-
-    @api.model
     def action_sign_report(self, domain):
         records = self.search(domain)
-        print(records)
 
         if records:
-            pdf = records[0].attachment_ids[0]
-            print(pdf.id)
+            pdf = records[0].attachment_ids
         return {
             "type": "ir.actions.act_window",
             "name": "Tài liệu PDF",
@@ -96,8 +82,6 @@ class TrainingDay(models.Model):
             "target": "new",
             "context": {
                 "default_attachment_ids": pdf.ids,
-                # nếu muốn truyền cả active_id
-                "active_id": records[0].id,
             },
         }
 

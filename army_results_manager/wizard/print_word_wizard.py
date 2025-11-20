@@ -56,10 +56,6 @@ class PrintWordWizard(models.TransientModel):
     )
 
     # ==================== Helper Functions ====================
-    @api.onchange('attachment_ids')
-    def _onchange_attachment_ids(self):
-        if len(self.attachment_ids) > 1:
-            raise UserError('Bạn chỉ có thể gửi 1 báo cáo!')
 
     def action_send_report(self):
         TrainingDay = self.env['training.day']

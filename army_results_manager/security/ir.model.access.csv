@@ -26,6 +26,7 @@ access_training_category,access_training_category,model_training_category,,1,1,1
 
 
 access_training_day_admin,access_training_day_admin,model_training_day,group_admin,1,1,1,1
+access_training_day_commander,access_training_day_commander,model_training_day,group_training_commander,1,0,0,0
 access_training_day_officer,access_training_day_officer,model_training_day,group_data_entry_officer,1,1,1,1
 access_training_day_assistant,access_training_day_assistant,model_training_day,group_training_commander_assistant,1,0,0,0
 

@@ -191,7 +191,7 @@
                   name="Dashboard"
                   parent="menu_military_root"
                   action="action_dashboard"
-                  groups="army_results_manager.group_admin,army_results_manager.group_training_commander_assistant"
+                  groups="army_results_manager.group_admin,army_results_manager.group_training_commander_assistant,army_results_manager.group_training_commander"
                   sequence="1"/>
 
         <menuitem id="menu_unit_management"
@@ -356,7 +356,7 @@
                   name="Trợ giúp"
                   parent="menu_military_root"
                   action="action_view_support_contact"
-                  groups="army_results_manager.group_admin,army_results_manager.group_training_commander_assistant"
+                  groups="army_results_manager.group_admin,army_results_manager.group_training_commander_assistant,army_results_manager.group_training_commander"
                   sequence="8"/>
 
         <menuitem id="menu_data_source"
