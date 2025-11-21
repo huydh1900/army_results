@@ -2,7 +2,7 @@
 <odoo>
 
     <record id="hr.hr_employee_print_badge" model="ir.actions.report">
-        <field name="groups_id" eval="[(6, 0, [ref('base.group_no_one')])]"/>
+        <field name="binding_model_id" eval="False"/>
     </record>
 
     <record id="view_employee_tree_inherit" model="ir.ui.view">
@@ -179,6 +179,7 @@
 
             <xpath expr="//field[@name='job_title']" position="attributes">
                 <attribute name="string">Chức vụ</attribute>
+                <attribute name="placeholder">Chức vụ</attribute>
             </xpath>
 
             <xpath expr="//field[@name='work_email']" position="attributes">

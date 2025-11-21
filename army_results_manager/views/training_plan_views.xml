@@ -85,7 +85,7 @@
                     </group>
                     <notebook>
                         <page string="Huấn luyện chung">
-                            <field name="common_subject_ids" attrs="{'readonly': [('state', '=', 'approved')]}">
+                            <field name="common_subject_ids" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}">
                                 <tree editable="bottom" no_open="1">
                                     <field name="name"/>
                                     <field name="total_hours"/>
@@ -98,7 +98,7 @@
                             </field>
                         </page>
                         <page string="Huấn luyện riêng">
-                            <field name="specific_subject_ids" attrs="{'readonly': [('state', '=', 'approved')]}">
+                            <field name="specific_subject_ids" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}">
                                 <tree editable="bottom" no_open="1">
                                     <field name="name"/>
                                     <field name="total_hours"/>

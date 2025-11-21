@@ -104,7 +104,7 @@ class TrainingCourse(models.Model):
 
     def action_detail(self):
         self.ensure_one()
-        if self.plan_id.state == 'approved':
+        if self.plan_id.state in ['approved','posted']:
             context = {'edit': False}
         else:
             context = {'edit': True}
