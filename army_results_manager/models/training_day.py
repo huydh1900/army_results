@@ -116,6 +116,7 @@ class TrainingDay(models.Model):
                     'mission_name': rec.mission_name,
                     'lesson_name': rec.lesson_name,
                     'year': rec.year,
+                    'training_officer_ids': [(6, 0, rec.training_officer_ids.ids)],
                 })
 
         if comment_vals:
@@ -218,6 +219,15 @@ class TrainingDayComment(models.Model):
     strength = fields.Text(string='Điểm mạnh')
     weakness = fields.Text(string='Điểm yếu')
     video = fields.Binary(string="Video", attachment=True)
+    training_officer_ids = fields.Many2many(
+        'hr.employee',
+        'training_day_comment_rel',
+        'day_comment_id',
+        'employee_id',
+        string='Giảng viên',
+        related='day_id.training_officer_ids',
+        store=True
+    )
 
     @api.depends('strength', 'weakness')
     def _compute_comment(self):

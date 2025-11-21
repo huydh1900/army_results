@@ -114,7 +114,7 @@
             <field name="name">Kế hoạch chờ duyệt</field>
             <field name="res_model">training.day</field>
             <field name="view_mode">tree,form,gantt</field>
-            <field name="domain">[('state', 'in', ['posted', 'to_modify'])]</field>
+            <field name="domain">[('state', 'in', ['posted'])]</field>
             <field name="context">{'default_action': 'draft', 'group_by': ['year', 'month_name', 'week_name',
                 'weekday']}}
             </field>
@@ -197,7 +197,7 @@
         <menuitem id="menu_unit_management"
                   name="Quản lý Lực Lượng và Huấn luyện"
                   parent="menu_military_root"
-                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer,army_results_manager.group_training_commander"
+                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer,army_results_manager.group_training_commander,army_results_manager.group_training_commander_assistant"
                   sequence="2"/>
 
         <!--        Menu camera-->
@@ -292,13 +292,13 @@
         <menuitem id="menu_student"
                   name="Học viên"
                   parent="menu_unit_management_units"
-                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer,army_results_manager.group_training_commander_assistant"
+                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer"
                   action="action_student"/>
 
         <menuitem id="menu_training_course"
                   name="Khóa huấn luyện"
                   parent="menu_unit_management"
-                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer,army_results_manager.group_training_commander"
+                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer,army_results_manager.group_training_commander,army_results_manager.group_training_commander_assistant"
                   action="action_training_course"/>
 
         <menuitem id="menu_training_stage_result"

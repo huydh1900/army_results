@@ -64,7 +64,7 @@
         <field name="name">CBHL: Xem all</field>
         <field name="model_id" ref="army_results_manager.model_training_day_comment"/>
         <field name="groups"
-               eval="[(4, ref('army_results_manager.group_training_commander_assistant')), (4, ref('army_results_manager.group_admin'))]"/>
+               eval="[(4, ref('army_results_manager.group_admin'))]"/>
         <field name="domain_force">[(1, '=', 1)]</field>
     </record>
 

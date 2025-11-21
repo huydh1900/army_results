@@ -4,13 +4,14 @@
         <field name="model">training.day.comment</field>
         <field name="arch" type="xml">
             <tree editable="bottom" create="0" delete="0">
-                <field name="student_id" readonly="1"/>
+                <field name="student_id" readonly="1" options="{'no_open': True}"/>
                 <field name="score"/>
                 <field name="comment"/>
+                <field name="training_officer_ids" widget="many2many_tags"/>
                 <button name="action_open_comment"
                         string="Nhận xét"
                         type="object"
-                        groups="army_results_manager.group_training_commander_assistant"
+                        groups="army_results_manager.group_training_commander_assistant,army_results_manager.group_admin"
                         class="btn-primary"/>
             </tree>
         </field>
