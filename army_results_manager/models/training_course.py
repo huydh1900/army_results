@@ -44,6 +44,8 @@ class TrainingCourse(models.Model):
         string='Cán bộ phụ trách huấn luyện',
         domain="[('role', '=', 'training_officer')]")
 
+    approver_id = fields.Many2one('hr.employee', related='plan_id.approver_id', store=True)
+
     @api.depends('is_common', 'plan_id.student_ids')
     def _compute_student_ids(self):
         for rec in self:

@@ -46,6 +46,7 @@
                         <field name="responsible_level_id" attrs="{'readonly': [('state', '=', 'approved')]}"/>
                         <field name="measure" attrs="{'readonly': [('state', '=', 'approved')]}"/>
                         <field name="total_hours" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                        <field name="approver_id" attrs="{'readonly': [('state', '=', 'approved')]}"/>
                     </group>
                 </group>
                 <notebook>

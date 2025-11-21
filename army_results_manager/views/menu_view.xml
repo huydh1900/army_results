@@ -100,8 +100,8 @@
         <record id="action_open_students_safe" model="ir.actions.server">
             <field name="name">Học viên</field>
             <field name="model_id" ref="hr.model_hr_employee"/>
-            <field name="state">code</field>
-            <field name="code">action = model.get_action_student()</field>
+            <!--            <field name="state">code</field>-->
+            <!--            <field name="code">action = model.get_action_student()</field>-->
         </record>
 
         <record id="action_training_plan_draft" model="ir.actions.act_window">
@@ -225,32 +225,32 @@
                   parent="menu_military_root"
                   sequence="4"/>
 
-            <menuitem id="menu_training_plan_draft"
-                      name="Xây dựng kế hoạch"
-                      parent="menu_training_plan"
-                      action="action_training_plan_draft"
-                      groups="army_results_manager.group_admin,army_results_manager.group_training_commander_assistant,army_results_manager.group_data_entry_officer"
-                      sequence="1"/>
+        <menuitem id="menu_training_plan_draft"
+                  name="Xây dựng kế hoạch"
+                  parent="menu_training_plan"
+                  action="action_training_plan_draft"
+                  groups="army_results_manager.group_admin,army_results_manager.group_training_commander_assistant,army_results_manager.group_data_entry_officer"
+                  sequence="1"/>
 
-            <menuitem id="menu_training_plan_approve"
-                      name="Phê duyệt kế hoạch"
-                      parent="menu_training_plan"
-                      groups="army_results_manager.group_admin,army_results_manager.group_training_commander"
-                      sequence="2"/>
+        <menuitem id="menu_training_plan_approve"
+                  name="Phê duyệt kế hoạch"
+                  parent="menu_training_plan"
+                  groups="army_results_manager.group_admin,army_results_manager.group_training_commander"
+                  sequence="2"/>
 
-                <menuitem id="menu_training_plan_posted"
-                          name="Kế hoạch chờ duyệt"
-                          parent="menu_training_plan_approve"
-                          action="action_training_day_posted"
-                          groups="army_results_manager.group_admin,army_results_manager.group_training_commander"
-                          sequence="1"/>
+        <menuitem id="menu_training_plan_posted"
+                  name="Kế hoạch chờ duyệt"
+                  parent="menu_training_plan_approve"
+                  action="action_training_day_posted"
+                  groups="army_results_manager.group_admin,army_results_manager.group_training_commander"
+                  sequence="1"/>
 
-                <menuitem id="menu_training_plan_approved"
-                          name="Kế hoạch đã duyệt"
-                          parent="menu_training_plan_approve"
-                          action="action_training_day_approved"
-                          groups="army_results_manager.group_training_commander,army_results_manager.group_admin"
-                          sequence="2"/>
+        <menuitem id="menu_training_plan_approved"
+                  name="Kế hoạch đã duyệt"
+                  parent="menu_training_plan_approve"
+                  action="action_training_day_approved"
+                  groups="army_results_manager.group_training_commander,army_results_manager.group_admin"
+                  sequence="2"/>
 
         <!--        -->
         <menuitem id="menu_training_mission"
@@ -266,12 +266,6 @@
                   groups="army_results_manager.group_admin,army_results_manager.group_training_commander_assistant,army_results_manager.group_training_student"
                   sequence="6"/>
 
-        <menuitem id="menu_setting"
-                  name="Cấu hình"
-                  parent="menu_military_root"
-                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer"
-                  sequence="7"/>
-
         <menuitem id="menu_unit_management_units"
                   name="Lực Lượng"
                   groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer,army_results_manager.group_training_commander_assistant"
@@ -286,20 +280,20 @@
         <menuitem id="menu_commanding_officer"
                   name="Cán bộ chỉ huy"
                   parent="menu_unit_management_units"
-                  groups="army_results_manager.group_admin"
+                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer"
                   action="action_commanding_officer"/>
 
         <menuitem id="menu_training_officer"
                   name="Cán bộ phụ trách huấn luyện"
                   parent="menu_unit_management_units"
-                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer,army_results_manager.group_training_commander"
+                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer"
                   action="action_training_officer"/>
 
         <menuitem id="menu_student"
                   name="Học viên"
                   parent="menu_unit_management_units"
                   groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer,army_results_manager.group_training_commander_assistant"
-                  action="action_open_students_safe"/>
+                  action="action_student"/>
 
         <menuitem id="menu_training_course"
                   name="Khóa huấn luyện"
@@ -320,6 +314,12 @@
                   groups="army_results_manager.group_admin,army_results_manager.group_training_commander_assistant,army_results_manager.group_training_student"
                   action="action_training_mission_result"
                   sequence="2"/>
+
+        <menuitem id="menu_setting"
+                  name="Cấu hình"
+                  parent="menu_military_root"
+                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer"
+                  sequence="9"/>
 
         <menuitem id="menu_training_subject"
                   name="Môn học"

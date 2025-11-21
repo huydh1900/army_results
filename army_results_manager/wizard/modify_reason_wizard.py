@@ -17,7 +17,7 @@ class ModifyReasonWizard(models.TransientModel):
         if not self.reason:
             raise UserError("Bạn phải nhập lý do chỉnh sửa trước khi xác nhận.")
         active_id = self.env.context.get("active_id")
-        record = self.env["training.day"].browse(active_id)
+        record = self.sudo().env["training.day"].browse(active_id)
 
         record.write({
             'state': 'to_modify',
@@ -35,7 +35,7 @@ class ModifyReasonWizard(models.TransientModel):
             else:
                 updated_note = new_note
 
-            plan.write({
+            plan.sudo().write({
                 'state': 'to_modify',
                 'reason_modify': updated_note,
             })
