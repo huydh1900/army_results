@@ -1,100 +1,153 @@
 from odoo import models, fields, api
 import threading
-import cv2
-import time
+import subprocess
+import logging
 
-buffer_dict = {}  # lưu MJPEG frame cho từng camera
+_logger = logging.getLogger(__name__)
+
+# Dictionary global để kiểm soát thread
+_active_streams = {}
 
 
 class CameraDevice(models.Model):
     _name = "camera.device"
     _rec_name = "name"
-    _description = "Thiết bị Camera"
 
-    name = fields.Char("Tên camera", required=True)
-    ip_address = fields.Char("IP camera", required=True)
-    username = fields.Char("Tên đăng nhập", default="admin")
-    password = fields.Char("Mật khẩu", default="")
-    mjpeg_port = fields.Integer(default=5000)
+    name = fields.Char("Tên Camera")
+    ip_address = fields.Char("IP Camera")
+    username = fields.Char("User", default="admin")
+    password = fields.Char("Password", default="")
+    port = fields.Char("Port")
+    is_streaming = fields.Boolean("Đang Stream", default=False)
+
+    buffer_dict = {}  # Lưu frame MJPEG
+
     mjpeg_url = fields.Char(compute="_compute_mjpeg_url")
-    buffer_dict = {}
-    # location_id = fields.Char()
 
-    thread_active = fields.Boolean(default=False)
-
-    @api.depends('mjpeg_port')
     def _compute_mjpeg_url(self):
         for rec in self:
-            rec.mjpeg_url = f"http://127.0.0.1:{rec.mjpeg_port}/mjpeg/{rec.id}"
+            rec.mjpeg_url = f"/mjpeg/{rec.id}"
 
     def start_stream(self):
-        for rec in self:
-            if rec.thread_active:
-                continue
-            rec.thread_active = True
+        self.ensure_one()
+        _logger.info(f"[Camera {self.id}] Bắt đầu stream...")
 
-            # Lấy dữ liệu cần thiết ra ngoài recordset (thread-safe)
-            camera_data = {
-                'id': rec.id,
-                'ip_address': rec.ip_address,
-                'username': rec.username,
-                'password': rec.password,
+        if self.id in _active_streams:
+            _logger.warning(f"[Camera {self.id}] Stream đã chạy rồi!")
+            return {
+                "type": "ir.actions.act_url",
+                "url": self.mjpeg_url,
+                "target": "new",
             }
 
-            # Tạo thread cho camera
-            t = threading.Thread(target=self._stream_buffer_thread, args=(camera_data,))
-            t.daemon = True
-            t.start()
+        # Đánh dấu đang stream
+        self.write({"is_streaming": True})
+        _active_streams[self.id] = True
 
-    def _stream_buffer_thread(self, camera_data):
-        camera_id = camera_data['id']
-        rtsp_url = f"rtsp://{camera_data['username']}:{camera_data['password']}@{camera_data['ip_address']}/Streaming/Channels/101"
+        camera_data = {
+            "id": self.id,
+            "ip_address": self.ip_address,
+            "username": self.username,
+            "password": self.password,
+        }
 
-        cap = cv2.VideoCapture(rtsp_url)
-        if not cap.isOpened():
-            # Không kết nối được camera
-            return
+        t = threading.Thread(target=self._stream_worker, args=(camera_data,), daemon=True)
+        t.start()
 
-        while True:
-            # Kiểm tra thread_active trong database mỗi vòng lặp
-            try:
-                rec_active = self.env['camera.device'].browse(camera_id).thread_active
-            except Exception:
-                # Nếu db closed, dừng thread
-                break
-
-            if not rec_active:
-                break
-
-            ret, frame = cap.read()
-            if ret:
-                ret2, jpeg = cv2.imencode('.jpg', frame)
-                if ret2:
-                    buffer_dict[camera_id] = jpeg.tobytes()
-
-            # Giới hạn tốc độ vòng lặp, tránh quá tải CPU
-            time.sleep(0.05)  # ~20 FPS
-
-        cap.release()
-        # Dọn sạch buffer khi dừng
-        if camera_id in buffer_dict:
-            del buffer_dict[camera_id]
-
-
+        return {
+            "type": "ir.actions.act_url",
+            "url": self.mjpeg_url,
+            "target": "new",
+        }
 
     def stop_stream(self):
-        for rec in self:
-            rec.thread_active = False
-            if rec.id in buffer_dict:
-                del buffer_dict[rec.id]
+        self.ensure_one()
+        _logger.info(f"[Camera {self.id}] Dừng stream...")
+        _active_streams.pop(self.id, None)
+        self.write({"is_streaming": False})
+        CameraDevice.buffer_dict.pop(self.id, None)
 
-    def _stream_buffer(self, rec):
-        rtsp_url = f"rtsp://{rec.username}:{rec.password}@{rec.ip_address}/Streaming/Channels/101"
-        cap = cv2.VideoCapture(rtsp_url)
-        while rec.thread_active:
-            ret, frame = cap.read()
-            if ret:
-                ret2, jpeg = cv2.imencode('.jpg', frame)
-                if ret2:
-                    buffer_dict[rec.id] = jpeg.tobytes()
-        cap.release()
+    @staticmethod
+    def _stream_worker(cam):
+        """Worker thread đọc RTSP và ghi vào buffer"""
+        cam_id = cam["id"]
+        rtsp_url = (
+            f"rtsp://{cam['username']}:{cam['password']}@"
+            f"{cam['ip_address']}/Streaming/Channels/101"
+        )
+
+        _logger.info(f"[Camera {cam_id}] Kết nối RTSP: {rtsp_url}")
+
+        cmd = [
+            r"C:\Users\Administrator\Downloads\ffmpeg-8.0.1-essentials_build\bin\ffmpeg.exe",
+            "-rtsp_transport", "tcp",
+            "-i", rtsp_url,
+            "-q:v", "5",
+            "-r", "10",  # 10 FPS
+            "-vf", "scale=640:360",
+            "-f", "mjpeg",
+            "-"
+        ]
+
+        try:
+            proc = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                bufsize=10 ** 8
+            )
+            _logger.info(f"[Camera {cam_id}] FFmpeg PID: {proc.pid}")
+        except Exception as e:
+            _logger.error(f"[Camera {cam_id}] Không khởi động được FFmpeg: {e}")
+            return
+
+        # Đọc MJPEG frames
+        try:
+            while cam_id in _active_streams:
+                # Đọc đến khi thấy JPEG marker
+                frame = CameraDevice._read_mjpeg_frame(proc.stdout)
+
+                if frame:
+                    CameraDevice.buffer_dict[cam_id] = frame
+                    _logger.debug(f"[Camera {cam_id}] Frame mới: {len(frame)} bytes")
+                else:
+                    _logger.warning(f"[Camera {cam_id}] Frame rỗng")
+
+                # Kiểm tra FFmpeg còn sống không
+                if proc.poll() is not None:
+                    stderr = proc.stderr.read().decode(errors="ignore")
+                    _logger.error(f"[Camera {cam_id}] FFmpeg crash:\n{stderr}")
+                    break
+
+        except Exception as e:
+            _logger.error(f"[Camera {cam_id}] Lỗi đọc stream: {e}")
+        finally:
+            proc.terminate()
+            proc.wait()
+            _active_streams.pop(cam_id, None)
+            CameraDevice.buffer_dict.pop(cam_id, None)
+            _logger.info(f"[Camera {cam_id}] Stream đã dừng")
+
+    @staticmethod
+    def _read_mjpeg_frame(stream):
+        """Đọc 1 JPEG frame hoàn chỉnh từ MJPEG stream"""
+        SOI = b'\xff\xd8'  # Start of Image
+        EOI = b'\xff\xd9'  # End of Image
+
+        # Tìm SOI
+        chunk = stream.read(2)
+        while chunk and chunk != SOI:
+            chunk = chunk[1:] + stream.read(1)
+
+        if not chunk:
+            return None
+
+        # Đọc đến EOI
+        frame = SOI
+        while True:
+            byte = stream.read(1)
+            if not byte:
+                return None
+            frame += byte
+            if frame[-2:] == EOI:
+                return frame

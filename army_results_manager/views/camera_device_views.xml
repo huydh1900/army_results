@@ -6,26 +6,36 @@
             <form string="Camera">
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <!--                        <button name="action_test_connect_camera"-->
-                        <!--                                type="object"-->
-                        <!--                                class="oe_stat_button"-->
-                        <!--                                string="Test connect">-->
-                        <!--                        </button>-->
-                        <button name="start_stream" type="object" class="btn-primary" string="Start Stream"/>
-                        <button name="stop_stream" type="object" class="btn-danger" string="Stop Stream"/>
+                        <button name="start_stream"
+                                string="Test camera"
+                                type="object"
+                                icon="fa-video-camera"/>
                     </div>
+
                     <group>
                         <field name="name"/>
-<!--                        <field name="location_id"/>-->
-<!--                        <field name="department_id"/>-->
                         <field name="ip_address"/>
                         <field name="username"/>
                         <field name="password"/>
                     </group>
+
+                    <notebook>
+                        <page string="Live Stream">
+                            <div style="text-align: center">
+                                <iframe height="720" width="1280"
+                                        class="o_video_dialog_iframe mw-100 mh-100 overflow-hidden"
+                                        allowfullscreen="allowfullscreen" frameborder="0"
+                                        style="width: 50%;margin-left: auto;margin-right: auto;"
+                                        src="http://localhost:8011/mjpeg/2"/>
+                            </div>
+                        </page>
+                    </notebook>
+
                 </sheet>
             </form>
         </field>
     </record>
+
 
     <record id="view_camera_device_tree" model="ir.ui.view">
         <field name="name">camera.device.tree</field>
@@ -33,8 +43,8 @@
         <field name="arch" type="xml">
             <tree string="Camera">
                 <field name="name"/>
-<!--                <field name="location_id"/>-->
-<!--                <button name="action_view_camera" type="object" title="Mở camera" icon="fa-video-camera"/>-->
+                <!--                <field name="location_id"/>-->
+                <!--                <button name="action_view_camera" type="object" title="Mở camera" icon="fa-video-camera"/>-->
             </tree>
         </field>
     </record>

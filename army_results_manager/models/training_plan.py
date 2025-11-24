@@ -125,9 +125,10 @@ class TrainingPlan(models.Model):
     @api.depends('location_id')
     def _compute_camera_count(self):
         for rec in self:
-            rec.camera_count = self.env['camera.device'].search_count([
-                ('location_id', '=', rec.location_id.id)
-            ])
+            # rec.camera_count = self.env['camera.device'].search_count([
+            #     ('location_id', '=', rec.location_id.id)
+            # ])
+            rec.camera_count = 0
 
     def action_open_camera(self):
         if self.camera_count == 0:
