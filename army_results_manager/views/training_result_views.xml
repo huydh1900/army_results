@@ -12,7 +12,7 @@
                 <button name="action_generate_note_by_ai"
                         type="object"
                         string="Nhận xét AI"
-                        groups="army_results_manager.group_training_commander_assistant"
+                        groups="army_results_manager.group_training_commander_assistant,army_results_manager.group_admin"
                         title="Tạo nhận xét bằng AI"/>
             </tree>
         </field>

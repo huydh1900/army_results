@@ -5,6 +5,12 @@
         <menuitem id="menu_military_root" name="Quản lý huấn luyện bộ đội"
                   web_icon="army_results_manager,static/src/img/icon.png"/>
 
+        <record id="action_camera_video" model="ir.actions.act_window">
+            <field name="name">Camera Videos</field>
+            <field name="res_model">camera.video</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
         <menuitem id="base.menu_administration"
                   groups="army_results_manager.group_data_entry_officer,base.group_no_one"
                   name="Cài đặt"
@@ -207,6 +213,11 @@
                   groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer"
                   sequence="3"/>
 
+        <menuitem id="menu_camera_video_root_2"
+                  name="Videos"
+                  parent="menu_camera_management"
+                  action="action_camera_video"
+                  groups="army_results_manager.group_admin"/>
         <menuitem id="menu_list_camera"
                   name="Danh mục Camera"
                   parent="menu_camera_management"

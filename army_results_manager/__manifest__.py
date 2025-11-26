@@ -13,7 +13,6 @@
     'author': "My Company",
     'website': "https://www.yourcompany.com",
 
-    'category': 'Uncategorized',
     'version': '0.1',
 
     'depends': ['auth_signup', 'web', 'base', 'hr', 'web_unsplash', 'web_widget_video'],
@@ -34,6 +33,7 @@
         'wizard/preview_report_pdf_wizard.xml',
         'views/webclient_templates.xml',
         'views/support_contact_views.xml',
+        'views/camera_video_views.xml',
         'views/training_day_comment_views.xml',
         'views/res_users_views.xml',
         'views/training_day_views.xml',
@@ -62,6 +62,7 @@
         ],
         "web.assets_backend": [
             "army_results_manager/static/lib/chart/chart.umd.min.js",
+            "army_results_manager/static/lib/vgcaplugin/vgcaplugin.js",
             "army_results_manager/static/src/components/**/*.xml",
             "army_results_manager/static/src/components/**/*.js",
             "army_results_manager/static/src/xml/*.xml",

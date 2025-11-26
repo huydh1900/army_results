@@ -4,38 +4,51 @@
         <field name="model">camera.device</field>
         <field name="arch" type="xml">
             <form string="Camera">
+                <header>
+                    <button name="start_stream" string="Xem" type="object"
+                            class="btn-primary"
+                            attrs="{'invisible': [('is_streaming', '=', True)]}"/>
+                    <button name="stop_stream" string="Dừng lại" type="object"
+                            class="btn-danger"
+                            attrs="{'invisible': [('is_streaming', '=', False)]}"/>
+
+                    <button name="start_recording" string="Bắt đầu ghi" type="object"
+                            class="btn-success"/>
+<!--                            attrs="{'invisible': [('is_recording', '=', True)]}"/>-->
+                    <button name="stop_recording" string="Dừng ghi" type="object"
+                            class="btn-danger"/>
+                    <button name="start_recording" string="Zoom" type="object"
+                            class="btn-success"/>
+<!--                            attrs="{'invisible': [('is_recording', '=', False)]}"/>-->
+                </header>
                 <sheet>
-                    <div class="oe_button_box" name="button_box">
-                        <button name="start_stream"
-                                string="Test camera"
-                                type="object"
-                                icon="fa-video-camera"/>
-                    </div>
-
                     <group>
-                        <field name="name"/>
-                        <field name="ip_address"/>
-                        <field name="username"/>
-                        <field name="password"/>
+                        <group>
+                            <field name="name"/>
+                            <field name="ip_address"/>
+                            <field name="username"/>
+                            <field name="password" password="True"/>
+                        </group>
+                        <group>
+                            <field name="is_streaming" readonly="1"/>
+<!--                            <field name="is_recording" readonly="1"/>-->
+                        </group>
                     </group>
-
                     <notebook>
-                        <page string="Live Stream">
+                        <page string=" ">
                             <div style="text-align: center">
                                 <iframe height="720" width="1280"
                                         class="o_video_dialog_iframe mw-100 mh-100 overflow-hidden"
                                         allowfullscreen="allowfullscreen" frameborder="0"
                                         style="width: 50%;margin-left: auto;margin-right: auto;"
-                                        src="http://localhost:8011/mjpeg/2"/>
+                                        src="http://localhost:8013/mjpeg/1"/>
                             </div>
                         </page>
                     </notebook>
-
                 </sheet>
             </form>
         </field>
     </record>
-
 
     <record id="view_camera_device_tree" model="ir.ui.view">
         <field name="name">camera.device.tree</field>

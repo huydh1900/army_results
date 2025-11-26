@@ -8,11 +8,10 @@
                 </button>
             </t>
 
-            <!--            <t t-if="this.props.context['default_action'] == 'draft'">-->
-            <!--                <button type="button" class="btn btn-primary" t-on-click="OnOpenApproved">-->
-            <!--                    Duyệt kế hoạch-->
-            <!--                </button>-->
-            <!--            </t>-->
+            <button type="button" class="btn btn-primary" t-on-click="signDocument">
+                Ký số
+            </button>
+
         </xpath>
     </t>
 </templates>

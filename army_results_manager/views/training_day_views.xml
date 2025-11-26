@@ -34,6 +34,8 @@
             <form string="Ngày huấn luyện">
                 <header>
                     <field name="state" widget="statusbar"/>
+<!--                    <button name="action_open_sign" string="Ký" type="object"-->
+<!--                            class="btn-primary"/>-->
                 </header>
                 <sheet>
                     <group>
@@ -51,7 +53,8 @@
                             <field name="subject_code"/>
                             <field name="course_name"/>
                             <field name="total_hours"/>
-<!--                            <field name="datas" widget="pdf_viewer"/>-->
+                            <field name="attachment_ids"/>
+<!--                            <field name="sign_template_id"/>-->
                         </group>
                     </group>
                     <notebook>
