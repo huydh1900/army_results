@@ -70,5 +70,35 @@
             </field>
         </record>
 
+        <record id="view_department_search_inherit" model="ir.ui.view">
+            <field name="name">hr.department.search.inherit</field>
+            <field name="model">hr.department</field>
+            <field name="inherit_id" ref="hr.view_department_filter"/>
+            <field name="arch" type="xml">
+                <!-- Thay thế search cũ bằng search mới -->
+                <search position="replace">
+                    <search string="Departments">
+                        <!-- Các field tìm kiếm -->
+                        <field name="name" string="Tên đơn vị"/>
+                        <field name="province_id" string="Địa điểm"/>
+                        
+                        <!-- Separator -->
+                        <separator/>
+                        
+                        <!-- Filter Archived -->
+                        <filter string="Archived" name="inactive" domain="[('active','=',False)]"/>
+                        
+                        <!-- Group By -->
+                        <group expand="0" string="Group By">
+                            <filter name="group_name" string="Tên đơn vị" 
+                                    context="{'group_by':'name'}"/>
+                            <filter name="group_province" string="Địa điểm" 
+                                    context="{'group_by':'province_id'}"/>
+                        </group>
+                    </search>
+                </search>
+            </field>
+        </record>
+
     </data>
 </odoo>

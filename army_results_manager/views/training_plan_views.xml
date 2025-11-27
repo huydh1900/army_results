@@ -189,9 +189,25 @@
             <search string="Tìm kế hoạch huấn luyện">
                 <field name="name" string="Tên kế hoạch"/>
                 <field name="location_id" string="Địa điểm"/>
-                <field name="name" string="Trạng thái"/>
+                <field name="state" string="Trạng thái"/>
                 <field name="start_date" string="Ngày bắt đầu"/>
                 <field name="end_date" string="Ngày kết thúc"/>
+                
+                <!-- Filter theo trạng thái -->
+                <filter name="draft" string="Soạn thảo" domain="[('state','=','draft')]"/>
+                <filter name="to_modify" string="Cần chỉnh sửa" domain="[('state','=','to_modify')]"/>
+                <filter name="posted" string="Chờ duyệt" domain="[('state','=','posted')]"/>
+                <filter name="approved" string="Đã duyệt" domain="[('state','=','approved')]"/>
+                <filter name="cancel" string="Hủy" domain="[('state','=','cancel')]"/>
+                
+                <separator/>
+                
+                <!-- Group by -->
+                <group expand="0" string="Nhóm theo">
+                    <filter name="group_location" string="Địa điểm" context="{'group_by':'location_id'}"/>
+                    <filter name="group_state" string="Trạng thái" context="{'group_by':'state'}"/>
+                    <filter name="group_start_date" string="Ngày bắt đầu" context="{'group_by':'start_date'}"/>
+                </group>
             </search>
         </field>
     </record>

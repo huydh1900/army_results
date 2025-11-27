@@ -201,4 +201,42 @@
         <field name="groups_id" eval="[(6, 0, [ref('base.group_no_one')])]"/>
     </record>
 
+    <record id="view_employee_search_inherit" model="ir.ui.view">
+        <field name="name">hr.employee.search.inherit</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_filter"/>
+        <field name="arch" type="xml">
+            <!-- Giữ lại field name và thêm các field cần thiết -->
+            <field name="name" position="replace">
+                <field name="name" string="Họ và tên"/>
+                <field name="role" string="Vai trò"/>
+                <field name="job_id" string="Chức vụ"/>
+                <field name="mobile_phone" string="SĐT"/>
+                <field name="work_email" string="Email"/>
+                <field name="department_id" string="Đơn vị công tác"/>
+            </field>
+            
+            <!-- Xóa các field không cần -->
+            <field name="category_ids" position="replace"/>
+            <field name="parent_id" position="replace"/>
+            <field name="company_id" position="replace"/>
+            
+            <!-- Thêm các filter mới -->
+            <filter name="inactive" position="after">
+                <separator/>
+                <filter name="training_officer" string="Cán bộ chỉ huy" 
+                        domain="[('role','=','training_officer')]"/>
+                <filter name="student" string="Học viên" 
+                        domain="[('role','=','student')]"/>
+            </filter>
+            
+            <!-- Thêm group by mới -->
+            <filter name="group_department" position="after">
+                <filter name="group_role" string="Vai trò" 
+                        context="{'group_by':'role'}"/>
+                <filter name="group_job" string="Chức vụ" 
+                        context="{'group_by':'job_id'}"/>
+            </filter>
+        </field>
+    </record>
 </odoo>
