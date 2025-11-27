@@ -27,6 +27,13 @@
                 <xpath expr="//button[@name='action_create_employee']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
+                <xpath expr="//field[@name='name']" position="attributes">
+                    <attribute name="placeholder"/>
+                </xpath>
+
+                <xpath expr="//field[@name='login']" position="attributes">
+                    <attribute name="placeholder"/>
+                </xpath>
                 <xpath expr="//button[@name='action_reset_password']" position="replace"/>
                 <xpath expr="//button[@name='action_reset_password']" position="replace"/>
             </field>
@@ -38,6 +45,10 @@
 
         <record id="privacy_lookup.ir_action_server_action_privacy_lookup_user" model="ir.actions.server">
             <field name="groups_id" eval="[(6, 0, [ref('base.group_no_one')])]"/>
+        </record>
+
+        <record id="base.menu_users" model="ir.ui.menu">
+            <field name="name">Users</field>
         </record>
 
     </data>

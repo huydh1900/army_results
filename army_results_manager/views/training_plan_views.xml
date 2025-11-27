@@ -188,6 +188,8 @@
         <field name="arch" type="xml">
             <search string="Tìm kế hoạch huấn luyện">
                 <field name="name" string="Tên kế hoạch"/>
+                <field name="location_id" string="Địa điểm"/>
+                <field name="name" string="Trạng thái"/>
                 <field name="start_date" string="Ngày bắt đầu"/>
                 <field name="end_date" string="Ngày kết thúc"/>
             </search>
