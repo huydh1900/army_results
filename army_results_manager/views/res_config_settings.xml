@@ -7,15 +7,15 @@
         <field name="arch" type="xml">
             <xpath expr="//div[@id='languages']" position="after">
                 <div class="app_settings_block" id="openai_settings_block" data-string="AI Settings">
-                    <h2>Cấu hình AI</h2>
+                    <h2>Cấu hình Domain</h2>
                     <div class="row mt16 o_settings_container">
                         <div class="col-12 col-lg-6 o_setting_box">
                             <div class="o_setting_right_pane">
-                                <label for="openai_api_key" string="OpenAI API Key"/>
+                                <label for="openai_api_key" string="Domain"/>
                                 <field name="openai_api_key" password="True"
-                                       placeholder="Nhập OpenAI API Key tại đây..."/>
+                                       placeholder="  Nhập Domain tại đây..."/>
                                 <div class="text-muted">
-                                    Dùng để kết nối với OpenAI cho các tính năng nhận xét tự động.
+                                    Dùng để kết nối với Domain cho các tính năng nhận xét tự động.
                                 </div>
                             </div>
                         </div>
