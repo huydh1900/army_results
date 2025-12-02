@@ -121,7 +121,8 @@
             <field name="res_model">training.day</field>
             <field name="view_mode">tree,form,gantt</field>
             <field name="domain">[('state', 'in', ['posted'])]</field>
-            <field name="context">{'default_action': 'draft', 'group_by': ['year', 'month_name', 'week_name',
+            <field name="context">{'default_action': 'draft', 'showButtonDocument': true, 'group_by': ['year', 'month_name',
+                'week_name',
                 'weekday']}}
             </field>
         </record>
@@ -131,7 +132,8 @@
             <field name="res_model">training.day</field>
             <field name="view_mode">tree,form,gantt</field>
             <field name="domain">[('state', 'in', ['approved'])]</field>
-            <field name="context">{'default_action': 'approved', 'group_by': ['year', 'month_name', 'week_name',
+            <field name="context">{'default_action': 'approved', 'showButtonDocument': true, 'group_by': ['year', 'month_name',
+                'week_name',
                 'weekday']}}}
             </field>
         </record>
@@ -141,6 +143,7 @@
             <field name="name">Danh mục camera</field>
             <field name="res_model">camera.device</field>
             <field name="view_mode">tree,form</field>
+            <field name="context">{'hide_button': true}</field>
         </record>
 
         <record id="action_view_training_location" model="ir.actions.act_window">
@@ -154,9 +157,10 @@
             <field name="res_model">training.day</field>
             <field name="view_mode">tree,form,gantt</field>
             <field name="view_id" ref="view_training_day_tree_report"/>
-            <field name="context">{'default_action': 'report', 'group_by': ['year', 'month_name', 'week_name',
-                'weekday',
-                'plan_name', 'mission_name', 'lesson_name']}
+            <field name="context">{
+                'default_action': 'report',
+                'showDocument':true,
+                'group_by': ['year', 'month_name', 'week_name', 'weekday', 'plan_name', 'mission_name', 'lesson_name']}
             </field>
         </record>
 
@@ -222,12 +226,6 @@
                   name="Danh mục Camera"
                   parent="menu_camera_management"
                   groups="army_results_manager.group_admin"
-                  action="action_view_camera_device"/>
-
-        <menuitem id="menu_config_camera"
-                  name="Cấu hình Camera"
-                  parent="menu_camera_management"
-                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer,army_results_manager.group_training_commander_assistant"
                   action="action_view_camera_device"/>
 
         <menuitem id="menu_training_plan"

@@ -58,21 +58,25 @@ class PrintWordWizard(models.TransientModel):
     # ==================== Helper Functions ====================
 
     def action_send_report(self):
-        TrainingDay = self.env['training.day']
+        self.ensure_one()
 
-        if not self.approver_id:
-            raise UserError('Bạn phải chọn người phê duyệt trước khi bấm Gửi duyệt!')
-        elif not self.attachment_ids:
-            raise UserError('File Pdf không được trống!')
-        domain = [
-            ('year', '=', self.year),
-            ('month_name', '=', f'Tháng {self.month}'),
-            ('week_name', '=', f'Tuần {self.week}'),
-        ]
-        records = TrainingDay.search(domain)
-        records.write({'attachment_ids': [(6, 0, self.attachment_ids.ids)]})
+        if not self.attachment_ids:
+            raise UserError("Bạn phải chọn ít nhất 1 file!")
 
+        # Lấy model cha (record gốc)
+        active_model = self.env.context.get('active_model')
 
+        for att in self.attachment_ids:
+            self.env['ir.attachment'].create({
+                'name': att.name,
+                'datas': att.datas,
+                'res_model': active_model,
+                'type': att.type,
+                'public': True,
+                'mimetype': att.mimetype,
+                'approver_id': self.approver_id.id,
+            })
+        return {'type': 'ir.actions.client', 'tag': 'soft_reload'}
 
     @api.onchange('report_type')
     def _onchange_report_type(self):
@@ -1593,7 +1597,7 @@ class PrintWordWizard(models.TransientModel):
 
                     # Xác định loại training
                     courses_dict = plans_data[plan]['common_courses'] if record.type_training == 'common_training' else \
-                    plans_data[plan]['private_courses']
+                        plans_data[plan]['private_courses']
 
                     # Khởi tạo course
                     if course not in courses_dict:
@@ -2130,8 +2134,6 @@ class PrintWordWizard(models.TransientModel):
                             private_subject_counter += 1
 
                     plan_counter += 1
-
-
 
         file_data = BytesIO()
         doc.save(file_data)

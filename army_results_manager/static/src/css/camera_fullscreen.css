@@ -1,0 +1,34 @@
+.camera-container {
+    width: 100%;
+    height: 100vh; /* full màn hình */
+    overflow-y: auto; /* scroll theo chiều dọc */
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+/* Grid camera: 3 cột */
+.camera-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+/* Mỗi iframe chiếm toàn bộ ô grid */
+.camera-frame {
+    width: 100%;
+    height: 200px; /* bạn có thể tăng giảm tùy ý */
+    border: none;
+}
+
+/* Khi màn hình nhỏ hơn, 2 cột hoặc 1 cột */
+@media (max-width: 1200px) {
+    .camera-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 800px) {
+    .camera-grid {
+        grid-template-columns: 1fr;
+    }
+}

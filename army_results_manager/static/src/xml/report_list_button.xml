@@ -3,15 +3,45 @@
     <t t-name="button_report.ListView.Buttons" t-inherit="web.ListView.Buttons">
         <xpath expr="//div[contains(@class, 'o_list_buttons')]" position="inside">
             <t t-if="this.props.context['default_action'] == 'report'">
-                <button type="button" class="btn btn-primary" t-on-click="OnOpenWizard">In
+                <button type="button" class="btn btn-primary" t-on-click="OnOpenWizard" style="margin-right:10px">In
                     Báo cáo
+                </button>
+                <button type="button"
+                        class="btn btn-warning"
+                        t-on-click="viewWaitDocuments">
+                    <i class="fa fa-paper-plane"/>
+                    Văn bản chờ ký (<t t-esc="state.countWait"/>)
+                </button>
+
+                <button type="button"
+                        class="btn btn-success"
+                        t-on-click="viewSignedDocuments"
+                        style="margin-left: 10px;">
+                    <i class="fa fa-check-circle"/>
+                    Văn bản đã ký (<t t-esc="state.countSigned"/>)
                 </button>
             </t>
 
-            <button type="button" class="btn btn-primary" t-on-click="signDocument">
-                Ký số
-            </button>
+            <t t-if="this.props.context['showButtonDocument'] == true">
+                <button type="button"
+                        class="btn btn-warning"
+                        t-on-click="viewWaitDocumentsPlan">
+                    <i class="fa fa-paper-plane"/>
+                    Văn bản chờ ký (<t t-esc="state.countWaitPlan"/>)
+                </button>
 
+                <button type="button"
+                        class="btn btn-success"
+                        t-on-click="viewSignedDocumentsPlan"
+                        style="margin-left: 10px;">
+                    <i class="fa fa-check-circle"/>
+                    Văn bản đã ký (<t t-esc="state.countSignedPlan"/>)
+                </button>
+            </t>
+
+            <t t-if="this.props.context['default_action'] == 'camera_device_view'">
+                <button class="btn btn-primary" t-on-click="() => this.openFullscreen()">Xem đa màn hình</button>
+            </t>
         </xpath>
     </t>
 </templates>

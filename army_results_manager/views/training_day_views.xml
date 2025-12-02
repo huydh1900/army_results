@@ -34,8 +34,6 @@
             <form string="Ngày huấn luyện">
                 <header>
                     <field name="state" widget="statusbar"/>
-<!--                    <button name="action_open_sign" string="Ký" type="object"-->
-<!--                            class="btn-primary"/>-->
                 </header>
                 <sheet>
                     <group>
@@ -53,8 +51,6 @@
                             <field name="subject_code"/>
                             <field name="course_name"/>
                             <field name="total_hours"/>
-                            <field name="attachment_ids"/>
-<!--                            <field name="sign_template_id"/>-->
                         </group>
                     </group>
                     <notebook>
@@ -99,7 +95,6 @@
                 <field name="day"/>
                 <field name="lesson_name"/>
                 <field name="total_hours"/>
-                <field name="attachment_ids"/>
                 <field name="state" widget="badge"
                        decoration-muted="state == 'draft'"
                        decoration-success="state == 'approved'"
@@ -131,6 +126,17 @@
         <field name="name">training.day.tree.report</field>
         <field name="model">training.day</field>
         <field name="inherit_id" ref="army_results_manager.view_training_day_tree_report"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="js_class">button_in_tree</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="training_day_tree_plan_inherit_js_class" model="ir.ui.view">
+        <field name="name">training.day.tree.plan</field>
+        <field name="model">training.day</field>
+        <field name="inherit_id" ref="army_results_manager.view_training_day_in_plan_tree"/>
         <field name="arch" type="xml">
             <xpath expr="//tree" position="attributes">
                 <attribute name="js_class">button_in_tree</attribute>

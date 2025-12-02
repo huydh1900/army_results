@@ -7,3 +7,5 @@ class TrainingLocation(models.Model):
     _description = "Vị trí huấn luyện"
 
     name = fields.Char("Tên khu vực", required=True)
+    location_setting = fields.Text(string="Vị trí lắp đặt")
+    camera_ids = fields.One2many("camera.device", "location_id", string="Danh mục camera")

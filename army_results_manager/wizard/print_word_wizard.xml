@@ -7,13 +7,13 @@
             <form string="Báo cáo tổng hợp huấn luyện">
                 <group>
                     <field name="report_type"/>
-                    <field name="week"
-                           attrs="{'invisible':[('report_type','!=','week')], 'required':[('report_type','=','week')]}"/>
+                    <field name="year"/>
                     <field name="month"
                            attrs="{'invisible':[('report_type','=','year')], 'required':[('report_type','in',['month','week'])]}"/>
-                    <field name="year"/>
+                    <field name="week"
+                           attrs="{'invisible':[('report_type','!=','week')], 'required':[('report_type','=','week')]}"/>
                     <field name="approver_id"/>
-                    <field name="attachment_ids" widget="many2many_binary"/>
+                    <field name="attachment_ids" widget="many2many_binary" class="o_social_post_form_attachments"/>
                 </group>
                 <footer>
                     <button string="In" type="object" name="action_print_word" class="btn-primary"/>

@@ -27,7 +27,7 @@ class TrainingPlan(models.Model):
         ('approved', 'Đã duyệt'),
         ('cancel', 'Hủy'),
     ], string="Trạng thái", default="draft", tracking=True)
-    location_id = fields.Many2one('training.location', string='Địa điểm')
+    location_ids = fields.Many2many('training.location', string='Địa điểm')
     student_ids = fields.Many2many('hr.employee', string='Học viên', domain="[('role', '=', 'student')]")
     training_content = fields.Char(string='Nội dung huấn luyện')
     reason_modify = fields.Text(string='Lý do chỉnh sửa', tracking=True)
@@ -54,6 +54,19 @@ class TrainingPlan(models.Model):
     approver_id = fields.Many2one('hr.employee', string='Cán bộ phê duyệt',
                                   domain=[('role', '=', 'commanding_officer')])
     count_rec_training_day = fields.Integer(compute='_compute_count_rec_training_day')
+
+    @api.onchange('location_ids')
+    def _onchange_location_ids(self):
+        """Tự động điền danh sách camera thuộc các địa điểm đã chọn"""
+        if not self.location_ids:
+            self.camera_ids = [(5, 0, 0)]  # clear
+            return
+
+        cameras = self.env['camera.device'].search([
+            ('location_id', 'in', self.location_ids.ids)
+        ])
+
+        self.camera_ids = [(6, 0, cameras.ids)]
 
     def _compute_count_rec_training_day(self):
         TrainingDay = self.env['training.day']
@@ -122,13 +135,10 @@ class TrainingPlan(models.Model):
         self.env["training.warning.log"].create({"message": message})
         return True
 
-    @api.depends('location_id')
+    @api.depends('camera_ids')
     def _compute_camera_count(self):
         for rec in self:
-            # rec.camera_count = self.env['camera.device'].search_count([
-            #     ('location_id', '=', rec.location_id.id)
-            # ])
-            rec.camera_count = 0
+            rec.camera_count = len(rec.camera_ids)
 
     def action_open_camera(self):
         if self.camera_count == 0:
@@ -139,11 +149,12 @@ class TrainingPlan(models.Model):
             "name": "Danh mục camera",
             "res_model": "camera.device",
             "view_mode": "tree",
-            "domain": [('location_id', '=', self.location_id.id)],
+            "domain": [('id', '=', self.camera_ids.ids)],
             "target": "new",
             'context': {
                 'create': False,
                 'delete': False,
+                'default_action': 'camera_device_view',
             },
         }
 

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<t t-name="camera_fullscreen_view" owl="1">
+    <div class="camera-container">
+        <div class="camera-grid">
+            <t t-foreach="this.props.action.params.cameras" t-as="cam" t-key="cam.id">
+                <iframe t-att-src="cam.stream_url" class="camera-frame"/>
+            </t>
+        </div>
+    </div>
+</t>

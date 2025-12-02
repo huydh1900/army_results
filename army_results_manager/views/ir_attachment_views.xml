@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_attachment_tree_inherit" model="ir.ui.view">
+        <field name="name">ir.attachment.tree.inherit</field>
+        <field name="model">ir.attachment</field>
+        <field name="inherit_id" ref="base.view_attachment_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="replace">
+                <tree string="Attachments">
+                    <field name="name" string="Tên tài liệu"/>
+                    <field name="type"/>
+                    <field name="file_size" string="Dung lượng tệp"/>
+                    <field name="create_uid" string="Người tạo"/>
+                    <field name="create_date" string="Thời gian tạo"/>
+                    <field name="approver_id"/>
+                </tree>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_attachment_form_inherit" model="ir.ui.view">
+        <field name="name">ir.attachment.form.inherit</field>
+        <field name="model">ir.attachment</field>
+        <field name="inherit_id" ref="base.view_attachment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form/sheet/group/group[2]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//label[@for='name']" position="before">
+                <div class="oe_button_box" name="button_box">
+                    <button
+                            name="action_sign_document"
+                            type="object"
+                            class="button_sign_digital">
+                        <span class="fa fa-pencil-square-o"/>  <!-- icon ký -->
+                        <span>Ký số</span>
+                    </button>
+                </div>
+            </xpath>
+            <field name="datas" position="after">
+                <field name="is_signed"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

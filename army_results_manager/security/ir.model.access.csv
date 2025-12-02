@@ -31,7 +31,6 @@ access_training_day_officer,access_training_day_officer,model_training_day,group
 access_training_day_assistant,access_training_day_assistant,model_training_day,group_training_commander_assistant,1,0,0,0
 
 
-
 access_res_users_data_entry,access_res_users_data_entry,base.model_res_users,army_results_manager.group_data_entry_officer,1,1,1,1
 
 

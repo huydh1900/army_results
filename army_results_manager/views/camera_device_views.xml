@@ -4,47 +4,29 @@
         <field name="model">camera.device</field>
         <field name="arch" type="xml">
             <form string="Camera">
-                <header>
-                    <button name="start_stream" string="Xem" type="object"
-                            class="btn-primary"
-                            attrs="{'invisible': [('is_streaming', '=', True)]}"/>
-                    <button name="stop_stream" string="Dừng lại" type="object"
-                            class="btn-danger"
-                            attrs="{'invisible': [('is_streaming', '=', False)]}"/>
-
-                    <button name="start_recording" string="Bắt đầu ghi" type="object"
-                            class="btn-success"/>
-<!--                            attrs="{'invisible': [('is_recording', '=', True)]}"/>-->
-                    <button name="stop_recording" string="Dừng ghi" type="object"
-                            class="btn-danger"/>
-                    <button name="start_recording" string="Zoom" type="object"
-                            class="btn-success"/>
-<!--                            attrs="{'invisible': [('is_recording', '=', False)]}"/>-->
-                </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="view_camera"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-video-camera"
+                                string="Xem camera"/>
+                        <button name="check_camera_status_digest"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-plug"
+                                string="Kiểm tra kết nối"/>
+                    </div>
                     <group>
                         <group>
                             <field name="name"/>
                             <field name="ip_address"/>
                             <field name="username"/>
                             <field name="password" password="True"/>
-                        </group>
-                        <group>
-                            <field name="is_streaming" readonly="1"/>
-<!--                            <field name="is_recording" readonly="1"/>-->
+                            <field name="location_id"/>
+                            <field name="state" readonly="True"/>
                         </group>
                     </group>
-                    <notebook>
-                        <page string=" ">
-                            <div style="text-align: center">
-                                <iframe height="720" width="1280"
-                                        class="o_video_dialog_iframe mw-100 mh-100 overflow-hidden"
-                                        allowfullscreen="allowfullscreen" frameborder="0"
-                                        style="width: 50%;margin-left: auto;margin-right: auto;"
-                                        src="http://localhost:8013/mjpeg/1"/>
-                            </div>
-                        </page>
-                    </notebook>
                 </sheet>
             </form>
         </field>
@@ -56,9 +38,20 @@
         <field name="arch" type="xml">
             <tree string="Camera">
                 <field name="name"/>
-                <!--                <field name="location_id"/>-->
-                <!--                <button name="action_view_camera" type="object" title="Mở camera" icon="fa-video-camera"/>-->
+                <field name="location_id"/>
+                <field name="state" readonly="True"/>
             </tree>
+        </field>
+    </record>
+
+    <record id="view_camera_device_tree_inherit_js_class" model="ir.ui.view">
+        <field name="name">camera.device.tree</field>
+        <field name="model">camera.device</field>
+        <field name="inherit_id" ref="army_results_manager.view_camera_device_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="js_class">button_in_tree</attribute>
+            </xpath>
         </field>
     </record>
 </odoo>

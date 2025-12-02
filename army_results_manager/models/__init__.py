@@ -10,6 +10,7 @@ from . import training_mission
 from . import training_material
 from . import training_day
 from . import hr_department
+from . import ir_attachment
 from . import hr_employee
 from . import training_plan
 from . import training_course

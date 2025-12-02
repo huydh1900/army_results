@@ -40,16 +40,4 @@ patch(ListRenderer.prototype, "training_day_patch", {
         });
     },
 
-    async SignReport(group) {
-        const domain = group.groupDomain;
-        const action = await this.orm.call(
-            "training.day",
-            "action_sign_report",
-            [],
-            {domain}
-        );
-
-        this.actionService.doAction(action);
-    }
-
 });

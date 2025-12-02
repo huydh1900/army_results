@@ -1,3 +1,9 @@
+.button_sign_digital {
+    background-color: #1abc9c !important;
+    border-color: #16a085 !important;
+    color: white !important;
+}
+
 /* ===== MENU CHA ===== */
 .o_menu_sections .dropdown > a {
     position: relative;

@@ -1,7 +1,4 @@
 from odoo import models, fields, api
-import json
-import hashlib
-import base64
 
 
 class TrainingDay(models.Model):
@@ -53,122 +50,6 @@ class TrainingDay(models.Model):
     )
     reason_modify = fields.Text(string='Lý do chỉnh sửa')
     approver_id = fields.Many2one(related='plan_id.approver_id', store=True)
-    attachment_ids = fields.Many2many(
-        'ir.attachment',
-        string='Tài liệu PDF',
-        domain=[('mimetype', '=', 'application/pdf')]
-    )
-
-    digital_signature = fields.Text('Chữ ký số (PKCS#7)')
-    signed_data = fields.Text('Dữ liệu đã ký (JSON)')
-    signed_date = fields.Datetime('Ngày ký')
-    is_signed = fields.Boolean('Đã ký số', default=False)
-
-    @api.model
-    def vgca_sign_msg(self):
-        """Chuẩn bị thông tin file để ký"""
-        record_id = 6
-        day = self.browse(record_id)
-
-        if not day.exists():
-            return {'error': f'Không tìm thấy bản ghi ID {record_id}'}
-
-        if not day.attachment_ids:
-            return {'error': 'Không có file đính kèm'}
-
-        attachment = day.attachment_ids[0]
-
-        # ⭐ Tạo URL public cho file (quan trọng!)
-        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
-        file_url = f"{base_url}/web/content/{attachment.id}?download=true"
-
-        # ⭐ Cấu trúc JSON theo VGCA yêu cầu
-        json_data = {
-            "FileUploadHandler": f"{base_url}/vgca/upload",  # Endpoint xử lý upload
-            "SessionId": self.env.user.session_token if hasattr(self.env.user, 'session_token') else "",
-            "Files": [
-                {
-                    "FileID": str(attachment.id),
-                    "FileName": attachment.name,
-                    "URL": file_url  # ⭐ URL để VGCA tải file
-                }
-            ]
-        }
-
-        # Chuyển sang JSON string
-        json_string = json.dumps(json_data, ensure_ascii=False, separators=(',', ':'))
-
-        # Băm SHA256
-        hash_object = hashlib.sha256(json_string.encode('utf-8'))
-        hash_bytes = hash_object.digest()
-        hash_base64 = base64.b64encode(hash_bytes).decode('utf-8')
-
-        print("=" * 60)
-        print("JSON Data:", json_string)
-        print("Hash Base64:", hash_base64)
-        print("File URL:", file_url)
-        print("=" * 60)
-
-        return {
-            'success': True,
-            'hash_value': hash_base64,
-            'hash_alg': 'SHA256',
-            'json_data': json_string,
-            'file_url': file_url,
-            'file_name': attachment.name,
-            'attachment_id': attachment.id,
-            'record_id': record_id
-        }
-
-    @api.model
-    def save_signature(self, attachment_id, signature, json_data):
-        """Lưu file đã ký"""
-        attachment = self.env['ir.attachment'].browse(attachment_id)
-
-        if not attachment.exists():
-            return {'error': 'Không tìm thấy file'}
-
-        try:
-            # Tạo file mới cho chữ ký (PKCS#7 signature)
-            signed_file = self.env['ir.attachment'].create({
-                'name': f'SIGNED_{attachment.name}',
-                'datas': base64.b64encode(signature.encode('utf-8')),
-                'res_model': attachment.res_model,
-                'res_id': attachment.res_id,
-                'mimetype': 'application/pkcs7-signature',
-                'description': f'Chữ ký số của {attachment.name}'
-            })
-
-            # Lưu JSON data đã ký
-            json_file = self.env['ir.attachment'].create({
-                'name': f'SIGNED_DATA_{attachment.name}.json',
-                'datas': base64.b64encode(json_data.encode('utf-8')),
-                'res_model': attachment.res_model,
-                'res_id': attachment.res_id,
-                'mimetype': 'application/json',
-                'description': 'Dữ liệu JSON đã ký'
-            })
-
-            # Cập nhật trạng thái
-            if attachment.res_model == 'training.day':
-                day = self.env['training.day'].browse(attachment.res_id)
-                day.write({
-                    'is_signed': True,
-                    'signed_date': fields.Datetime.now(),
-                    'digital_signature': signature
-                })
-
-            return {
-                'success': True,
-                'signed_file_id': signed_file.id,
-                'json_file_id': json_file.id
-            }
-
-        except Exception as e:
-            import traceback
-            print("Error saving signature:", str(e))
-            print(traceback.format_exc())
-            return {'error': str(e)}
 
     def action_open_modify_wizard(self):
         return {
@@ -178,24 +59,6 @@ class TrainingDay(models.Model):
             "view_mode": "form",
             "target": "new",
             "context": {"active_id": self.id},
-        }
-
-    @api.model
-    def action_sign_report(self, domain):
-        records = self.search(domain)
-
-        if records:
-            pdf = records[0].attachment_ids
-        return {
-            "type": "ir.actions.act_window",
-            "name": "Tài liệu PDF",
-            "res_model": "preview.report.pdf.wizard",
-            "views": [[False, "form"]],
-            "view_mode": "form",
-            "target": "new",
-            "context": {
-                "default_attachment_ids": pdf.ids,
-            },
         }
 
     @api.model
