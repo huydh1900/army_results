@@ -12,6 +12,24 @@ class IrAttachment(models.Model):
 
     is_signed = fields.Boolean(default=False, string="Đã ký", readonly=True)
     approver_id = fields.Many2one('hr.employee', string='Cán bộ phê duyệt', readonly=True)
+    datas_signed = fields.Binary(string="File đã ký", attachment=True)
+    datas_signed_name = fields.Char("Signed Filename")
+
+    @api.model
+    def mark_signed(self, attachment_id, signed_content, signed_filename):
+        """
+        Lưu file đã ký vào attachment.
+        """
+        record = self.browse(attachment_id)
+        if not record:
+            return False
+
+        record.sudo().write({
+            "datas_signed": signed_content,
+            "datas_signed_name": signed_filename,
+            "is_signed": True
+        })
+        return True
 
     def action_sign_document(self):
         return {
@@ -22,12 +40,6 @@ class IrAttachment(models.Model):
                 "attachment_id": self.id,
             },
         }
-
-    @api.model
-    def mark_signed(self, attachment_id):
-        """Cập nhật trạng thái đã ký"""
-        record = self.browse(attachment_id)
-        record.sudo().write({"is_signed": True})
 
     @api.model
     def vgca_sign_msg(self, attachment_id):

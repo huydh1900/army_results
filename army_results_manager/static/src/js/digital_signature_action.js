@@ -7,8 +7,9 @@ const digitalSignatureAction = async (env, params) => {
     console.log("JS chạy với params:", params);
     const action = env.services.action;
 
-    let attachment_id = params.params.attachment_id
+    let attachment_id = params.params.attachment_id;
     try {
+
         const fileData = await env.services.orm.call(
             "ir.attachment",
             "vgca_sign_msg",
@@ -31,7 +32,10 @@ const digitalSignatureAction = async (env, params) => {
             FileName: fileData.file_url,
         };
 
-        const callback = (rv) => {
+        // ---------------------------------------------------
+        //   ⚠ CALLBACK PHẢI LÀ async !!!
+        // ---------------------------------------------------
+        const callback = async (rv) => {
             if (!rv) {
                 alert("Không nhận được dữ liệu từ VGCA!");
                 return;
@@ -40,32 +44,59 @@ const digitalSignatureAction = async (env, params) => {
             let result;
             try {
                 result = JSON.parse(rv);
-                console.log(result)
+                console.log("Kết quả VGCA:", result);
             } catch (e) {
                 alert("Dữ liệu trả về không phải JSON:\n" + rv);
                 return;
             }
 
             if (result.Status === true || result.Status === 0) {
-                let attachment_id = params.params.attachment_id;
-                env.services.orm.call("ir.attachment", "mark_signed", [attachment_id])
-                let localPath = result.LocalPath || result.SavePath || "";
-                let finalName = result.FileName || "";
 
-                // Hiển thị thông tin đầy đủ cho người dùng
-                alert(
-                    "File đã ký thành công!\n\n" +
-                    "Tên file: " + finalName + "\n" +
-                    "Đã lưu tại: " + localPath + "\n\n" +
-                    "Bạn có thể mở file để kiểm tra."
+                let originalName = fileData.file_url.split('/').pop();
+                let signedName = originalName.replace(/(\.[^.]+)$/, "_signed$1");
+
+                let fileUrl = result.FileServer;
+                if (!fileUrl) {
+                    alert("VGCA không trả về FileServer!");
+                    return;
+                }
+
+                // ---------------------------------------------------
+                //  ⚠ TẢI FILE ĐÃ KÝ VỀ → CHUYỂN BASE64 (CÓ await)
+                // ---------------------------------------------------
+                let fileBase64;
+                try {
+                    const blob = await fetch(fileUrl).then(r => r.blob());
+                    fileBase64 = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () =>
+                            resolve(reader.result.split(",")[1]);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(blob);
+                    });
+                } catch (err) {
+                    alert("Không thể tải file từ FileServer: " + err);
+                    return;
+                }
+
+                // ---------------------------------------------------
+                //  ⚠ LƯU FILE VÀO ODOO (CÓ await)
+                // ---------------------------------------------------
+                await env.services.orm.call(
+                    "ir.attachment",
+                    "mark_signed",
+                    [attachment_id, fileBase64, signedName]
                 );
+
+                alert("Ký số thành công và file đã được lưu!");
+
                 action.doAction({
-                    'type': 'ir.actions.client',
-                    'tag': 'soft_reload',
+                    type: "ir.actions.client",
+                    tag: "soft_reload",
                 });
-                window.open(result.FileServer, "_blank");
+
             } else {
-                alert("Ký số thất bại!\n" + result.Message);
+                alert("Ký thất bại: " + result.Message);
             }
         };
 
@@ -74,8 +105,6 @@ const digitalSignatureAction = async (env, params) => {
     } catch (error) {
         alert("Lỗi hệ thống:\n" + error.message);
     }
-
 };
 
-const actionRegistry = registry.category("actions");
-actionRegistry.add("digital_signature_action", digitalSignatureAction);
+registry.category("actions").add("digital_signature_action", digitalSignatureAction);

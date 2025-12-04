@@ -1,10 +1,33 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
 <t t-name="camera_fullscreen_view" owl="1">
     <div class="camera-container">
-        <div class="camera-grid">
-            <t t-foreach="this.props.action.params.cameras" t-as="cam" t-key="cam.id">
-                <iframe t-att-src="cam.stream_url" class="camera-frame"/>
+
+        <div class="camera-grid"
+             t-att-data-rows="this.props.action.params.rows"
+             t-att-style="`
+                --rows:${this.props.action.params.rows};
+                grid-template-columns: repeat(${this.props.action.params.cols}, 1fr);
+             `">
+
+            <t t-set="cams" t-value="this.props.action?.params?.cameras || []"/>
+
+            <t t-foreach="cams" t-as="cam" t-key="cam.id">
+                <!-- Ô camera -->
+                <t t-if="!cam.empty">
+                    <div class="camera-item">
+                        <iframe t-att-src="cam.stream_url" class="camera-frame"/>
+                    </div>
+                </t>
+                <!-- Ô trống -->
+                <t t-if="cam.empty">
+                    <div class="camera-item"/>
+                </t>
             </t>
+
         </div>
+
     </div>
 </t>
+
+
+</templates>

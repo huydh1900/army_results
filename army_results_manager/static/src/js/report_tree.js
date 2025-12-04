@@ -4,7 +4,7 @@ import {registry} from '@web/core/registry';
 import {listView} from '@web/views/list/list_view';
 import {useService} from "@web/core/utils/hooks";
 
-const {useState, onWillStart, onMounted} = owl;
+const {useState, onWillStart} = owl;
 
 export class ReportListController extends ListController {
     setup() {
@@ -33,7 +33,7 @@ export class ReportListController extends ListController {
         this.state.cameras = this.state.cameras.map(c => {
             return {
                 ...c,
-                stream_url: `/camera/proxy/7`
+                stream_url: `/camera/proxy/{id}`
             };
         });
     }
@@ -52,28 +52,38 @@ export class ReportListController extends ListController {
         });
     }
 
-    openFullscreen() {
-        const records = this.model.root.records;
+    openFullscreen(rows, cols) {
+    const totalSlots = rows * cols;
+    const records = this.model.root.records;
 
-        const cameras = records.map(r => {
-            const id = r.resId;
-            return {
-                id: id,
-                name: r.data.name,
-                stream_url: `/camera/proxy/${id}`,
-            };
-        });
+    let cameras = records.map(r => {
+        const id = r.resId;
+        return {
+            id: id,
+            empty: false,
+            name: r.data.name,
+            stream_url: `/camera/proxy/${id}`,
+        };
+    });
 
-        this.actionService.doAction({
-            type: "ir.actions.client",
-            tag: "camera.fullscreen",
-            params: {
-                cameras: cameras || [],
-            },
-        });
-
+    // bổ sung ô trống nếu thiếu
+    while (cameras.length < totalSlots) {
+        cameras.push({ empty: true });
     }
 
+    // cắt nếu camera > số slot (trường hợp hiếm)
+    cameras = cameras.slice(0, totalSlots);
+
+    this.actionService.doAction({
+        type: "ir.actions.client",
+        tag: "camera.fullscreen",
+        params: {
+            cameras,
+            rows,
+            cols,
+        },
+    });
+}
 
     async fetchDocumentCounts() {
         const uid = this.env.services.user.userId;
@@ -91,7 +101,7 @@ export class ReportListController extends ListController {
         ]);
 
         const countSignedPlan = await this.orm.call('ir.attachment', 'search_count', [
-            [['is_signed', '=', true], ['create_uid', '=', uid]]
+            [['is_signed', '=', true], ['approver_id.user_id', '=', uid]]
         ]);
 
         this.state.countWait = countWait;
@@ -143,6 +153,7 @@ export class ReportListController extends ListController {
 
     viewSignedDocumentsPlan() {
         const uid = this.env.services.user.userId;
+        console.log(this.state)
 
         this.actionService.doAction({
             type: 'ir.actions.act_window',
@@ -170,6 +181,9 @@ export class ReportListController extends ListController {
                 ['is_signed', '=', true],
                 ['create_uid', '=', uid],
             ],
+            context: {
+                edit: false,
+            }
         });
     }
 

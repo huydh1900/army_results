@@ -39,6 +39,10 @@
             </xpath>
             <field name="datas" position="after">
                 <field name="is_signed"/>
+                <field name="datas_signed" attrs="{'invisible': [('is_signed', '=', False)]}"/>
+            </field>
+            <field name="datas" position="attributes">
+                <attribute name="string">Văn bản gốc</attribute>
             </field>
         </field>
     </record>

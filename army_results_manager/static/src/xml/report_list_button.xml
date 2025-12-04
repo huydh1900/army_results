@@ -40,7 +40,24 @@
             </t>
 
             <t t-if="this.props.context['default_action'] == 'camera_device_view'">
-                <button class="btn btn-primary" t-on-click="() => this.openFullscreen()">Xem đa màn hình</button>
+                <button class="btn btn-primary" t-on-click="() => this.openFullscreen(1, 1)" style="margin-left:5px">
+                    1x1
+                </button>
+                <button class="btn btn-primary" t-on-click="() => this.openFullscreen(2, 2)" style="margin-left:5px">
+                    2x2
+                </button>
+                <button class="btn btn-primary" t-on-click="() => this.openFullscreen(2, 4)" style="margin-left:5px">
+                    2x4
+                </button>
+                <button class="btn btn-primary" t-on-click="() => this.openFullscreen(4, 4)" style="margin-left:5px">
+                    4x4
+                </button>
+                <button class="btn btn-primary" t-on-click="() => this.openFullscreen(4, 8)" style="margin-left:5px">
+                    4x8
+                </button>
+                <button class="btn btn-primary" t-on-click="() => this.openFullscreen(8, 8)" style="margin-left:5px">
+                    8x8
+                </button>
             </t>
         </xpath>
     </t>
