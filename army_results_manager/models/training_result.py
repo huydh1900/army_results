@@ -1,5 +1,4 @@
 from odoo import models, fields, api
-from openai import OpenAI
 from odoo.exceptions import UserError
 import requests
 

@@ -16,8 +16,8 @@
                 <div class="custom_login_container">
                     <!-- Left Section -->
                     <div class="login_left_section">
-                        <h1>PHẦN MỀM QUẢN LÝ</h1>
-                        <div class="subtitle">VÀ GIÁM SÁT HUẤN LUYỆN BỘ ĐỘI</div>
+                        <h1>HỆ THỐNG QUẢN LÝ,</h1>
+                        <div class="subtitle">THEO DÕI KẾ HOẠCH VÀ KẾT QUẢ HUẤN LUYỆN</div>
                         <p class="description">Hệ thống quản lý hiện đại, chuyên nghiệp</p>
                         <ul>
                             <li>Quản lý quân nhân toàn diện</li>
@@ -88,7 +88,7 @@
                         </div>
 
                         <div class="login_footer">
-                            © 2025 Hệ thống quản lý quân nhân - Cục Quân Huấn.
+                            © 2025 Hệ thống quản lý quân nhân - Cục Quân Huấn - Nhà trường.
                         </div>
                     </div>
                 </div>
