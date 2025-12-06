@@ -19,7 +19,7 @@ class TrainingPlan(models.Model):
     )
     start_date = fields.Date(string="Thời gian bắt đầu", required=True)
     end_date = fields.Date(string="Thời gian kết thúc", required=True)
-    participants_ids = fields.Many2many('hr.department', string="Đối tượng tham gia")
+    participants_ids = fields.Many2many('hr.department', string="Đơn vị quản lý")
     state = fields.Selection([
         ('draft', 'Soạn thảo'),
         ('to_modify', 'Cần chỉnh sửa'),

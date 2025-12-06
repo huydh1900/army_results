@@ -7,6 +7,7 @@ class TrainingCourse(models.Model):
     _description = "Nội dung huấn luyện"
 
     name = fields.Char(string="Nội dung huấn luyện")
+    subject_line_id = fields.Many2one('training.subject.line', string="Danh sách môn học")
     total_hours = fields.Float(string='Tổng số giờ', compute='_compute_total_hours', store=True)
     plan_id = fields.Many2one('training.plan', ondelete='cascade')
     mission_ids = fields.One2many('training.mission', 'course_id', string='Danh sách nội dung huấn luyện')

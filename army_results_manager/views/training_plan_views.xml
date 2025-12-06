@@ -80,6 +80,7 @@
                             <field name="participants_ids" widget="many2many_tags"
                                    attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                             <field name="student_ids" widget="many2many_tags"
+                                   domain="[('department_id','in', participants_ids)]"
                                    attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                         </group>
                     </group>
@@ -88,6 +89,7 @@
                             <field name="common_subject_ids" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}">
                                 <tree editable="bottom" no_open="1">
                                     <field name="name"/>
+                                    <field name="subject_line_id" domain="[('subject_id.type_training', '=', 'common_training')]"/>
                                     <field name="total_hours"/>
                                     <button name="action_detail"
                                             type="object"
@@ -101,6 +103,7 @@
                             <field name="specific_subject_ids" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}">
                                 <tree editable="bottom" no_open="1">
                                     <field name="name"/>
+                                    <field name="subject_line_id" domain="[('subject_id.type_training', '=', 'common_training')]"/>
                                     <field name="total_hours"/>
                                     <button name="action_detail"
                                             type="object"

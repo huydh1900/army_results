@@ -45,8 +45,7 @@
                 <attribute name="invisible">1</attribute>
             </field>
             <field name="name" position="after">
-                <field name="role"/>
-                <field name="job_id" string="Chức vụ"/>
+                <field name="identification_id" string="SHSQ"/>
             </field>
             <field name="work_email" position="attributes">
                 <attribute name="string">Email</attribute>
@@ -55,7 +54,7 @@
                 <field name="mobile_phone" string="SĐT"/>
             </field>
             <field name="department_id" position="replace">
-                <field name="department_id" string="Đơn vị công tác"/>
+                <field name="department_id" string="Đơn vị quản lý"/>
             </field>
         </field>
     </record>
@@ -95,8 +94,11 @@
             <field name="lang" position="attributes">
                 <attribute name="invisible">1</attribute>
             </field>
+            <field name="job_id" position="before">
+                 <field name="don_vi_cong_tac"/>
+            </field>
             <field name="parent_id" position="attributes">
-                <attribute name="string">Người quản lý</attribute>
+                 <attribute name="invisible">1</attribute>
             </field>
             <field name="country_of_birth" position="attributes">
                 <attribute name="invisible">1</attribute>
@@ -119,11 +121,17 @@
             <field name="work_email" position="attributes">
                 <attribute name="string">Email</attribute>
             </field>
-            <field name="work_email" position="after">
-                <field name="identification_id"/>
+            <field name="mobile_phone" position="before">
+                <field name="identification_id" string="Số hiệu sĩ quan"/>
+                <field name="cap_bac"/>
+                <field name="ngay_sinh"/>
             </field>
             <field name="department_id" position="attributes">
-                <attribute name="string">Đơn vị công tác</attribute>
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="job_id" position="after">
+                <field name="department_id" string="Đơn vị quản lý"/>
+                <field name="parent_id" string="Cán bộ phụ trách"/>
             </field>
             <xpath expr="//form/sheet/notebook/page[@name='personal_information']/group/group[2]" position="attributes">
                 <attribute name="invisible">1</attribute>

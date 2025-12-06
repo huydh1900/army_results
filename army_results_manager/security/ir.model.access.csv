@@ -19,6 +19,11 @@ access_training_course,access_training_course,model_training_course,base.group_u
 
 
 access_training_subject,access_training_subject,model_training_subject,base.group_user,1,1,1,1
+access_training_subject_line,access_training_subject_line,model_training_subject_line,base.group_user,1,1,1,1
+access_training_lesson,access_training_lesson,model_training_lesson,base.group_user,1,1,1,1
+
+
+
 access_print_word_wizard,access_print_word_wizard,model_print_word_wizard,,1,1,1,1
 access_approved_wizard,access_approved_wizard,model_approved_wizard,,1,1,1,1
 access_preview_report_pdf_wizard,access_preview_report_pdf_wizard,model_preview_report_pdf_wizard,,1,1,1,1

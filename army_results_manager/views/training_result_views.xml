@@ -11,10 +11,21 @@
                 <field name="note"/>
                 <button name="action_generate_note_by_ai"
                         type="object"
-                        string="Nhận xét AI"
+                        string="Đánh giá AI"
                         groups="army_results_manager.group_training_commander_assistant,army_results_manager.group_admin"
-                        title="Tạo nhận xét bằng AI"/>
+                        title="Tạo đánh giá bằng AI"/>
             </tree>
+        </field>
+    </record>
+
+    <record id="view_training_result_tree_inherit_js_class" model="ir.ui.view">
+        <field name="name">training.result.tree</field>
+        <field name="model">training.result</field>
+        <field name="inherit_id" ref="army_results_manager.view_training_result_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="js_class">button_in_tree</attribute>
+            </xpath>
         </field>
     </record>
 

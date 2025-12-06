@@ -11,9 +11,59 @@
                         <field name="name"/>
                         <field name="type_training"/>
                     </group>
+
+                    <notebook>
+                        <page string="Môn học">
+                            <field name="line_ids">
+                                <tree>
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+
                 </sheet>
             </form>
         </field>
     </record>
 
+    <record id="view_training_subject_line_form" model="ir.ui.view">
+        <field name="name">training.subject.line.form</field>
+        <field name="model">training.subject.line</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="code"/>
+                        <field name="name"/>
+                    </group>
+                    <notebook>
+                        <page string="Bài học">
+                            <field name="lesson_ids">
+                                <tree edittable="bottom">
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="type"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="view_training_subject_tree" model="ir.ui.view">
+        <field name="name">training.subject.tree</field>
+        <field name="model">training.subject</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="type_training"/>
+            </tree>
+        </field>
+    </record>
 </odoo>

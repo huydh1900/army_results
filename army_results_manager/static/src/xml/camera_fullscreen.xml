@@ -11,7 +11,7 @@
 
             <t t-set="cams" t-value="this.props.action?.params?.cameras || []"/>
 
-            <t t-foreach="cams" t-as="cam" t-key="cam.id">
+            <t t-foreach="cams" t-as="cam" t-key="cam.id or cam.stream_url">
                 <!-- Ô camera -->
                 <t t-if="!cam.empty">
                     <div class="camera-item">

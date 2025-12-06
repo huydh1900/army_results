@@ -22,6 +22,10 @@ export class ReportListController extends ListController {
         });
     }
 
+    OnOpenWizardIn(){
+        console.log("Hii")
+    }
+
     async loadCameras() {
         this.state.cameras = await this.env.services.orm.searchRead(
             "camera.device",
@@ -53,37 +57,35 @@ export class ReportListController extends ListController {
     }
 
     openFullscreen(rows, cols) {
-    const totalSlots = rows * cols;
-    const records = this.model.root.records;
+        const totalSlots = rows * cols;
+        const records = this.model.root.records;
 
-    let cameras = records.map(r => {
-        const id = r.resId;
-        return {
-            id: id,
-            empty: false,
-            name: r.data.name,
-            stream_url: `/camera/proxy/${id}`,
-        };
-    });
+        let cameras = records.map(r => {
+            const id = r.resId;
+            return {
+                id: id,
+                empty: false,
+                name: r.data.name,
+                stream_url: `/camera/proxy/${id}`,
+            };
+        });
 
-    // bổ sung ô trống nếu thiếu
-    while (cameras.length < totalSlots) {
-        cameras.push({ empty: true });
+        // bổ sung slot trống
+        while (cameras.length < totalSlots) {
+            cameras.push({
+                id: `empty_${cameras.length}`,   // đảm bảo không trùng
+                empty: true,
+            });
+        }
+
+        cameras = cameras.slice(0, totalSlots);
+
+        this.actionService.doAction({
+            type: "ir.actions.client",
+            tag: "camera.fullscreen",
+            params: {cameras, rows, cols},
+        });
     }
-
-    // cắt nếu camera > số slot (trường hợp hiếm)
-    cameras = cameras.slice(0, totalSlots);
-
-    this.actionService.doAction({
-        type: "ir.actions.client",
-        tag: "camera.fullscreen",
-        params: {
-            cameras,
-            rows,
-            cols,
-        },
-    });
-}
 
     async fetchDocumentCounts() {
         const uid = this.env.services.user.userId;

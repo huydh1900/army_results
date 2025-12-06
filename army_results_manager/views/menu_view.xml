@@ -59,10 +59,10 @@
         </record>
 
         <record id="action_training_mission_result" model="ir.actions.act_window">
-            <field name="name">Kết quả huấn luyện</field>
+            <field name="name">Kết quả khóa huấn luyện</field>
             <field name="res_model">training.result</field>
             <field name="view_mode">tree,form</field>
-            <field name="context">{'group_by': ['training_course_id']}</field>
+            <field name="context">{'group_by': ['training_course_id'], 'default_action': 'print_score' }</field>
         </record>
 
         <record id="action_training_day_comment" model="ir.actions.act_window">
@@ -121,7 +121,8 @@
             <field name="res_model">training.day</field>
             <field name="view_mode">tree,form,gantt</field>
             <field name="domain">[('state', 'in', ['posted'])]</field>
-            <field name="context">{'default_action': 'draft', 'showButtonDocument': true, 'group_by': ['year', 'month_name',
+            <field name="context">{'default_action': 'draft', 'showButtonDocument': true, 'group_by': ['year',
+                'month_name',
                 'week_name',
                 'weekday']}}
             </field>
@@ -132,7 +133,8 @@
             <field name="res_model">training.day</field>
             <field name="view_mode">tree,form,gantt</field>
             <field name="domain">[('state', 'in', ['approved'])]</field>
-            <field name="context">{'default_action': 'approved', 'showButtonDocument': true, 'group_by': ['year', 'month_name',
+            <field name="context">{'default_action': 'approved', 'showButtonDocument': true, 'group_by': ['year',
+                'month_name',
                 'week_name',
                 'weekday']}}}
             </field>
@@ -205,7 +207,7 @@
                   sequence="1"/>
 
         <menuitem id="menu_unit_management"
-                  name="Quản lý Lực Lượng và Huấn luyện"
+                  name="Quản lý Đơn vị, Cán bộ"
                   parent="menu_military_root"
                   groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer,army_results_manager.group_training_commander,army_results_manager.group_training_commander_assistant"
                   sequence="2"/>
