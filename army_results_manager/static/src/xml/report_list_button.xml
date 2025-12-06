@@ -22,6 +22,11 @@
                 </button>
             </t>
 
+            <t t-if="this.props.context['default_action'] == 'print_score'">
+                <button type="button" class="btn btn-primary" t-on-click="OnOpenWizardIn" style="margin-right:10px">In
+                </button>
+            </t>
+
             <t t-if="this.props.context['showButtonDocument'] == true">
                 <button type="button"
                         class="btn btn-warning"
