@@ -33,6 +33,7 @@ patch(ListRenderer.prototype, "training_day_patch", {
 
         } catch (err) {
             console.error("Error approving by domain:", err);
+            console.log(domain)
         }
         this.actionService.doAction({
             'type': 'ir.actions.client',

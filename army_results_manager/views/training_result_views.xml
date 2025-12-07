@@ -58,4 +58,39 @@
         </field>
     </record>
 
+    <record id="view_training_result_search" model="ir.ui.view">
+        <field name="name">training.result.search</field>
+        <field name="model">training.result</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm kết quả huấn luyện">
+
+                <!-- Tìm theo học viên -->
+                <field name="employee_id" string="Học viên"/>
+
+                <!-- Tìm theo khóa huấn luyện -->
+                <field name="training_course_id" string="Khóa huấn luyện"/>
+
+                <!-- Tìm theo năm -->
+                <field name="year" string="Năm"/>
+
+                <!-- Bộ lọc theo kết quả -->
+                <filter name="filter_pass" string="Đạt" domain="[('result', '=', 'pass')]"/>
+                <filter name="filter_fail" string="Không đạt" domain="[('result', '=', 'fail')]"/>
+                <filter name="filter_excellent" string="Xuất sắc" domain="[('result', '=', 'excellent')]"/>
+                <filter name="filter_good" string="Khá" domain="[('result', '=', 'good')]"/>
+                <filter name="filter_average" string="Trung bình" domain="[('result', '=', 'average')]"/>
+
+                <!-- Nhóm theo -->
+                <group expand="0" string="Nhóm theo">
+                    <filter name="group_employee" string="Học viên" context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_course" string="Khóa huấn luyện" context="{'group_by': 'training_course_id'}"/>
+                    <filter name="group_year" string="Năm" context="{'group_by': 'year'}"/>
+                    <filter name="group_result" string="Kết quả" context="{'group_by': 'result'}"/>
+                </group>
+
+            </search>
+        </field>
+    </record>
+
+
 </odoo>

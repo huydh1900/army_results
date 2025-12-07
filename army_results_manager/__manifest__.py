@@ -44,7 +44,6 @@
         'views/hr_department_views.xml',
         'views/ir_cron.xml',
         'views/training_mission_views.xml',
-        'views/training_mission_line_views.xml',
         'views/training_result_views.xml',
         'views/hr_employee_views.xml',
         'wizard/modify_reason_wizard.xml',

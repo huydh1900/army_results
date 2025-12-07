@@ -41,7 +41,7 @@
         </record>
 
         <record id="action_training_subject" model="ir.actions.act_window">
-            <field name="name">Môn học</field>
+            <field name="name">Chủ đề</field>
             <field name="res_model">training.subject</field>
             <field name="view_mode">tree,form</field>
         </record>
@@ -62,14 +62,15 @@
             <field name="name">Kết quả khóa huấn luyện</field>
             <field name="res_model">training.result</field>
             <field name="view_mode">tree,form</field>
-            <field name="context">{'group_by': ['training_course_id'], 'default_action': 'print_score' }</field>
+            <field name="context">{'group_by': ['plan_name', 'training_course_id'], 'default_action': 'print_score' }
+            </field>
         </record>
 
         <record id="action_training_day_comment" model="ir.actions.act_window">
             <field name="name">Kết quả giai đoạn</field>
             <field name="res_model">training.day.comment</field>
             <field name="view_mode">tree,form</field>
-            <field name="context">{'group_by': ['year', 'mission_name', 'lesson_name', 'day_date', 'student_id']}
+            <field name="context">{'group_by': ['year', 'lesson_name', 'day_date', 'student_id']}
             </field>
         </record>
 
@@ -106,18 +107,16 @@
         <record id="action_open_students_safe" model="ir.actions.server">
             <field name="name">Học viên</field>
             <field name="model_id" ref="hr.model_hr_employee"/>
-            <!--            <field name="state">code</field>-->
-            <!--            <field name="code">action = model.get_action_student()</field>-->
         </record>
 
         <record id="action_training_plan_draft" model="ir.actions.act_window">
-            <field name="name">Xây dựng kế hoạch</field>
+            <field name="name">Xây dựng khóa huấn luyện</field>
             <field name="res_model">training.plan</field>
             <field name="view_mode">tree,form,gantt,calendar</field>
         </record>
 
         <record id="action_training_day_posted" model="ir.actions.act_window">
-            <field name="name">Kế hoạch chờ duyệt</field>
+            <field name="name">Khóa huấn luyện chờ duyệt</field>
             <field name="res_model">training.day</field>
             <field name="view_mode">tree,form,gantt</field>
             <field name="domain">[('state', 'in', ['posted'])]</field>
@@ -129,7 +128,7 @@
         </record>
 
         <record id="action_training_day_approved" model="ir.actions.act_window">
-            <field name="name">Kế hoạch đã duyệt</field>
+            <field name="name">Khóa huấn luyện đã duyệt</field>
             <field name="res_model">training.day</field>
             <field name="view_mode">tree,form,gantt</field>
             <field name="domain">[('state', 'in', ['approved'])]</field>
@@ -231,33 +230,33 @@
                   action="action_view_camera_device"/>
 
         <menuitem id="menu_training_plan"
-                  name="Kế hoạch huấn luyện"
+                  name="Khóa huấn luyện"
                   groups="army_results_manager.group_admin,army_results_manager.group_training_commander_assistant,army_results_manager.group_data_entry_officer,army_results_manager.group_training_commander"
                   parent="menu_military_root"
                   sequence="4"/>
 
         <menuitem id="menu_training_plan_draft"
-                  name="Xây dựng kế hoạch"
+                  name="Xây dựng Khóa huấn luyện"
                   parent="menu_training_plan"
                   action="action_training_plan_draft"
                   groups="army_results_manager.group_admin,army_results_manager.group_training_commander_assistant,army_results_manager.group_data_entry_officer"
                   sequence="1"/>
 
         <menuitem id="menu_training_plan_approve"
-                  name="Phê duyệt kế hoạch"
+                  name="Phê duyệt Khóa huấn luyện"
                   parent="menu_training_plan"
                   groups="army_results_manager.group_admin,army_results_manager.group_training_commander"
                   sequence="2"/>
 
         <menuitem id="menu_training_plan_posted"
-                  name="Kế hoạch chờ duyệt"
+                  name="Khóa huấn luyện chờ duyệt"
                   parent="menu_training_plan_approve"
                   action="action_training_day_posted"
                   groups="army_results_manager.group_admin,army_results_manager.group_training_commander"
                   sequence="1"/>
 
         <menuitem id="menu_training_plan_approved"
-                  name="Kế hoạch đã duyệt"
+                  name="Khóa huấn luyện đã duyệt"
                   parent="menu_training_plan_approve"
                   action="action_training_day_approved"
                   groups="army_results_manager.group_training_commander,army_results_manager.group_admin"
@@ -333,7 +332,7 @@
                   sequence="9"/>
 
         <menuitem id="menu_training_subject"
-                  name="Môn học"
+                  name="Bài học"
                   parent="menu_setting"
                   groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer"
                   action="action_training_subject"/>

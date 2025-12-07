@@ -5,6 +5,7 @@
         <field name="arch" type="xml">
             <tree string="Kế hoạch huấn luyện">
                 <field name="plan_code"/>
+                <field name="name"/>
                 <field name="start_date"/>
                 <field name="end_date"/>
                 <field name="location_ids" widget="many2many_tags"/>
@@ -62,7 +63,6 @@
                         <group>
                             <field name="plan_code" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                             <field name="name" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
-                            <field name="type" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                             <field name="location_ids" widget="many2many_tags" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                             <field name="camera_ids" widget="many2many_tags" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                             <field name="description" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
@@ -88,8 +88,8 @@
                         <page string="Huấn luyện chung">
                             <field name="common_subject_ids" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}">
                                 <tree editable="bottom" no_open="1">
-                                    <field name="name"/>
                                     <field name="subject_line_id" domain="[('subject_id.type_training', '=', 'common_training')]"/>
+                                    <field name="type"/>
                                     <field name="total_hours"/>
                                     <button name="action_detail"
                                             type="object"
@@ -102,8 +102,8 @@
                         <page string="Huấn luyện riêng">
                             <field name="specific_subject_ids" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}">
                                 <tree editable="bottom" no_open="1">
-                                    <field name="name"/>
-                                    <field name="subject_line_id" domain="[('subject_id.type_training', '=', 'common_training')]"/>
+                                    <field name="subject_line_id" domain="[('subject_id.type_training', '=', 'private_training')]"/>
+                                    <field name="type"/>
                                     <field name="total_hours"/>
                                     <button name="action_detail"
                                             type="object"
@@ -135,7 +135,7 @@
                    default_group_by="state"
                    create="false"
                    edit="false"
-                   string="Kế hoạch huấn luyện"
+                   string="Khóa huấn luyện"
                    decoration-info="state == 'approved'"
                    color="state"
             >
@@ -189,8 +189,9 @@
         <field name="name">training.plan.search</field>
         <field name="model">training.plan</field>
         <field name="arch" type="xml">
-            <search string="Tìm kế hoạch huấn luyện">
-                <field name="name" string="Tên kế hoạch"/>
+            <search>
+                <field name="name" string="Tên khóa huấn luyện"/>
+                <field name="plan_code" string="Mã khóa huấn luyện"/>
                 <field name="location_ids" string="Địa điểm"/>
                 <field name="state" string="Trạng thái"/>
                 <field name="start_date" string="Ngày bắt đầu"/>

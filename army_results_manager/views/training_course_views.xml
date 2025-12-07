@@ -4,8 +4,8 @@
         <field name="model">training.course</field>
         <field name="arch" type="xml">
             <tree create="0" delete="0">
-                <field name="name"/>
-                <field name="plan_id" string="Tên kế hoạch"/>
+                <field name="subject_line_id"/>
+                <field name="plan_id" string="Khóa huấn luyện"/>
             </tree>
         </field>
     </record>
@@ -16,6 +16,13 @@
         <field name="arch" type="xml">
             <form string="Khóa huấn luyện">
                 <div class="oe_button_box" name="button_box">
+                    <button name="action_open_camera"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-video-camera"
+                            string="Mở camera">
+                        <field name="camera_count" widget="statinfo" string="Camera"/>
+                    </button>
                     <button name="action_open_students"
                             type="object"
                             class="oe_stat_button"
@@ -33,7 +40,8 @@
                 <group>
                     <group>
                         <field name="state" invisible="1"/>
-                        <field name="name" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                        <field name="subject_line_id" readonly="1" options="{'no_open': True}"/>
+                        <field name="type" attrs="{'readonly': [('state', '=', 'approved')]}"/>
                         <field name="participants_ids" widget="many2many_tags"
                                attrs="{'readonly': [('state', '=', 'approved')]}"/>
                         <field name="student_ids" widget="many2many_tags" options="{'no_create': True}"
@@ -50,11 +58,10 @@
                     </group>
                 </group>
                 <notebook>
-                    <page string="Danh sách nhiệm vụ huấn luyện">
+                    <page string="Danh sách các bài huấn luyện">
                         <field name="mission_ids" attrs="{'readonly': [('state', '=', 'approved')]}">
                             <tree editable="bottom">
-                                <field name="name"/>
-                                <field name="subject_id" options="{'no_create':True, 'no_open':True}"/>
+                                <field name="lesson_id"/>
                                 <field name="total_hours"/>
                                 <button name="action_detail"
                                         type="object"

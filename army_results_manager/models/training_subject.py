@@ -25,15 +25,23 @@ class TrainingSubjectLine(models.Model):
     subject_id = fields.Many2one('training.subject', string="Chủ đề")
     lesson_ids = fields.One2many('training.lesson', 'subject_line_id', string='Tên bài học')
 
+
 class TrainingLesson(models.Model):
     _name = 'training.lesson'
     _rec_name = 'name'
     _description = 'Bài học'
 
     code = fields.Char("Mã bài học")
-    name = fields.Char(string='Tên bài học')
+    name = fields.Text(string='Tên bài học')
     type = fields.Selection([
         ('squad', 'Phân đội'),
         ('officer', 'Sĩ quan')
     ], string="Loại huấn luyện", required=True, default='squad')
     subject_line_id = fields.Many2one('training.subject.line', string='Tên môn học')
+    stage = fields.Selection([
+        ('gd_1', 'Giai đoạn 1: Huấn luyện cơ bản'),
+        ('gd_2', 'Giai đoạn 1: Huấn luyện phân đoạn'),
+        ('gd_3', 'Giai đoạn 1: Huấn luyện cơ bản'),
+        ('gd_4', 'Giai đoạn 1: Huấn luyện cơ bản'),
+        ('gd_5', 'Giai đoạn 1: Huấn luyện cơ bản'),
+    ], string="Giai đoạn")

@@ -41,7 +41,7 @@
                     <notebook>
                         <page string="Bài học">
                             <field name="lesson_ids">
-                                <tree edittable="bottom">
+                                <tree editable="bottom">
                                     <field name="code"/>
                                     <field name="name"/>
                                     <field name="type"/>

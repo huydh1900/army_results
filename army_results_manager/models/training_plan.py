@@ -9,14 +9,9 @@ class TrainingPlan(models.Model):
     _inherit = ['mail.thread']
     _description = "Kế hoạch huấn luyện"
 
-    plan_code = fields.Char(string='Mã kế hoạch', required=True)
-    name = fields.Char(string='Tên kế hoạch', required=True)
+    plan_code = fields.Char(string='Mã khóa huấn luyện', required=True)
+    name = fields.Char(string='Tên khóa huấn luyện', required=True)
     description = fields.Text(string="Mô tả")
-    type = fields.Selection([
-        ('squad', 'Phân đội'),
-        ('officer', 'Sĩ quan')
-    ], string="Loại huấn luyện", required=True, default='squad'
-    )
     start_date = fields.Date(string="Thời gian bắt đầu", required=True)
     end_date = fields.Date(string="Thời gian kết thúc", required=True)
     participants_ids = fields.Many2many('hr.department', string="Đơn vị quản lý")
@@ -27,7 +22,7 @@ class TrainingPlan(models.Model):
         ('approved', 'Đã duyệt'),
         ('cancel', 'Hủy'),
     ], string="Trạng thái", default="draft", tracking=True)
-    location_ids = fields.Many2many('training.location', string='Địa điểm')
+
     student_ids = fields.Many2many('hr.employee', string='Học viên', domain="[('role', '=', 'student')]")
     training_content = fields.Char(string='Nội dung huấn luyện')
     reason_modify = fields.Text(string='Lý do chỉnh sửa', tracking=True)
@@ -35,6 +30,7 @@ class TrainingPlan(models.Model):
     year = fields.Char(string='Năm', default=lambda self: str(date.today().year), required=True)
     total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True)
     camera_ids = fields.Many2many('camera.device', string="Camera giám sát")
+    location_ids = fields.Many2many('training.location', string='Địa điểm')
     camera_count = fields.Integer(compute='_compute_camera_count')
     common_subject_ids = fields.One2many(
         'training.course',
