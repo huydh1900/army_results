@@ -216,6 +216,19 @@ class TrainingDayComment(models.Model):
                 parts.append(rec.weakness.strip())
             rec.comment = '\n'.join(parts) if parts else ''
 
+            # Nếu không có result_id thì bỏ qua
+            if not rec.result_id:
+                continue
+
+            # Lấy tất cả comment cùng result_id
+            comments = rec.result_id.day_comment_ids.mapped('comment')
+
+            # Ghi vào note_tmp của TrainingResult
+            rec.result_id.write({
+                'note_tmp': "\n\n".join([c for c in comments if c])
+            })
+
+
     def action_open_comment(self):
         """Mở form nhận xét học viên."""
         self.ensure_one()

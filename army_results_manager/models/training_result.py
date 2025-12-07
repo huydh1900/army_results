@@ -25,6 +25,7 @@ class TrainingResult(models.Model):
         string="Xếp loại",
     )
     note = fields.Text(string='Nhận xét', tracking=True)
+    note_tmp = fields.Text()
 
     # def action_generate_note_by_ai(self):
     #     """Chuyển đến controller để tạo nhận xét AI"""
