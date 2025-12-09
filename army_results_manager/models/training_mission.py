@@ -37,8 +37,8 @@ class TrainingMission(models.Model):
     camera_ids = fields.Many2many('camera.device', string="Camera giám sát")
     location_ids = fields.Many2many('training.location', string='Địa điểm')
     camera_count = fields.Integer(compute='_compute_camera_count')
-    start_date = fields.Date(string="Thời gian bắt đầu", required=True)
-    end_date = fields.Date(string="Thời gian kết thúc", required=True)
+    start_date = fields.Date(string="Thời gian bắt đầu")
+    end_date = fields.Date(string="Thời gian kết thúc")
     percent_done = fields.Float(string="Tiến độ (%)", default=0.0)
 
     @api.model
