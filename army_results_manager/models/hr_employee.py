@@ -54,38 +54,6 @@ class HrEmployeePrivate(models.Model):
             'training': training,
         }
 
-    @api.depends("result_ids")
-    def _compute_classification(self):
-        for rec in self:
-            scores = []
-
-            # Thu thập toàn bộ điểm của record
-            for result in rec.result_ids:
-                # Nếu result.score là 1 con số:
-                if isinstance(result.score, (int, float)):
-                    scores.append(result.score)
-                # Nếu là danh sách điểm (ví dụ One2many):
-                elif isinstance(result.score, list):
-                    scores.extend(result.score)
-
-            if not scores:
-                rec.classification = False
-                continue
-
-            avg_score = mean(scores)
-
-            # Xếp loại theo ngưỡng điểm
-            if avg_score >= 9:
-                rec.classification = "excellent"
-            elif avg_score >= 8:
-                rec.classification = "good"
-            elif avg_score >= 6.5:
-                rec.classification = "average"
-            elif avg_score >= 5:
-                rec.classification = "pass"
-            else:
-                rec.classification = "fail"
-
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
@@ -110,3 +78,62 @@ class HrEmployeePrivate(models.Model):
 
     def action_related_contacts(self):
         return
+
+    @api.depends("result_ids.score", "result_ids.result")
+    def _compute_classification(self):
+        for emp in self:
+            results = emp.result_ids.filtered(lambda r: r.score and r.result)
+
+            if not results:
+                emp.classification = False
+                continue
+
+            total = 0
+            count = 0
+            for r in results:
+                try:
+                    total += float(r.score)
+                    count += 1
+                except:
+                    pass
+
+            if not count:
+                emp.classification = False
+                continue
+
+            avg = total / count
+
+            if avg >= 8:
+                emp.classification = "excellent"
+            elif avg >= 7:
+                emp.classification = "good"
+            elif avg >= 5:
+                emp.classification = "pass"
+            elif avg >= 4:
+                emp.classification = "average"
+            else:
+                emp.classification = "fail"
+
+    @api.model
+    def get_top_department_training(self, limit=5):
+        self.env.cr.execute("""
+            SELECT 
+                d.id,
+                d.name,
+                COUNT(e.id) AS good_count
+            FROM hr_employee e
+            JOIN hr_department d ON e.department_id = d.id
+            WHERE e.classification IN ('excellent', 'good')
+            GROUP BY d.id, d.name
+            ORDER BY good_count DESC
+            LIMIT %s
+        """, (limit,))
+
+        rows = self.env.cr.dictfetchall()
+
+        return [
+            {"label": r["name"], "value": r["good_count"]}
+            for r in rows
+        ]
+
+

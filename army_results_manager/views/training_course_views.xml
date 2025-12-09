@@ -15,63 +15,70 @@
         <field name="model">training.course</field>
         <field name="arch" type="xml">
             <form string="Khóa huấn luyện">
-                <div class="oe_button_box" name="button_box">
-                    <button name="action_open_camera"
-                            type="object"
-                            class="oe_stat_button"
-                            icon="fa-video-camera"
-                            string="Mở camera">
-                        <field name="camera_count" widget="statinfo" string="Camera"/>
-                    </button>
+
+                <!-- HEADER BUTTONS -->
+                <header>
                     <button name="action_open_students"
                             type="object"
                             class="oe_stat_button"
-                            icon="fa-users">
+                            icon="fa-users"
+                            string="Học viên"
+                            attrs="{'invisible': [('student_count', '=', 0)]}">
                         <field name="student_count" widget="statinfo" string="Học viên"/>
                     </button>
+
                     <button name="action_open_result_training"
                             type="object"
                             class="oe_stat_button"
                             icon="fa-list-alt"
-                            attrs="{'invisible': [('student_count', '=', 0)]}"
-                            title="Kết quả huấn luyện"
-                            string="Kết quả huấn luyện"/>
-                </div>
-                <group>
-                    <group>
-                        <field name="state" invisible="1"/>
-                        <field name="subject_line_id" readonly="1" options="{'no_open': True}"/>
-                        <field name="type" attrs="{'readonly': [('state', '=', 'approved')]}"/>
-                        <field name="participants_ids" widget="many2many_tags"
-                               attrs="{'readonly': [('state', '=', 'approved')]}"/>
-                        <field name="student_ids" widget="many2many_tags" options="{'no_create': True}"
-                               attrs="{'readonly': [('state', '=', 'approved')]}"/>
-                        <field name="training_officer_ids" widget="many2many_tags" options="{'no_create': True}"
-                               attrs="{'readonly': [('state', '=', 'approved')]}"/>
-                        <field name="participant_category_id" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            string="Kết quả huấn luyện"
+                            attrs="{'invisible': ['|',('state', '=', 'draft'), ('student_count', '=', 0)]}"/>
+                </header>
+
+                <sheet>
+                    <!-- Ẩn field state -->
+                    <field name="state" invisible="1"/>
+
+                    <!-- CHIA 2 CỘT -->
+                    <group col="2" class="mt16">
+                        <group>
+                            <field name="subject_line_id" readonly="1" options="{'no_open': True}"/>
+                            <field name="type" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="participants_ids" widget="many2many_tags"
+                                   attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="student_ids" widget="many2many_tags" options="{'no_create': True}"
+                                   attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="training_officer_ids" widget="many2many_tags" options="{'no_create': True}"
+                                   attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="participant_category_id" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                        </group>
+
+                        <group>
+                            <field name="responsible_level_id" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="measure" attrs="{'readonly': [('state', '=', 'approved')]}"/>
+                            <field name="total_hours"/>
+                            <field name="approver_id" readonly="1" options="{'no_open': True}"/>
+                        </group>
                     </group>
-                    <group>
-                        <field name="responsible_level_id" attrs="{'readonly': [('state', '=', 'approved')]}"/>
-                        <field name="measure" attrs="{'readonly': [('state', '=', 'approved')]}"/>
-                        <field name="total_hours"/>
-                        <field name="approver_id" readonly="1" options="{'no_open': True}"/>
-                    </group>
-                </group>
-                <notebook>
-                    <page string="Danh sách các bài huấn luyện">
-                        <field name="mission_ids" attrs="{'readonly': [('state', '=', 'approved')]}">
-                            <tree editable="bottom">
-                                <field name="lesson_id"/>
-                                <field name="total_hours"/>
-                                <button name="action_detail"
-                                        type="object"
-                                        class="oe_stat_button"
-                                        title="Chi tiết"
-                                        icon="fa-eye"/>
-                            </tree>
-                        </field>
-                    </page>
-                </notebook>
+
+                    <!-- NOTEBOOK -->
+                    <notebook>
+                        <page string="Danh sách các bài huấn luyện">
+                            <field name="mission_ids" attrs="{'readonly': [('state', '=', 'approved')]}">
+                                <tree editable="bottom" string="Các bài huấn luyện">
+                                    <field name="lesson_id"/>
+                                    <field name="total_hours"/>
+                                    <button name="action_detail"
+                                            type="object"
+                                            class="oe_stat_button"
+                                            icon="fa-eye"
+                                            title="Chi tiết"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+
             </form>
         </field>
     </record>

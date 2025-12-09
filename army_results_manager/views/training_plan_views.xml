@@ -8,7 +8,7 @@
                 <field name="name"/>
                 <field name="start_date"/>
                 <field name="end_date"/>
-                <field name="location_ids" widget="many2many_tags"/>
+                <field name="approver_id"/>
                 <field name="state" widget="badge"
                        decoration-muted="state == 'draft'"
                        decoration-info="state == 'posted'"
@@ -24,108 +24,130 @@
         <field name="model">training.plan</field>
         <field name="arch" type="xml">
             <form string="Kế hoạch huấn luyện">
-                <header>
-                    <field name="state" widget="statusbar"/>
-                    <button name="action_post"
-                            string="Gửi duyệt"
-                            type="object"
-                            states="draft,to_modify"
-                            groups="army_results_manager.group_data_entry_officer,army_results_manager.group_admin"
-                            class="btn-primary"/>
-
-                    <button name="action_cancel"
-                            string="Hủy"
-                            type="object"
-                            states="posted,to_modify"
-                            groups="army_results_manager.group_data_entry_officer,army_results_manager.group_admin"
-                            confirm="Bạn có chắc muốn Hủy kế hoạch này?"
-                            class="btn-danger"/>
-                </header>
-
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_open_camera"
-                                type="object"
-                                class="oe_stat_button"
-                                icon="fa-video-camera"
-                                string="Mở camera">
-                            <field name="camera_count" widget="statinfo" string="Camera"/>
-                        </button>
                         <button name="action_open_training_day"
                                 type="object"
                                 class="oe_stat_button"
                                 icon="fa-calendar"
                                 attrs="{'invisible': [('count_rec_training_day', '=', 0)]}"
-                                string="Chi tiết bài học">
-                        </button>
+                                string="Chi tiết bài học"/>
                     </div>
-                    <group>
+                    <header>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,to_modify,posted,approved"/>
+
+                        <button name="action_post"
+                                string="Gửi duyệt"
+                                type="object"
+                                states="draft,to_modify"
+                                groups="army_results_manager.group_data_entry_officer,army_results_manager.group_admin"
+                                class="btn-primary"/>
+
+                        <button name="action_cancel"
+                                string="Hủy"
+                                type="object"
+                                states="posted,to_modify"
+                                groups="army_results_manager.group_data_entry_officer,army_results_manager.group_admin"
+                                confirm="Bạn có chắc muốn Hủy kế hoạch này?"
+                                class="btn-danger"/>
+                    </header>
+                    <!-- GROUPED INPUTS -->
+                    <group col="2" class="mt16">
                         <group>
-                            <field name="plan_code" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
-                            <field name="name" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
-                            <field name="location_ids" widget="many2many_tags" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
-                            <field name="camera_ids" widget="many2many_tags" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
-                            <field name="description" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
+                            <field name="plan_code"
+                                   attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
+                            <field name="name"
+                                   attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
+                            <field name="description"
+                                   attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                             <field name="training_content"
                                    attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                         </group>
+
                         <group>
-                            <field name="start_date" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
-                            <field name="end_date" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
-                            <field name="year" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
-                            <field name="approver_id" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"
-                                   options='{"no_create": True, "no_open": True}'/>
-                            <field name="total_hours"/>
-                            <field name="count_rec_training_day" invisible="1"/>
-                            <field name="participants_ids" widget="many2many_tags"
+                            <field name="start_date"
                                    attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
-                            <field name="student_ids" widget="many2many_tags"
+                            <field name="end_date"
+                                   attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
+                            <field name="year"
+                                   attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
+
+                            <field name="approver_id"
+                                   options='{"no_create": True, "no_open": True}'
+                                   attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
+
+                            <field name="total_hours"/>
+
+                            <field name="count_rec_training_day" invisible="1"/>
+
+                            <field name="participants_ids"
+                                   widget="many2many_tags"
+                                   attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
+
+                            <field name="student_ids"
+                                   widget="many2many_tags"
                                    domain="[('department_id','in', participants_ids)]"
                                    attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                         </group>
                     </group>
+
+                    <!-- NOTEBOOK -->
                     <notebook>
+
+                        <!-- COMMON TRAINING -->
                         <page string="Huấn luyện chung">
-                            <field name="common_subject_ids" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}">
+                            <field name="common_subject_ids"
+                                   attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}">
                                 <tree editable="bottom" no_open="1">
-                                    <field name="subject_line_id" domain="[('subject_id.type_training', '=', 'common_training')]"/>
+                                    <field name="subject_line_id"
+                                           domain="[('subject_id.type_training', '=', 'common_training')]"/>
                                     <field name="type"/>
                                     <field name="total_hours"/>
                                     <button name="action_detail"
                                             type="object"
                                             class="oe_stat_button"
-                                            title="Chi tiết"
-                                            icon="fa-eye"/>
+                                            icon="fa-eye"
+                                            title="Chi tiết"/>
                                 </tree>
                             </field>
                         </page>
+
+                        <!-- SPECIFIC TRAINING -->
                         <page string="Huấn luyện riêng">
-                            <field name="specific_subject_ids" attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}">
+                            <field name="specific_subject_ids"
+                                   attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}">
                                 <tree editable="bottom" no_open="1">
-                                    <field name="subject_line_id" domain="[('subject_id.type_training', '=', 'private_training')]"/>
+                                    <field name="subject_line_id"
+                                           domain="[('subject_id.type_training', '=', 'private_training')]"/>
                                     <field name="type"/>
                                     <field name="total_hours"/>
                                     <button name="action_detail"
                                             type="object"
                                             class="oe_stat_button"
-                                            title="Chi tiết"
-                                            icon="fa-eye"/>
+                                            icon="fa-eye"
+                                            title="Chi tiết"/>
                                 </tree>
                             </field>
                         </page>
+
+                        <!-- REASON MODIFY -->
                         <page string="Lý do chỉnh sửa">
                             <field name="reason_modify" readonly="1"/>
                         </page>
-                    </notebook>
-                </sheet>
 
-                <div class="oe_chatter">
-                    <field name="message_follower_ids" groups="base.group_user"/>
-                    <field name="message_ids"/>
-                </div>
+                    </notebook>
+
+                    <!-- CHATTER -->
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" groups="base.group_user"/>
+                        <field name="message_ids"/>
+                    </div>
+
+                </sheet>
             </form>
         </field>
     </record>
+
 
     <record id="view_training_plan_gantt" model="ir.ui.view">
         <field name="name">training.plan.gantt</field>
@@ -192,23 +214,21 @@
             <search>
                 <field name="name" string="Tên khóa huấn luyện"/>
                 <field name="plan_code" string="Mã khóa huấn luyện"/>
-                <field name="location_ids" string="Địa điểm"/>
                 <field name="state" string="Trạng thái"/>
                 <field name="start_date" string="Ngày bắt đầu"/>
                 <field name="end_date" string="Ngày kết thúc"/>
-                
+
                 <!-- Filter theo trạng thái -->
                 <filter name="draft" string="Soạn thảo" domain="[('state','=','draft')]"/>
                 <filter name="to_modify" string="Cần chỉnh sửa" domain="[('state','=','to_modify')]"/>
                 <filter name="posted" string="Chờ duyệt" domain="[('state','=','posted')]"/>
                 <filter name="approved" string="Đã duyệt" domain="[('state','=','approved')]"/>
                 <filter name="cancel" string="Hủy" domain="[('state','=','cancel')]"/>
-                
+
                 <separator/>
-                
+
                 <!-- Group by -->
                 <group expand="0" string="Nhóm theo">
-                    <filter name="group_location" string="Địa điểm" context="{'group_by':'location_ids'}"/>
                     <filter name="group_state" string="Trạng thái" context="{'group_by':'state'}"/>
                     <filter name="group_start_date" string="Ngày bắt đầu" context="{'group_by':'start_date'}"/>
                 </group>

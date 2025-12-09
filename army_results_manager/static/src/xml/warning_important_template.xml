@@ -17,13 +17,13 @@
                             </div>
                         </t>
                     </t>
-                    <t t-else="">
-                        <div class="alert_box alert_success">
-                            <div class="alert_icon icon_success">✓</div>
-                            <div style="flex: 1;">Không có cảnh báo nào hôm nay 🎉</div>
-                            <span class="status_badge status_success">Tốt</span>
-                        </div>
-                    </t>
+<!--                    <t t-else="">-->
+<!--                        <div class="alert_box alert_success">-->
+<!--                            <div class="alert_icon icon_success">✓</div>-->
+<!--                            <div style="flex: 1;">Không có cảnh báo nào hôm nay 🎉</div>-->
+<!--                            <span class="status_badge status_success">Tốt</span>-->
+<!--                        </div>-->
+<!--                    </t>-->
                 </div>
             </div>
         </div>

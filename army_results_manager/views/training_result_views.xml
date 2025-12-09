@@ -35,12 +35,17 @@
         <field name="arch" type="xml">
             <form string="Kết quả huấn luyện" create="false">
                 <group>
-                    <field name="training_course_id" options='{"no_open":True}'/>
-                    <field name="year"/>
-                    <field name="employee_id" options='{"no_open":True}'/>
-                    <field name="score"/>
-                    <field name="result"/>
-                    <field name="note"/>
+                    <group>
+                        <field name="plan_name" readonly="1"/>
+                        <field name="training_course_id" options='{"no_open":True}'/>
+                        <field name="year"/>
+                        <field name="employee_id" options='{"no_open":True}'/>
+                    </group>
+                    <group>
+                        <field name="score"/>
+                        <field name="result"/>
+                        <field name="note"/>
+                    </group>
                 </group>
                 <notebook>
                     <page string="Kết quả giai đoạn huấn luyện">

@@ -11,8 +11,9 @@ class TrainingResult(models.Model):
 
     employee_id = fields.Many2one("hr.employee", string='Học viên', readonly=True)
     training_course_id = fields.Many2one("training.course", string="Môn học", readonly=True, ondelete='cascade')
-    year = fields.Char(related="training_course_id.year", readonly=True)
-    plan_name = fields.Char()
+    year = fields.Char(related="training_course_id.year", readonly=True, store=True)
+    plan_id = fields.Many2one(related="training_course_id.plan_id", readonly=True, store=True)
+    plan_name = fields.Char(related="plan_id.name", readonly=True, store=True)
     day_comment_ids = fields.One2many('training.day.comment', 'result_id')
     score = fields.Char(string="Điểm số")
     result = fields.Selection(
@@ -76,6 +77,7 @@ class TrainingResult(models.Model):
                 score = float(rec.score)
             except ValueError:
                 raise UserError("Điểm số nhập vào không cho phép là ký tự!")
+
             if score >= 8:
                 rec.result = "excellent"
             elif score >= 7:

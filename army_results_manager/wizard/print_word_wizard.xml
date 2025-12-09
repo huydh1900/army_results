@@ -6,18 +6,22 @@
         <field name="arch" type="xml">
             <form string="Báo cáo tổng hợp huấn luyện">
                 <group>
-                    <field name="report_type"/>
-                    <field name="year"/>
+                    <field name="type_action"/>
+                    <field name="report_type" attrs="{'invisible':[('type_action','=','send_report')]}"/>
+                    <field name="year" attrs="{'invisible':[('type_action','=','send_report')]}"/>
                     <field name="month"
-                           attrs="{'invisible':[('report_type','=','year')], 'required':[('report_type','in',['month','week'])]}"/>
+                           attrs="{'invisible':['|', ('report_type','=','year'), ('type_action','=','send_report')]}"/>
                     <field name="week"
-                           attrs="{'invisible':[('report_type','!=','week')], 'required':[('report_type','=','week')]}"/>
-                    <field name="approver_id"/>
-                    <field name="attachment_ids" widget="many2many_binary" class="o_social_post_form_attachments"/>
+                           attrs="{'invisible':['|',('type_action','=','send_report'), ('report_type','!=','week')]}"/>
+                    <field name="approver_id" attrs="{'invisible':[('type_action','!=','send_report')]}"/>
+                    <field name="attachment_ids" attrs="{'invisible':[('type_action','!=','send_report')]}"
+                           widget="many2many_binary" class="o_social_post_form_attachments"/>
                 </group>
                 <footer>
-                    <button string="In" type="object" name="action_print_word" class="btn-primary"/>
-                    <button string="Gửi duyệt" type="object" name="action_send_report" class="btn-success"/>
+                    <button string="In" attrs="{'invisible':[('type_action','=','send_report')]}" type="object"
+                            name="action_print_word" class="btn-primary"/>
+                    <button string="Gửi duyệt" attrs="{'invisible':[('type_action','!=','send_report')]}" type="object"
+                            name="action_send_report" class="btn-success"/>
                     <button string="Hủy" class="btn-danger" special="cancel"/>
                 </footer>
             </form>

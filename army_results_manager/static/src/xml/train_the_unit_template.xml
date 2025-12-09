@@ -7,7 +7,7 @@
                 <ul class="unit_list">
                     <t t-foreach="state.units" t-as="unit" t-key="unit.id">
                         <li class="unit_item">
-                            <span class="unit_name"><t t-esc="unit.name"/></span>
+                            <span class="unit_name" style="white-space: normal; word-wrap: break-word;"><t t-esc="unit.name"/></span>
                             <div class="progress_bar">
                                 <div class="progress_fill"
                                      t-att-class="'progress_fill ' + this.getProgressColor(unit.percent_done)"

@@ -10,7 +10,7 @@ export class TrainTheUnitComponent extends Component {
     }
 
     async getUnitItemData() {
-        const data = await this.orm.call("training.course", "get_list_course", []);
+        const data = await this.orm.call("training.mission", "get_list_mission", []);
         this.state.units = data;
     }
 

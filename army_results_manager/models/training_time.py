@@ -15,7 +15,7 @@ class TrainingTime(models.Model):
     )
     end_time = fields.Float(
         string="Thời gian kết thúc",
-        required=True, default=7.0,
+        required=True, default=11.5,
         help="Giờ kết thúc huấn luyện (chọn giờ và phút)"
     )
     duration_hours = fields.Float(

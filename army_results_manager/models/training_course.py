@@ -50,33 +50,6 @@ class TrainingCourse(models.Model):
     ], string="Loại huấn luyện", required=True, default="squad"
     )
 
-    camera_ids = fields.Many2many('camera.device', string="Camera giám sát")
-    location_ids = fields.Many2many('training.location', string='Địa điểm')
-    camera_count = fields.Integer(compute='_compute_camera_count')
-
-    def action_open_camera(self):
-        if self.camera_count == 0:
-            raise UserError("Không có camera được gán cho vị trí huấn luyện này!")
-
-        return {
-            "type": "ir.actions.act_window",
-            "name": "Danh mục camera",
-            "res_model": "camera.device",
-            "view_mode": "tree",
-            "domain": [('id', '=', self.camera_ids.ids)],
-            "target": "new",
-            'context': {
-                'create': False,
-                'delete': False,
-                'default_action': 'camera_device_view',
-            },
-        }
-
-    @api.depends('camera_ids')
-    def _compute_camera_count(self):
-        for rec in self:
-            rec.camera_count = len(rec.camera_ids)
-
     def name_get(self):
         result = []
         for rec in self:
@@ -145,22 +118,6 @@ class TrainingCourse(models.Model):
             else:
                 rec.total_hours = 0
 
-    @api.model
-    def get_list_course(self):
-        data = []
-        courses = self.search([('state', '=', 'approved')])
-        for course in courses:
-            total_mission = len(course.mission_ids)
-            done_mission = len(course.mission_ids.filtered(lambda m: m.state == 'done'))
-            percent_done = round((done_mission / total_mission) * 100, 2) if total_mission else 0
-
-            data.append({
-                'name': course.name,
-                'id': course.id,
-                'percent_done': percent_done,
-            })
-        return data
-
     def _compute_student_count(self):
         for rec in self:
             rec.student_count = len(rec.student_ids)
@@ -181,42 +138,6 @@ class TrainingCourse(models.Model):
             'target': 'current',
             'context': context,
         }
-
-    def write(self, vals):
-        res = super().write(vals)
-        if vals.get('student_ids') or vals.get('mission_ids'):
-            self._sync_students_to_results()
-        return res
-
-    def _sync_students_to_results(self):
-        """Đồng bộ học viên và kết quả huấn luyện (tối ưu cho số lượng lớn)."""
-        Result = self.env['training.result']
-
-        for rec in self:
-            # Lấy danh sách ID học viên hiện tại
-            current_ids = set(rec.student_ids.ids)
-
-            # Lấy tất cả employee_id của result hiện có cho khóa này
-            existing_results = Result.search([('training_course_id', '=', rec.id)])
-            existing_ids = set(existing_results.mapped('employee_id.id'))
-
-            # Xóa kết quả của học viên không còn trong danh sách
-            remove_ids = existing_ids - current_ids
-            if remove_ids:
-                Result.search([
-                    ('training_course_id', '=', rec.id),
-                    ('employee_id', 'in', list(remove_ids))
-                ]).unlink()
-
-            # Thêm mới cho học viên chưa có
-            add_ids = current_ids - existing_ids
-            if add_ids:
-                # Tạo danh sách dữ liệu hàng loạt
-                vals_list = [
-                    {'training_course_id': rec.id, 'employee_id': sid}
-                    for sid in add_ids
-                ]
-                Result.create(vals_list)
 
     def action_open_students(self):
         """Mở danh sách học viên của khóa huấn luyện"""
