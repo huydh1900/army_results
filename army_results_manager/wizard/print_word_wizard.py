@@ -21,6 +21,11 @@ class PrintWordWizard(models.TransientModel):
     _name = "print.word.wizard"
     _description = "Wizard chọn mẫu in Word/Excel"
 
+    type_action = fields.Selection([
+        ('print', 'In báo cáo'),
+        ('send_report', 'Gửi báo cáo')]
+        , default='print', string="Chức năng", required=True
+    )
     mau_in = fields.Selection(
         [('template1', 'Phụ lục 1'),
          ('template2', 'Phụ lục 2'),
@@ -32,7 +37,7 @@ class PrintWordWizard(models.TransientModel):
         ('week', 'Theo tuần'),
         ('month', 'Theo tháng'),
         ('year', 'Theo năm'),
-    ], string="Loại báo cáo", required=True, default='week')
+    ], string="Loại báo cáo", default='week')
 
     year = fields.Char(string="Năm", default=lambda self: date.today().year)
     month = fields.Selection([
@@ -59,6 +64,9 @@ class PrintWordWizard(models.TransientModel):
 
     def action_send_report(self):
         self.ensure_one()
+
+        if not self.approver_id:
+            raise UserError("Bạn phải điền Cán bộ Phê duyệt trước khi Gửi báo !")
 
         if not self.attachment_ids:
             raise UserError("Bạn phải chọn ít nhất 1 file!")
@@ -1070,6 +1078,21 @@ class PrintWordWizard(models.TransientModel):
     # ==================== Main Action ====================
 
     def action_print_word(self):
+        if self.type_action == 'print' and not self.report_type:
+            raise UserError('Bạn phải chọn Loại báo cáo trước khi in!')
+
+        # Báo cáo năm
+        if self.report_type == 'year' and not self.year:
+            raise UserError('Bạn phải điền năm trước khi in Báo cáo năm!')
+
+        # Báo cáo tháng
+        if self.report_type == 'month' and (not self.year or not self.month):
+            raise UserError('Bạn phải điền năm và tháng trước khi in Báo cáo theo tháng!')
+
+        # Báo cáo tuần
+        if self.report_type == 'week' and (not self.year or not self.month or not self.week):
+            raise UserError('Bạn phải điền năm, tháng và tuần trước khi in Báo cáo theo tuần!')
+
         if self.report_type == 'week':
             self.mau_in = 'template3'
         elif self.report_type == 'month':

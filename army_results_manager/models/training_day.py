@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from odoo.exceptions import UserError
 
 
 class TrainingDay(models.Model):
@@ -8,12 +9,12 @@ class TrainingDay(models.Model):
 
     time_ids = fields.One2many('training.time', 'time_id')
     comment_ids = fields.One2many('training.day.comment', 'day_id', string="Nhận xét học viên")
-    mission_line_id = fields.Many2one('training.mission.line', string='Nhiệm vụ huấn luyện')
+    mission_id = fields.Many2one('training.mission')
     student_ids = fields.Many2many('hr.employee', string='Học viên', compute='_compute_student_ids', store=True)
     month = fields.Integer(string="Tháng", readonly=True)
-    day = fields.Date(string="Ngày")
+    day = fields.Date(string="Ngày", required=True)
     week = fields.Integer(string="Tuần", readonly=True)
-    year = fields.Char(related='mission_line_id.mission_id.course_id.year', store=True)
+    year = fields.Char(related='mission_id.course_id.year', store=True)
     month_name = fields.Char(string="Tên tháng", compute='_compute_name', store=True)
     week_name = fields.Char(string="Tên tuần", compute='_compute_name', store=True)
     day_name = fields.Char(string="Tên ngày", compute='_compute_name', store=True)
@@ -24,32 +25,54 @@ class TrainingDay(models.Model):
         ('approved', 'Đã duyệt'),
         ('cancel', 'Hủy'),
     ], string="Trạng thái", default="draft", tracking=True)
-    mission_id = fields.Many2one(related='mission_line_id.mission_id', store=True)
     mission_name = fields.Char(related='mission_id.name', store=True)
-    lesson_name = fields.Char(related='mission_line_id.name', store=True)
-    course_id = fields.Many2one(related='mission_line_id.mission_id.course_id', store=True)
-    course_name = fields.Char(related='course_id.name', store=True)
-    subject_code = fields.Char(related='mission_line_id.mission_id.subject_id.code', store=True)
-    type_training = fields.Selection(related='mission_line_id.mission_id.subject_id.type_training', store=True)
+    lesson_name = fields.Char(related='mission_id.name', store=True)
+    course_id = fields.Many2one(related='mission_id.course_id', store=True)
+    course_name = fields.Char(related='course_id.subject_line_id.name', store=True)
     weekday = fields.Char(string="Thứ", compute='_compute_name', store=True)
     total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True, group_operator=False)
     plan_id = fields.Many2one(
         'training.plan',
-        related='mission_line_id.mission_id.course_id.plan_id',
+        related='mission_id.course_id.plan_id',
         store=True
     )
+
     plan_name = fields.Char(related='plan_id.name', store=True)
-    type_plan = fields.Selection(related='plan_id.type', store=True)
+    # type_plan = fields.Selection(related='plan_id.type', store=True)
     training_officer_ids = fields.Many2many(
         'hr.employee',
         'training_day_rel',
         'day_id',
         'employee_id',
         string='Giảng viên',
-        related='mission_line_id.training_officer_ids',
+        related='mission_id.training_officer_ids',
     )
     reason_modify = fields.Text(string='Lý do chỉnh sửa')
     approver_id = fields.Many2one(related='plan_id.approver_id', store=True)
+
+    @api.constrains('day', 'mission_id')
+    @api.onchange('day', 'mission_id')
+    def _check_day_in_mission_range(self):
+        for rec in self:
+            if not rec.mission_id.start_date or not rec.mission_id.end_date:
+                raise UserError('Bạn cần nhập Ngày bắt đầu và Ngày kết thúc của bài học trước!')
+
+            if rec.day and rec.mission_id:
+                start = rec.mission_id.start_date
+                end = rec.mission_id.end_date
+
+                # Định dạng ngày dd-mm-yyyy
+                day_str = rec.day.strftime('%d-%m-%Y')
+                start_str = start.strftime('%d-%m-%Y')
+                end_str = end.strftime('%d-%m-%Y')
+
+                if rec.day < start or rec.day > end:
+                    raise UserError(
+                        "Ngày bạn chọn (%s) không hợp lệ.\n\n"
+                        "Ngày bắt đầu của nhiệm vụ là: %s\n"
+                        "Ngày kết thúc của nhiệm vụ là: %s" %
+                        (day_str, start_str, end_str)
+                    )
 
     def action_open_modify_wizard(self):
         return {
@@ -74,23 +97,39 @@ class TrainingDay(models.Model):
         comment_vals = []
         for rec in records:
             for student in rec.student_ids:
-                # 1. Lấy hoặc tạo TrainingResult cho học viên trong khóa đó
+
+                # 1. Lấy hoặc tạo TrainingResult theo khóa
                 result = self.sudo().env['training.result'].search([
                     ('employee_id', '=', student.id),
-                    ('training_course_id', '=', rec.mission_line_id.mission_id.course_id.id)
+                    ('training_course_id', '=', rec.mission_id.course_id.id),
+                    ('plan_id', '=', rec.plan_id.id),
                 ], limit=1)
 
                 if not result:
                     result = self.sudo().env['training.result'].create({
                         'employee_id': student.id,
-                        'training_course_id': rec.mission_line_id.mission_id.course_id.id,
+                        'training_course_id': rec.mission_id.course_id.id,
+                        'plan_id': rec.plan_id.id,
                     })
+
+                # 2. Không tạo comment trùng
+                existing_comment = self.env['training.day.comment'].search([
+                    ('day_id', '=', rec.id),
+                    ('student_id', '=', student.id),
+                ], limit=1)
+
+                if existing_comment:
+                    continue
+
+                # 3. Tạo comment mới
                 comment_vals.append({
                     'day_id': rec.id,
                     'day_date': rec.day.strftime('%d-%m-%Y'),
                     'result_id': result.id,
                     'student_id': student.id,
                     'mission_name': rec.mission_name,
+                    'plan_name': rec.plan_name,
+                    'plan_id': rec.plan_id.id,
                     'lesson_name': rec.lesson_name,
                     'year': rec.year,
                     'training_officer_ids': [(6, 0, rec.training_officer_ids.ids)],
@@ -113,7 +152,17 @@ class TrainingDay(models.Model):
                 plan.sudo().write({'state': 'approved'})
                 plan.course_ids.sudo().write({'state': 'approved'})
 
-    @api.depends('month', 'week', 'mission_line_id', 'day')
+        # --- CẬP NHẬT TRẠNG THÁI NHIỆM VỤ ---
+        mission_ids = records.mapped('mission_id').filtered(lambda m: m)
+
+        for mission in mission_ids:
+            all_mission_days = self.search([('mission_id', '=', mission.id)])
+            approved_mission_days = all_mission_days.filtered(lambda d: d.state == 'approved')
+
+            if len(all_mission_days) == len(approved_mission_days):
+                mission.sudo().write({'state': 'approved'})
+
+    @api.depends('month', 'week', 'mission_id', 'day')
     def _compute_name(self):
         weekday_map = {
             0: 'Thứ Hai',
@@ -161,10 +210,10 @@ class TrainingDay(models.Model):
             self.month = False
             self.week = False
 
-    @api.depends('mission_line_id.student_ids')
+    @api.depends('mission_id.student_ids')
     def _compute_student_ids(self):
         for rec in self:
-            rec.student_ids = rec.mission_line_id.student_ids
+            rec.student_ids = rec.mission_id.student_ids
 
     def action_detail(self):
         self.ensure_one()
@@ -187,9 +236,11 @@ class TrainingDayComment(models.Model):
     student_id = fields.Many2one('hr.employee', string="Học viên", required=True)
     comment = fields.Text(string='Nhận xét', compute='_compute_comment', store=True)
     day_date = fields.Char(string='Ngày')
+    plan_name = fields.Char(string='Tên khóa huấn luyện')
+    plan_id = fields.Many2one('training.plan', string='Mã khóa huấn luyện', readonly=True)
+    mission_name = fields.Char(string='Tên bài học')
     result_id = fields.Many2one('training.result', ondelete='cascade')
-    course_name = fields.Char(related='day_id.mission_line_id.mission_id.course_id.name', store=True)
-    mission_name = fields.Char()
+    course_name = fields.Char(related='day_id.mission_id.course_id.subject_line_id.name', store=True)
     lesson_name = fields.Char(string='Tên bài học')
     year = fields.Char()
     score = fields.Char(string="Điểm số")

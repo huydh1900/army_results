@@ -6,6 +6,7 @@ import {BarChartComponent} from "./bar_chart_component";
 import {TrainTheUnitComponent} from "./train_the_unit_component";
 import {TrainingResultComponent} from "./training_result_component";
 import {WarningImportantComponent} from "./warning_important_component";
+import {TopUnitTrainingComponent} from "./top_unit_training_component";
 
 export class Dashboard extends Component {
     setup() {
@@ -18,6 +19,7 @@ Dashboard.components = {
     BarChartComponent,
     TrainTheUnitComponent,
     TrainingResultComponent,
-    WarningImportantComponent
+    WarningImportantComponent,
+    TopUnitTrainingComponent
 };
 registry.category("actions").add("army_dashboard", Dashboard)

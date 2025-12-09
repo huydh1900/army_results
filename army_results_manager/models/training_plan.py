@@ -7,16 +7,11 @@ class TrainingPlan(models.Model):
     _name = "training.plan"
     _rec_name = 'name'
     _inherit = ['mail.thread']
-    _description = "Kế hoạch huấn luyện"
+    _description = "Khóa huấn luyện"
 
-    plan_code = fields.Char(string='Mã kế hoạch', required=True)
-    name = fields.Char(string='Tên kế hoạch', required=True)
+    plan_code = fields.Char(string='Mã khóa huấn luyện', required=True)
+    name = fields.Char(string='Tên khóa huấn luyện', required=True)
     description = fields.Text(string="Mô tả")
-    type = fields.Selection([
-        ('squad', 'Phân đội'),
-        ('officer', 'Sĩ quan')
-    ], string="Loại huấn luyện", required=True, default='squad'
-    )
     start_date = fields.Date(string="Thời gian bắt đầu", required=True)
     end_date = fields.Date(string="Thời gian kết thúc", required=True)
     participants_ids = fields.Many2many('hr.department', string="Đơn vị quản lý")
@@ -27,15 +22,13 @@ class TrainingPlan(models.Model):
         ('approved', 'Đã duyệt'),
         ('cancel', 'Hủy'),
     ], string="Trạng thái", default="draft", tracking=True)
-    location_ids = fields.Many2many('training.location', string='Địa điểm')
+
     student_ids = fields.Many2many('hr.employee', string='Học viên', domain="[('role', '=', 'student')]")
     training_content = fields.Char(string='Nội dung huấn luyện')
     reason_modify = fields.Text(string='Lý do chỉnh sửa', tracking=True)
     course_ids = fields.One2many('training.course', 'plan_id')
     year = fields.Char(string='Năm', default=lambda self: str(date.today().year), required=True)
     total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True)
-    camera_ids = fields.Many2many('camera.device', string="Camera giám sát")
-    camera_count = fields.Integer(compute='_compute_camera_count')
     common_subject_ids = fields.One2many(
         'training.course',
         'plan_id',
@@ -54,19 +47,6 @@ class TrainingPlan(models.Model):
     approver_id = fields.Many2one('hr.employee', string='Cán bộ phê duyệt',
                                   domain=[('role', '=', 'commanding_officer')])
     count_rec_training_day = fields.Integer(compute='_compute_count_rec_training_day')
-
-    @api.onchange('location_ids')
-    def _onchange_location_ids(self):
-        """Tự động điền danh sách camera thuộc các địa điểm đã chọn"""
-        if not self.location_ids:
-            self.camera_ids = [(5, 0, 0)]  # clear
-            return
-
-        cameras = self.env['camera.device'].search([
-            ('location_id', 'in', self.location_ids.ids)
-        ])
-
-        self.camera_ids = [(6, 0, cameras.ids)]
 
     def _compute_count_rec_training_day(self):
         TrainingDay = self.env['training.day']
@@ -123,9 +103,7 @@ class TrainingPlan(models.Model):
             ("start_date", ">=", today),
         ])
 
-        if not plans:
-            message = "Không có cảnh báo nào hôm nay."
-        else:
+        if plans:
             message = (
                     "Các kế hoạch sắp đến ngày bắt đầu nhưng chưa được duyệt:\n" +
                     "\n".join([f"- {plan.name} (ngày {plan.start_date})" for plan in plans])
@@ -134,29 +112,6 @@ class TrainingPlan(models.Model):
         # Ghi log lại
         self.env["training.warning.log"].create({"message": message})
         return True
-
-    @api.depends('camera_ids')
-    def _compute_camera_count(self):
-        for rec in self:
-            rec.camera_count = len(rec.camera_ids)
-
-    def action_open_camera(self):
-        if self.camera_count == 0:
-            raise UserError("Không có camera được gán cho vị trí huấn luyện này!")
-
-        return {
-            "type": "ir.actions.act_window",
-            "name": "Danh mục camera",
-            "res_model": "camera.device",
-            "view_mode": "tree",
-            "domain": [('id', '=', self.camera_ids.ids)],
-            "target": "new",
-            'context': {
-                'create': False,
-                'delete': False,
-                'default_action': 'camera_device_view',
-            },
-        }
 
     @api.depends('course_ids.total_hours')
     def _compute_total_hours(self):

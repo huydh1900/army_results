@@ -22,13 +22,12 @@
                             </field>
                         </page>
                     </notebook>
-
                 </sheet>
             </form>
         </field>
     </record>
 
-    <record id="view_training_subject_line_form" model="ir.ui.view">
+    <record id="view_training_subject_line_form_no_editable" model="ir.ui.view">
         <field name="name">training.subject.line.form</field>
         <field name="model">training.subject.line</field>
         <field name="arch" type="xml">
@@ -37,13 +36,16 @@
                     <group>
                         <field name="code"/>
                         <field name="name"/>
+                        <field name="type_training" invisible="1"/>
+                        <field name="stage_ids" widget="many2many_tags" attrs="{'invisible': [('type_training', '=', 'common_training')]}"/>
                     </group>
                     <notebook>
                         <page string="Bài học">
                             <field name="lesson_ids">
-                                <tree edittable="bottom">
+                                <tree editable="bottom">
                                     <field name="code"/>
                                     <field name="name"/>
+                                    <field name="stage_id" attrs="{'column_invisible': [('parent.type_training', '=', 'common_training')]}"/>
                                     <field name="type"/>
                                 </tree>
                             </field>
@@ -54,16 +56,4 @@
         </field>
     </record>
 
-
-    <record id="view_training_subject_tree" model="ir.ui.view">
-        <field name="name">training.subject.tree</field>
-        <field name="model">training.subject</field>
-        <field name="arch" type="xml">
-            <tree>
-                <field name="code"/>
-                <field name="name"/>
-                <field name="type_training"/>
-            </tree>
-        </field>
-    </record>
 </odoo>

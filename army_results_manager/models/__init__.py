@@ -2,7 +2,7 @@
 
 from . import training_subject
 from . import res_users
-from . import camera_video
+from . import media_library
 from . import training_time
 from . import training_result
 from . import training_category

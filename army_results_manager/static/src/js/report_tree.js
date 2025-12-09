@@ -22,8 +22,18 @@ export class ReportListController extends ListController {
         });
     }
 
-    OnOpenWizardIn(){
-        console.log("Hii")
+    OnOpenWizardPrint() {
+        this.actionService.doAction({
+            type: 'ir.actions.act_window',
+            res_model: 'print.score.wizard',
+            name: 'In kết quả huấn luyện',
+            view_mode: "form",
+            target: "new",
+            views: [[false, "form"]],
+            context: {
+                'active_model': 'training.result',
+            }
+        });
     }
 
     async loadCameras() {

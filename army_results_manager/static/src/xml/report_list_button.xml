@@ -23,7 +23,7 @@
             </t>
 
             <t t-if="this.props.context['default_action'] == 'print_score'">
-                <button type="button" class="btn btn-primary" t-on-click="OnOpenWizardIn" style="margin-right:10px">In
+                <button type="button" class="btn btn-primary" t-on-click="OnOpenWizardPrint" style="margin-left:10px">In kết quả
                 </button>
             </t>
 

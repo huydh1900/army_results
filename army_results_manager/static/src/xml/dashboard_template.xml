@@ -7,7 +7,11 @@
                 <BarChartComponent/>
                 <TrainTheUnitComponent/>
             </div>
-            <WarningImportantComponent/>
+            <div class="dashboard_row dashboard_row_split">
+                <TopUnitTrainingComponent/>
+                <WarningImportantComponent/>
+            </div>
+
         </div>
     </t>
 </templates>

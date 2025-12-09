@@ -1,12 +1,15 @@
 from odoo import models, fields, api
+from odoo.exceptions import UserError
+from datetime import date
 
 
 class TrainingMission(models.Model):
     _name = 'training.mission'
-    _description = 'Nhiệm vụ huấn luyện'
+    _inherit = ['mail.thread']
+    _description = 'Bài huấn luyện'
 
-    name = fields.Char(string="Tên nhiệm vụ", required=True)
-    description = fields.Text(string="Mô tả nhiệm vụ")
+    name = fields.Char(string="Tên bài học")
+    description = fields.Text(string="Mô tả")
     total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True)
     participants_ids = fields.Many2many('hr.department', string="Đối tượng tham gia")
     material_ids = fields.One2many('training.material', 'mission_id', string="Tài liệu / Video")
@@ -14,16 +17,12 @@ class TrainingMission(models.Model):
     student_ids = fields.Many2many('hr.employee', string='Học viên', compute='_compute_student_ids', store=True)
     state = fields.Selection([
         ('draft', 'Dự thảo'),
-        ('in_progress', 'Đang thực hiện'),
-        ('done', 'Hoàn thành'),
-        ('cancel', 'Hủy')
+        ('approved', 'Đã duyệt'),
     ], string='Trạng thái', default='draft')
-    mission_line_ids = fields.One2many('training.mission.line', 'mission_id', string='Chi tiết nhiệm vụ huấn luyện')
     exclude_main_training = fields.Boolean(
         string="Không tính vào thời gian huấn luyện chính khóa",
         default=False
     )
-    subject_id = fields.Many2one('training.subject', string="Môn học", required=True)
     training_officer_ids_domain = fields.Binary(compute='_compute_training_officer_ids_domain')
     training_officer_ids = fields.Many2many(
         'hr.employee',
@@ -33,6 +32,97 @@ class TrainingMission(models.Model):
         string='Giảng viên',
         required=True,
     )
+    lesson_id = fields.Many2one('training.lesson', string="Tên bài học")
+    day_ids = fields.One2many('training.day', 'mission_id', string='Thời gian huấn luyện', ondelete='cascade')
+    camera_ids = fields.Many2many('camera.device', string="Camera giám sát")
+    location_ids = fields.Many2many('training.location', string='Địa điểm')
+    camera_count = fields.Integer(compute='_compute_camera_count')
+    start_date = fields.Date(string="Thời gian bắt đầu", required=True)
+    end_date = fields.Date(string="Thời gian kết thúc", required=True)
+    percent_done = fields.Float(string="Tiến độ (%)", default=0.0)
+
+    @api.model
+    def cron_update_mission_progress(self):
+        """Cập nhật % tiến độ theo thời gian của nhiệm vụ."""
+        today = date.today()
+
+        missions = self.search([
+            ('state', '=', 'approved'),
+            ('start_date', '<=', today),
+        ])
+
+        for mission in missions:
+            start = mission.start_date
+            end = mission.end_date
+
+            # Tránh chia cho 0
+            if start and end and start != end:
+                total_range = (end - start).days
+                passed_days = (today - start).days
+
+                if passed_days < 0:
+                    percent_done = 0
+                else:
+                    percent_done = min(100, round((passed_days / total_range) * 100, 2))
+            else:
+                percent_done = 100
+
+            mission.sudo().write({
+                'percent_done': percent_done
+            })
+
+    @api.model
+    def get_list_mission(self):
+        data = []
+        missions = self.search([('state', '=', 'approved')])
+        for mission in missions:
+            data.append({
+                'name': mission.name,
+                'id': mission.id,
+                'percent_done': mission.percent_done,
+            })
+        return data
+
+    @api.constrains('start_date', 'end_date')
+    def _check_start_date(self):
+        if self.start_date > self.end_date:
+            raise UserError('Ngày bắt đầu phải nhỏ hơn Ngày kết thúc!')
+
+    @api.depends('camera_ids')
+    def _compute_camera_count(self):
+        for rec in self:
+            rec.camera_count = len(rec.camera_ids)
+
+    def action_open_camera(self):
+        if self.camera_count == 0:
+            raise UserError("Không có camera được gán cho vị trí huấn luyện này!")
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Danh mục camera",
+            "res_model": "camera.device",
+            "view_mode": "tree",
+            "domain": [('id', '=', self.camera_ids.ids)],
+            "target": "new",
+            'context': {
+                'create': False,
+                'delete': False,
+                'default_action': 'camera_device_view',
+            },
+        }
+
+    @api.onchange('location_ids')
+    def _onchange_location_ids(self):
+        """Tự động điền danh sách camera thuộc các địa điểm đã chọn"""
+        if not self.location_ids:
+            self.camera_ids = [(5, 0, 0)]  # clear
+            return
+
+        cameras = self.env['camera.device'].search([
+            ('location_id', 'in', self.location_ids.ids)
+        ])
+
+        self.camera_ids = [(6, 0, cameras.ids)]
 
     @api.depends('course_id.training_officer_ids', 'course_id')
     def _compute_training_officer_ids_domain(self):
@@ -55,76 +145,7 @@ class TrainingMission(models.Model):
             'target': 'current',
         }
 
-    @api.depends('mission_line_ids.total_hours')
-    def _compute_total_hours(self):
-        for rec in self:
-            rec.total_hours = sum(line.total_hours or 0.0 for line in rec.mission_line_ids)
-
-    def action_in_progress(self):
-        self.sudo().write({'state': 'in_progress'})
-
-    def action_done(self):
-        self.sudo().write({'state': 'done'})
-
-    def action_cancel(self):
-        self.sudo().write({'state': 'cancel'})
-
-    def action_reset_draft(self):
-        self.sudo().write({'state': 'draft'})
-
-
-class TrainingMissionLine(models.Model):
-    _name = 'training.mission.line'
-    _description = 'Chi tiết nhiệm vụ huấn luyện'
-
-    mission_id = fields.Many2one('training.mission', string='Nhiệm vụ', readonly=True)
-    name = fields.Char(string="Tên bài học", required=True)
-    total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True)
-    day_ids = fields.One2many('training.day', 'mission_line_id', string='Thời gian huấn luyện', ondelete='cascade')
-    student_ids = fields.Many2many('hr.employee', string='Học viên', compute='_compute_student_ids', store=True)
-    title = fields.Char(string='Chủ đề')
-    training_officer_ids_domain = fields.Binary(compute='_compute_training_officer_ids_domain')
-    training_officer_ids = fields.Many2many(
-        'hr.employee',
-        'training_mission_line_rel',
-        'mission_line_id',
-        'employee_id',
-        string='Giảng viên',
-        required=True,
-    )
-
-    @api.depends('mission_id.training_officer_ids', 'mission_id')
-    def _compute_training_officer_ids_domain(self):
-        for rec in self:
-            rec.training_officer_ids_domain = rec.mission_id.training_officer_ids.ids
-
-
-    @api.depends('day_ids', 'day_ids.total_hours')
+    @api.depends('day_ids.total_hours')
     def _compute_total_hours(self):
         for rec in self:
             rec.total_hours = sum(line.total_hours or 0.0 for line in rec.day_ids)
-
-    @api.depends('mission_id.student_ids')
-    def _compute_student_ids(self):
-        for rec in self:
-            rec.student_ids = rec.mission_id.student_ids
-
-    def action_detail(self):
-        self.ensure_one()
-        return {
-            'type': 'ir.actions.act_window',
-            'name': 'Chi tiết nhiệm vụ huấn luyện',
-            'res_model': 'training.mission.line',
-            'view_mode': 'form',
-            'res_id': self.id,
-            'target': 'current',
-        }
-
-    @api.constrains('day_ids', 'day_ids.total_hours')
-    @api.onchange('day_ids')
-    def _check_day_ids(self):
-        for rec in self:
-            if rec.day_ids:
-                rec.total_hours = sum(line.total_hours or 0.0 for line in rec.day_ids)
-            else:
-                rec.total_hours = 0

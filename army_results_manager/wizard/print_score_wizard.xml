@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_print_score_wizard_form" model="ir.ui.view">
+        <field name="name">print.score.wizard.form</field>
+        <field name="model">print.score.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Báo cáo tổng hợp huấn luyện">
+                <group>
+                    <field name="plan_id" domain="[('state', '=', 'approved')]"
+                           options="{'no_open': True, 'no_create': True}"/>
+                    <field name="course_id" domain="[('plan_id', '=', plan_id)]"
+                           options="{'no_open': True, 'no_create': True}"/>
+                </group>
+                <footer>
+                    <button string="In" type="object"
+                            name="action_print_score" class="btn-primary"/>
+                    <button string="Đóng" class="btn-danger" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_print_score_wizard" model="ir.actions.act_window">
+        <field name="name">In kết quả khóa huấn luyện</field>
+        <field name="res_model">print.score.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

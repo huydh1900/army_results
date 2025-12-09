@@ -3,11 +3,9 @@ from odoo import fields, models, api
 
 class TrainingCourse(models.Model):
     _name = "training.course"
-    _rec_name = 'name'
     _description = "Nội dung huấn luyện"
 
-    name = fields.Char(string="Nội dung huấn luyện")
-    subject_line_id = fields.Many2one('training.subject.line', string="Danh sách môn học")
+    subject_line_id = fields.Many2one('training.subject.line', string="Môn học")
     total_hours = fields.Float(string='Tổng số giờ', compute='_compute_total_hours', store=True)
     plan_id = fields.Many2one('training.plan', ondelete='cascade')
     mission_ids = fields.One2many('training.mission', 'course_id', string='Danh sách nội dung huấn luyện')
@@ -46,6 +44,43 @@ class TrainingCourse(models.Model):
         domain="[('role', '=', 'training_officer')]")
 
     approver_id = fields.Many2one('hr.employee', related='plan_id.approver_id', store=True)
+    type = fields.Selection([
+        ('squad', 'Phân đội'),
+        ('officer', 'Sĩ quan')
+    ], string="Loại huấn luyện", required=True, default="squad"
+    )
+
+    def name_get(self):
+        result = []
+        for rec in self:
+            name = rec.subject_line_id.name or "(Không có môn)"
+            result.append((rec.id, name))
+        return result
+
+    @api.onchange('type')
+    @api.constrains('type')
+    def onchange_type(self):
+        for rec in self:
+        # Tìm các bài học phù hợp type + môn
+            lessons = self.env['training.lesson'].search([
+                ('type', '=', rec.type),
+                ('subject_line_id', '=', rec.subject_line_id.id)
+            ])
+            # # Xóa danh sách mission cũ
+            rec.mission_ids = [(5, 0, 0)]
+
+            # Tạo danh sách mission mới
+            missions_vals = []
+            for lesson in lessons:
+                missions_vals.append(
+                    (0, 0, {
+                        'name': lesson.name,
+                        'lesson_id': lesson.id,
+                    })
+                )
+
+            # Gán vào mission_ids
+            rec.mission_ids = missions_vals
 
     @api.depends('is_common', 'plan_id.student_ids')
     def _compute_student_ids(self):
@@ -83,29 +118,13 @@ class TrainingCourse(models.Model):
             else:
                 rec.total_hours = 0
 
-    @api.model
-    def get_list_course(self):
-        data = []
-        courses = self.search([('state', '=', 'approved')])
-        for course in courses:
-            total_mission = len(course.mission_ids)
-            done_mission = len(course.mission_ids.filtered(lambda m: m.state == 'done'))
-            percent_done = round((done_mission / total_mission) * 100, 2) if total_mission else 0
-
-            data.append({
-                'name': course.name,
-                'id': course.id,
-                'percent_done': percent_done,
-            })
-        return data
-
     def _compute_student_count(self):
         for rec in self:
             rec.student_count = len(rec.student_ids)
 
     def action_detail(self):
         self.ensure_one()
-        if self.plan_id.state in ['approved','posted']:
+        if self.plan_id.state in ['approved', 'posted']:
             context = {'edit': False}
         else:
             context = {'edit': True}
@@ -119,42 +138,6 @@ class TrainingCourse(models.Model):
             'target': 'current',
             'context': context,
         }
-
-    def write(self, vals):
-        res = super().write(vals)
-        if vals.get('student_ids') or vals.get('mission_ids'):
-            self._sync_students_to_results()
-        return res
-
-    def _sync_students_to_results(self):
-        """Đồng bộ học viên và kết quả huấn luyện (tối ưu cho số lượng lớn)."""
-        Result = self.env['training.result']
-
-        for rec in self:
-            # Lấy danh sách ID học viên hiện tại
-            current_ids = set(rec.student_ids.ids)
-
-            # Lấy tất cả employee_id của result hiện có cho khóa này
-            existing_results = Result.search([('training_course_id', '=', rec.id)])
-            existing_ids = set(existing_results.mapped('employee_id.id'))
-
-            # Xóa kết quả của học viên không còn trong danh sách
-            remove_ids = existing_ids - current_ids
-            if remove_ids:
-                Result.search([
-                    ('training_course_id', '=', rec.id),
-                    ('employee_id', 'in', list(remove_ids))
-                ]).unlink()
-
-            # Thêm mới cho học viên chưa có
-            add_ids = current_ids - existing_ids
-            if add_ids:
-                # Tạo danh sách dữ liệu hàng loạt
-                vals_list = [
-                    {'training_course_id': rec.id, 'employee_id': sid}
-                    for sid in add_ids
-                ]
-                Result.create(vals_list)
 
     def action_open_students(self):
         """Mở danh sách học viên của khóa huấn luyện"""

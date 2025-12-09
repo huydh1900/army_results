@@ -128,6 +128,39 @@
     flex-wrap: wrap;
 }
 
+.dashboard_row_split {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+}
+
+.dashboard_row_split > * {
+    flex: 1 1 0;
+    min-width: 0; /* Quan trọng: cho phép co lại, không bị tràn */
+}
+
+.dashboard_card_top_unit{
+    width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    min-width: 300px;
+}
+
+.dashboard_card_top_unit canvas {
+    width: 100% !important;
+    height: 250px !important; /* Hoặc 300px tùy ý */
+}
+
+.dashboard_card_top_unit .card_body {
+    padding: 20px;
+    min-height: 280px; /* Đảm bảo có không gian */
+}
+
+
 .dashboard_card {
     background: white;
     border-radius: 8px;
