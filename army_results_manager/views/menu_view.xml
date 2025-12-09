@@ -33,10 +33,9 @@
         </record>
 
         <!-- Actions -->
-        <record id="action_training_course" model="ir.actions.act_window">
-            <field name="name">Khóa huấn luyện</field>
-            <field name="res_model">training.course</field>
-            <field name="domain">[('state', '=', 'approved')]</field>
+        <record id="action_training_schedule" model="ir.actions.act_window">
+            <field name="name">Kế hoạch huấn luyện</field>
+            <field name="res_model">training.schedule</field>
             <field name="view_mode">tree,form</field>
         </record>
 
@@ -173,7 +172,7 @@
             <field name="res_model">training.day</field>
             <field name="view_mode">tree,form,gantt</field>
             <field name="view_id" ref="view_training_day_tree_report"/>
-             <field name="domain">[('state', '=', 'approved')]</field>
+            <field name="domain">[('state', '=', 'approved')]</field>
             <field name="context">{
                 'default_action': 'report',
                 'showDocument':true,
@@ -189,7 +188,7 @@
         </record>
 
         <record id="action_training_plan_tree" model="ir.actions.act_window">
-            <field name="name">Kế hoạch huấn luyện</field>
+            <field name="name">Khóa huấn luyện</field>
             <field name="res_model">training.plan</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_training_plan_tree"/>
@@ -323,10 +322,11 @@
                   action="action_student"/>
 
         <menuitem id="menu_training_course"
-                  name="Khóa huấn luyện"
-                  parent="menu_unit_management"
+                  name="Kế hoạch huấn luyện"
+                  parent="menu_military_root"
                   groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer,army_results_manager.group_training_commander,army_results_manager.group_training_commander_assistant"
-                  action="action_training_course"/>
+                  action="action_training_schedule"
+                  sequence="3"/>
 
         <menuitem id="menu_training_stage_result"
                   name="Kết quả giai đoạn"

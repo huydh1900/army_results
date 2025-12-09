@@ -37,6 +37,11 @@ class TrainingPlan(models.Model):
         string='Môn huấn luyện chung'
     )
 
+    schedule_id = fields.Many2one(
+        "training.schedule",
+        string="Kế hoạch huấn luyện", required=True
+    )
+
     # Môn huấn luyện riêng theo nhóm/đơn vị
     specific_subject_ids = fields.One2many(
         'training.course',

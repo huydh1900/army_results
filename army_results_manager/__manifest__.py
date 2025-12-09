@@ -40,6 +40,7 @@
         'views/support_contact_views.xml',
         'views/training_location_views.xml',
         'views/media_library_views.xml',
+        'views/training_schedule_views.xml',
         'views/training_day_comment_views.xml',
         'views/res_users_views.xml',
         'views/training_day_views.xml',

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- FORM VIEW -->
+    <record id="view_training_schedule_form" model="ir.ui.view">
+        <field name="name">training.schedule.form</field>
+        <field name="model">training.schedule</field>
+        <field name="arch" type="xml">
+            <form string="Kế hoạch huấn luyện">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="year"/>
+                        <field name="start_date"/>
+                        <field name="end_date"/>
+                        <field name="duration_days" readonly="1"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Khóa huấn luyện">
+                            <field name="plan_ids">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="start_date"/>
+                                    <field name="end_date"/>
+                                    <field name="state"/>
+                                </tree>
+                            </field>
+
+                        </page>
+                        <page string="Mô tả">
+                            <field name="description"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- TREE VIEW -->
+    <record id="view_training_schedule_tree" model="ir.ui.view">
+        <field name="name">training.schedule.tree</field>
+        <field name="model">training.schedule</field>
+        <field name="arch" type="xml">
+            <tree string="Kế hoạch huấn luyện">
+                <field name="name"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="duration_days"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="action_training_schedule" model="ir.actions.act_window">
+        <field name="name">Kế hoạch huấn luyện</field>
+        <field name="res_model">training.schedule</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

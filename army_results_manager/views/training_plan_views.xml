@@ -4,6 +4,7 @@
         <field name="model">training.plan</field>
         <field name="arch" type="xml">
             <tree string="Kế hoạch huấn luyện">
+                <field name="schedule_id"/>
                 <field name="plan_code"/>
                 <field name="name"/>
                 <field name="start_date"/>
@@ -54,6 +55,8 @@
                     <!-- GROUPED INPUTS -->
                     <group col="2" class="mt16">
                         <group>
+                            <field name="schedule_id" options='{"no_create": True, "no_open": True}'
+                                   attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                             <field name="plan_code"
                                    attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                             <field name="name"

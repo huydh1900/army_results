@@ -1244,270 +1244,278 @@ class PrintWordWizard(models.TransientModel):
             if not records:
                 raise UserError('Không tìm thấy dữ liệu!')
 
-            # Table 1
-            subject_hours = {
-                'CT': 'chinh_tri_hours',
-                'GDPL': 'phap_luat_hours',
-                'HC': 'hau_can_hours',
-                'KT': 'ky_thuat_hours',
-                'DL': 'dieu_lenh_hours',
-                'KTCD': 'cdbb_hours',
-                'BS': 'ban_sung_hours',
-                'TLCM': 'tl_chuyen_mon_hours',
-                'TLC': 'tl_chung_hours'
-            }
 
-            # Group và tính tổng giờ trong 1 vòng lặp
-            grouped_by_plan = defaultdict(lambda: {
-                'records': [],
-                'total_hours': 0,
-                'chinh_tri_hours': 0,
-                'phap_luat_hours': 0,
-                'hau_can_hours': 0,
-                'ky_thuat_hours': 0,
-                'dieu_lenh_hours': 0,
-                'cdbb_hours': 0,
-                'ban_sung_hours': 0,
-                'tl_chuyen_mon_hours': 0,
-                'tl_chung_hours': 0
-            })
 
-            grouped_by_course_common = defaultdict(lambda: {'records': [], 'total_hours': 0})
-            grouped_by_course_private = defaultdict(lambda: {'records': [], 'total_hours': 0})
-
-            course_number = 1
-            total_common_hours = 0
-
-            for record in records:
-                plan_name = record.plan_name
-                grouped_by_plan[plan_name]['records'].append(record)
-                grouped_by_plan[plan_name]['total_hours'] += (record.total_hours or 0)
-
-                # Tính tổng giờ theo môn học cho từng plan
-                if record.subject_code in subject_hours:
-                    var_name = subject_hours[record.subject_code]
-                    grouped_by_plan[plan_name][var_name] += (record.total_hours or 0)
-
-                if record.type_training == 'common_training':
-                    grouped_by_course_common[record.course_name]['records'].append(record)
-                    grouped_by_course_common[record.course_name]['total_hours'] += (record.total_hours or 0)
-                    total_common_hours += (record.total_hours or 0)
-
-                elif record.type_training == 'private_training':
-                    grouped_by_course_private[record.course_name]['records'].append(record)
-                    grouped_by_course_private[record.course_name]['total_hours'] += (record.total_hours or 0)
-
-            # Lấy table và điền dữ liệu
-            table = doc.tables[0]
-            row_index = 2
-
-            letters = string.ascii_lowercase
-
-            for letter_index, (plan_name, data) in enumerate(grouped_by_plan.items()):
-                # Thêm hàng nếu cần
-                while row_index >= len(table.rows):
-                    table.add_row()
-
-                row = table.rows[row_index]
-
-                # Điền chữ cái
-                row.cells[0].text = letters[letter_index] if letter_index < 26 else get_lower_letter(letter_index)
-                row.cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-                # Điền dữ liệu - MỖI PLAN CÓ GIÁ TRỊ RIÊNG
-                row.cells[1].text = plan_name or ""
-                row.cells[2].text = f"{data['total_hours']:g}" if data['total_hours'] else ""
-                row.cells[3].text = f"{data['chinh_tri_hours']:g}" if data['chinh_tri_hours'] else ""
-                row.cells[4].text = f"{data['phap_luat_hours']:g}" if data['phap_luat_hours'] else ""
-                row.cells[5].text = f"{data['hau_can_hours']:g}" if data['hau_can_hours'] else ""
-                row.cells[6].text = f"{data['ky_thuat_hours']:g}" if data['ky_thuat_hours'] else ""
-                row.cells[7].text = f"{data['dieu_lenh_hours']:g}" if data['dieu_lenh_hours'] else ""
-                row.cells[8].text = f"{data['cdbb_hours']:g}" if data['cdbb_hours'] else ""
-                row.cells[9].text = f"{data['ban_sung_hours']:g}" if data['ban_sung_hours'] else ""
-                row.cells[10].text = f"{data['tl_chuyen_mon_hours']:g}" if data['tl_chuyen_mon_hours'] else ""
-                row.cells[11].text = f"{data['tl_chung_hours']:g}" if data['tl_chung_hours'] else ""
-
-                # Căn giữa các ô từ 2 đến 11
-                for i in range(2, 12):
-                    row.cells[i].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-                row.cells[12].text = "HL thể lực =35% tổng số thời gian"
-                row_index += 1
-
-            # Table 2
-
-            def get_column_index(week_name, weekday):
-                """Tính column index dựa trên tuần và thứ"""
-                week_number = int(week_name.replace('Tuần', '').strip())
-                weekday_map = {
-                    'Thứ Hai': 2, 'Thứ Ba': 3, 'Thứ Tư': 4, 'Thứ Năm': 5, 'Thứ Sáu': 6, 'Thứ Bảy': 7,
-                    'Thứ 2': 2, 'Thứ 3': 3, 'Thứ 4': 4, 'Thứ 5': 5, 'Thứ 6': 6, 'Thứ 7': 7,
-                }
-
-                weekday_number = weekday_map.get(weekday.strip())
-
-                if weekday_number is None or weekday_number < 2 or weekday_number > 6:
-                    return None
-
-                weekday_offset = weekday_number - 2
-                column_index = 5 + (week_number - 1) * 5 + weekday_offset
-
-                return column_index
-
-            def set_cell_alignment(cell, h_align=WD_ALIGN_PARAGRAPH.CENTER, v_align=WD_ALIGN_VERTICAL.CENTER):
-                """Helper function để set alignment cho cell"""
-                cell.paragraphs[0].alignment = h_align
-                cell.vertical_alignment = v_align
-
-            table_2 = doc.tables[1]
-
-            row_index_2 = 4
-
-            # Set tổng giờ chung
-
-            table_2.rows[3].cells[4].text = f"{total_common_hours:g}" if total_common_hours else ""
-
-            set_cell_alignment(table_2.rows[3].cells[4])
-
-            lesson_letter_index = 0  # Biến riêng cho letter của lessons
-
-            # Hàm xử lý dữ liệu cho các course (chung và riêng)
-
-            def process_course_data(course_data, is_common=True):
-                nonlocal course_number, row_index_2, lesson_letter_index
-
-                for course_name, data in course_data.items():
-                    # NHÓM CÁC LESSON THEO lesson_name VÀ TÍNH TỔNG HOURS
-                    grouped_lessons = defaultdict(lambda: {'total_hours': 0, 'week_data': []})
-
-                    for record in data['records']:
-                        lesson_name = record.lesson_name or ""
-                        grouped_lessons[lesson_name]['total_hours'] += (record.total_hours or 0)
-
-                        # Lưu thông tin tuần và thứ cho mỗi lesson
-                        if record.week_name and record.weekday:
-                            grouped_lessons[lesson_name]['week_data'].append({
-                                'week_name': record.week_name,
-                                'weekday': record.weekday,
-                                'hours': record.total_hours or 0
-                            })
-
-                    # Thêm hàng cho course
-                    while row_index_2 >= len(table_2.rows):
-                        table_2.add_row()
-
-                    row = table_2.rows[row_index_2]
-
-                    # Điền dữ liệu course
-                    row.cells[0].text = str(course_number)
-                    row.cells[1].text = course_name or ""
-                    row.cells[4].text = f"{data['total_hours']:g}" if data['total_hours'] else ""
-                    row.cells[26].text = "HL theo đội hình Trung tâm, ôn luyện theo đội hình Đoàn"
-
-                    set_cell_alignment(row.cells[0])
-
-                    # Căn giữa các ô từ 4 đến 11
-                    for i in range(4, 12):
-                        set_cell_alignment(row.cells[i])
-
-                    course_number += 1
-                    row_index_2 += 1
-
-                    # Duyệt qua các lesson đã được nhóm
-
-                    for lesson_name, lesson_data in grouped_lessons.items():
-                        while row_index_2 >= len(table_2.rows):
-                            table_2.add_row()
-
-                        lesson_row = table_2.rows[row_index_2]
-                        # Sử dụng lesson_letter_index riêng, bắt đầu từ 'a' cho mỗi course
-                        lesson_row.cells[0].text = letters[
-                            lesson_letter_index] if lesson_letter_index < 26 else get_lower_letter(lesson_letter_index)
-                        lesson_row.cells[1].text = lesson_name or ""
-                        lesson_row.cells[4].text = f"{lesson_data['total_hours']:g}" if lesson_data[
-                            'total_hours'] else ""
-
-                        # Điền giờ vào cột tuần/thứ tương ứng cho từng lesson
-                        for week_info in lesson_data['week_data']:
-                            col_index = get_column_index(week_info['week_name'], week_info['weekday'])
-                            if col_index is not None and col_index < len(lesson_row.cells):
-                                # Cộng dồn nếu đã có giá trị
-                                current_value = lesson_row.cells[col_index].text.strip()
-
-                                if current_value:
-                                    try:
-                                        current_hours = float(current_value)
-                                        total_hours = current_hours + week_info['hours']
-                                        lesson_row.cells[col_index].text = f"{total_hours:g}"
-                                    except ValueError:
-                                        lesson_row.cells[col_index].text = f"{week_info['hours']:g}"
-                                else:
-                                    lesson_row.cells[col_index].text = f"{week_info['hours']:g}"
-
-                            elif col_index is not None:
-                                print(
-                                    f"Warning: Column index {col_index} out of range. Table has {len(lesson_row.cells)} columns.")
-                                print(f"Week: {week_info['week_name']}, Weekday: {week_info['weekday']}")
-
-                        set_cell_alignment(lesson_row.cells[0])
-
-                        # Căn giữa các ô
-                        for i in range(4, min(12, len(lesson_row.cells))):
-                            lesson_row.cells[i].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-                        lesson_letter_index += 1  # Tăng letter index cho lesson
-                        row_index_2 += 1
-
-                    # Reset letter index về 'a' cho course tiếp theo
-                    lesson_letter_index = 0
-
-            # Xử lý các môn chung
-            process_course_data(grouped_by_course_common, is_common=True)
-
-            # Lưu lại vị trí kết thúc của môn chung để tính tổng
-            end_common_row = row_index_2
-
-            # Tính tổng cho các cột từ 5 đến 25 ở hàng 3 (chỉ trong phạm vi môn chung)
-            for col_index in range(5, 26):
-                total = 0
-
-                # Duyệt qua các hàng từ 4 đến end_common_row (không bao gồm end_common_row)
-                for row_idx in range(4, end_common_row):
-                    cell_text = table_2.rows[row_idx].cells[col_index].text.strip()
-
-                    if cell_text:
-                        try:
-                            total += float(cell_text)
-                        except ValueError:
-                            pass  # Bỏ qua nếu không phải số
-
-                # Ghi tổng vào hàng 3
-                if total > 0:
-                    table_2.rows[3].cells[col_index].text = f"{total:g}"
-
-                    set_cell_alignment(table_2.rows[3].cells[col_index])
-
-            # Thêm dòng "B. HUẤN LUYỆN RIÊNG" vào cuối table
-
-            while row_index_2 >= len(table_2.rows):
-                table_2.add_row()
-
-            private_header_row = table_2.rows[row_index_2]
-
-            private_header_row.cells[0].text = "B"
-
-            private_header_row.cells[1].text = "HUẤN LUYỆN RIÊNG"
-
-            private_header_row.cells[1].merge(private_header_row.cells[3])
-
-            set_cell_alignment(private_header_row.cells[0])
-
-            row_index_2 += 1
-
-            # Xử lý các môn riêng
-            course_number = 1
-
-            process_course_data(grouped_by_course_private, is_common=False)
+            first_table = doc.tables[0]  # lấy bảng đầu tiên
+
+            # In từng dòng và từng ô
+            for row in first_table.rows:
+                cells = [cell.text.strip() for cell in row.cells]
+                print(cells)
+            # # Table 1
+            # subject_hours = {
+            #     'CT': 'chinh_tri_hours',
+            #     'GDPL': 'phap_luat_hours',
+            #     'HC': 'hau_can_hours',
+            #     'KT': 'ky_thuat_hours',
+            #     'DL': 'dieu_lenh_hours',
+            #     'KTCD': 'cdbb_hours',
+            #     'BS': 'ban_sung_hours',
+            #     'TLCM': 'tl_chuyen_mon_hours',
+            #     'TLC': 'tl_chung_hours'
+            # }
+            #
+            # # Group và tính tổng giờ trong 1 vòng lặp
+            # grouped_by_plan = defaultdict(lambda: {
+            #     'records': [],
+            #     'total_hours': 0,
+            #     'chinh_tri_hours': 0,
+            #     'phap_luat_hours': 0,
+            #     'hau_can_hours': 0,
+            #     'ky_thuat_hours': 0,
+            #     'dieu_lenh_hours': 0,
+            #     'cdbb_hours': 0,
+            #     'ban_sung_hours': 0,
+            #     'tl_chuyen_mon_hours': 0,
+            #     'tl_chung_hours': 0
+            # })
+            #
+            # grouped_by_course_common = defaultdict(lambda: {'records': [], 'total_hours': 0})
+            # grouped_by_course_private = defaultdict(lambda: {'records': [], 'total_hours': 0})
+            #
+            # course_number = 1
+            # total_common_hours = 0
+            #
+            # for record in records:
+            #     plan_name = record.plan_name
+            #     grouped_by_plan[plan_name]['records'].append(record)
+            #     grouped_by_plan[plan_name]['total_hours'] += (record.total_hours or 0)
+            #
+            #     # Tính tổng giờ theo môn học cho từng plan
+            #     if record.subject_code in subject_hours:
+            #         var_name = subject_hours[record.subject_code]
+            #         grouped_by_plan[plan_name][var_name] += (record.total_hours or 0)
+            #
+            #     if record.type_training == 'common_training':
+            #         grouped_by_course_common[record.course_name]['records'].append(record)
+            #         grouped_by_course_common[record.course_name]['total_hours'] += (record.total_hours or 0)
+            #         total_common_hours += (record.total_hours or 0)
+            #
+            #     elif record.type_training == 'private_training':
+            #         grouped_by_course_private[record.course_name]['records'].append(record)
+            #         grouped_by_course_private[record.course_name]['total_hours'] += (record.total_hours or 0)
+            #
+            # # Lấy table và điền dữ liệu
+            # table = doc.tables[0]
+            # row_index = 2
+            #
+            # letters = string.ascii_lowercase
+            #
+            # for letter_index, (plan_name, data) in enumerate(grouped_by_plan.items()):
+            #     # Thêm hàng nếu cần
+            #     while row_index >= len(table.rows):
+            #         table.add_row()
+            #
+            #     row = table.rows[row_index]
+            #
+            #     # Điền chữ cái
+            #     row.cells[0].text = letters[letter_index] if letter_index < 26 else get_lower_letter(letter_index)
+            #     row.cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+            #
+            #     # Điền dữ liệu - MỖI PLAN CÓ GIÁ TRỊ RIÊNG
+            #     row.cells[1].text = plan_name or ""
+            #     row.cells[2].text = f"{data['total_hours']:g}" if data['total_hours'] else ""
+            #     row.cells[3].text = f"{data['chinh_tri_hours']:g}" if data['chinh_tri_hours'] else ""
+            #     row.cells[4].text = f"{data['phap_luat_hours']:g}" if data['phap_luat_hours'] else ""
+            #     row.cells[5].text = f"{data['hau_can_hours']:g}" if data['hau_can_hours'] else ""
+            #     row.cells[6].text = f"{data['ky_thuat_hours']:g}" if data['ky_thuat_hours'] else ""
+            #     row.cells[7].text = f"{data['dieu_lenh_hours']:g}" if data['dieu_lenh_hours'] else ""
+            #     row.cells[8].text = f"{data['cdbb_hours']:g}" if data['cdbb_hours'] else ""
+            #     row.cells[9].text = f"{data['ban_sung_hours']:g}" if data['ban_sung_hours'] else ""
+            #     row.cells[10].text = f"{data['tl_chuyen_mon_hours']:g}" if data['tl_chuyen_mon_hours'] else ""
+            #     row.cells[11].text = f"{data['tl_chung_hours']:g}" if data['tl_chung_hours'] else ""
+            #
+            #     # Căn giữa các ô từ 2 đến 11
+            #     for i in range(2, 12):
+            #         row.cells[i].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+            #
+            #     row.cells[12].text = "HL thể lực =35% tổng số thời gian"
+            #     row_index += 1
+            #
+            # # Table 2
+            #
+            # def get_column_index(week_name, weekday):
+            #     """Tính column index dựa trên tuần và thứ"""
+            #     week_number = int(week_name.replace('Tuần', '').strip())
+            #     weekday_map = {
+            #         'Thứ Hai': 2, 'Thứ Ba': 3, 'Thứ Tư': 4, 'Thứ Năm': 5, 'Thứ Sáu': 6, 'Thứ Bảy': 7,
+            #         'Thứ 2': 2, 'Thứ 3': 3, 'Thứ 4': 4, 'Thứ 5': 5, 'Thứ 6': 6, 'Thứ 7': 7,
+            #     }
+            #
+            #     weekday_number = weekday_map.get(weekday.strip())
+            #
+            #     if weekday_number is None or weekday_number < 2 or weekday_number > 6:
+            #         return None
+            #
+            #     weekday_offset = weekday_number - 2
+            #     column_index = 5 + (week_number - 1) * 5 + weekday_offset
+            #
+            #     return column_index
+            #
+            # def set_cell_alignment(cell, h_align=WD_ALIGN_PARAGRAPH.CENTER, v_align=WD_ALIGN_VERTICAL.CENTER):
+            #     """Helper function để set alignment cho cell"""
+            #     cell.paragraphs[0].alignment = h_align
+            #     cell.vertical_alignment = v_align
+            #
+            # table_2 = doc.tables[1]
+            #
+            # row_index_2 = 4
+            #
+            # # Set tổng giờ chung
+            #
+            # table_2.rows[3].cells[4].text = f"{total_common_hours:g}" if total_common_hours else ""
+            #
+            # set_cell_alignment(table_2.rows[3].cells[4])
+            #
+            # lesson_letter_index = 0  # Biến riêng cho letter của lessons
+            #
+            # # Hàm xử lý dữ liệu cho các course (chung và riêng)
+            #
+            # def process_course_data(course_data, is_common=True):
+            #     nonlocal course_number, row_index_2, lesson_letter_index
+            #
+            #     for course_name, data in course_data.items():
+            #         # NHÓM CÁC LESSON THEO lesson_name VÀ TÍNH TỔNG HOURS
+            #         grouped_lessons = defaultdict(lambda: {'total_hours': 0, 'week_data': []})
+            #
+            #         for record in data['records']:
+            #             lesson_name = record.lesson_name or ""
+            #             grouped_lessons[lesson_name]['total_hours'] += (record.total_hours or 0)
+            #
+            #             # Lưu thông tin tuần và thứ cho mỗi lesson
+            #             if record.week_name and record.weekday:
+            #                 grouped_lessons[lesson_name]['week_data'].append({
+            #                     'week_name': record.week_name,
+            #                     'weekday': record.weekday,
+            #                     'hours': record.total_hours or 0
+            #                 })
+            #
+            #         # Thêm hàng cho course
+            #         while row_index_2 >= len(table_2.rows):
+            #             table_2.add_row()
+            #
+            #         row = table_2.rows[row_index_2]
+            #
+            #         # Điền dữ liệu course
+            #         row.cells[0].text = str(course_number)
+            #         row.cells[1].text = course_name or ""
+            #         row.cells[4].text = f"{data['total_hours']:g}" if data['total_hours'] else ""
+            #         row.cells[26].text = "HL theo đội hình Trung tâm, ôn luyện theo đội hình Đoàn"
+            #
+            #         set_cell_alignment(row.cells[0])
+            #
+            #         # Căn giữa các ô từ 4 đến 11
+            #         for i in range(4, 12):
+            #             set_cell_alignment(row.cells[i])
+            #
+            #         course_number += 1
+            #         row_index_2 += 1
+            #
+            #         # Duyệt qua các lesson đã được nhóm
+            #
+            #         for lesson_name, lesson_data in grouped_lessons.items():
+            #             while row_index_2 >= len(table_2.rows):
+            #                 table_2.add_row()
+            #
+            #             lesson_row = table_2.rows[row_index_2]
+            #             # Sử dụng lesson_letter_index riêng, bắt đầu từ 'a' cho mỗi course
+            #             lesson_row.cells[0].text = letters[
+            #                 lesson_letter_index] if lesson_letter_index < 26 else get_lower_letter(lesson_letter_index)
+            #             lesson_row.cells[1].text = lesson_name or ""
+            #             lesson_row.cells[4].text = f"{lesson_data['total_hours']:g}" if lesson_data[
+            #                 'total_hours'] else ""
+            #
+            #             # Điền giờ vào cột tuần/thứ tương ứng cho từng lesson
+            #             for week_info in lesson_data['week_data']:
+            #                 col_index = get_column_index(week_info['week_name'], week_info['weekday'])
+            #                 if col_index is not None and col_index < len(lesson_row.cells):
+            #                     # Cộng dồn nếu đã có giá trị
+            #                     current_value = lesson_row.cells[col_index].text.strip()
+            #
+            #                     if current_value:
+            #                         try:
+            #                             current_hours = float(current_value)
+            #                             total_hours = current_hours + week_info['hours']
+            #                             lesson_row.cells[col_index].text = f"{total_hours:g}"
+            #                         except ValueError:
+            #                             lesson_row.cells[col_index].text = f"{week_info['hours']:g}"
+            #                     else:
+            #                         lesson_row.cells[col_index].text = f"{week_info['hours']:g}"
+            #
+            #                 elif col_index is not None:
+            #                     print(
+            #                         f"Warning: Column index {col_index} out of range. Table has {len(lesson_row.cells)} columns.")
+            #                     print(f"Week: {week_info['week_name']}, Weekday: {week_info['weekday']}")
+            #
+            #             set_cell_alignment(lesson_row.cells[0])
+            #
+            #             # Căn giữa các ô
+            #             for i in range(4, min(12, len(lesson_row.cells))):
+            #                 lesson_row.cells[i].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+            #
+            #             lesson_letter_index += 1  # Tăng letter index cho lesson
+            #             row_index_2 += 1
+            #
+            #         # Reset letter index về 'a' cho course tiếp theo
+            #         lesson_letter_index = 0
+            #
+            # # Xử lý các môn chung
+            # process_course_data(grouped_by_course_common, is_common=True)
+            #
+            # # Lưu lại vị trí kết thúc của môn chung để tính tổng
+            # end_common_row = row_index_2
+            #
+            # # Tính tổng cho các cột từ 5 đến 25 ở hàng 3 (chỉ trong phạm vi môn chung)
+            # for col_index in range(5, 26):
+            #     total = 0
+            #
+            #     # Duyệt qua các hàng từ 4 đến end_common_row (không bao gồm end_common_row)
+            #     for row_idx in range(4, end_common_row):
+            #         cell_text = table_2.rows[row_idx].cells[col_index].text.strip()
+            #
+            #         if cell_text:
+            #             try:
+            #                 total += float(cell_text)
+            #             except ValueError:
+            #                 pass  # Bỏ qua nếu không phải số
+            #
+            #     # Ghi tổng vào hàng 3
+            #     if total > 0:
+            #         table_2.rows[3].cells[col_index].text = f"{total:g}"
+            #
+            #         set_cell_alignment(table_2.rows[3].cells[col_index])
+            #
+            # # Thêm dòng "B. HUẤN LUYỆN RIÊNG" vào cuối table
+            #
+            # while row_index_2 >= len(table_2.rows):
+            #     table_2.add_row()
+            #
+            # private_header_row = table_2.rows[row_index_2]
+            #
+            # private_header_row.cells[0].text = "B"
+            #
+            # private_header_row.cells[1].text = "HUẤN LUYỆN RIÊNG"
+            #
+            # private_header_row.cells[1].merge(private_header_row.cells[3])
+            #
+            # set_cell_alignment(private_header_row.cells[0])
+            #
+            # row_index_2 += 1
+            #
+            # # Xử lý các môn riêng
+            # course_number = 1
+            #
+            # process_course_data(grouped_by_course_private, is_common=False)
 
             # self.print_table(doc, 1)
 
