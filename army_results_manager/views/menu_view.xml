@@ -176,7 +176,7 @@
             <field name="context">{
                 'default_action': 'report',
                 'showDocument':true,
-                'group_by': ['year', 'month_name', 'week_name', 'day_name','plan_name', 'lesson_name']}
+                'group_by': ['year', 'month_name', 'week_name', 'day_name']}
             </field>
         </record>
 
