@@ -13,6 +13,12 @@
                         type="object"
                         groups="army_results_manager.group_training_commander_assistant,army_results_manager.group_admin"
                         class="btn-primary"/>
+
+                <button name="action_gen_proposal_solution"
+                        string="Đề xuất HL nâng cao"
+                        type="object"
+                        groups="army_results_manager.group_training_commander_assistant,army_results_manager.group_admin"
+                        class="btn-primary"/>
             </tree>
         </field>
     </record>
@@ -27,6 +33,7 @@
                     <field name="score"/>
                     <field name="strength"/>
                     <field name="weakness"/>
+                    <field name="proposal_solution"/>
                     <field name="video" widget="video" filename="filename"/>
                 </group>
             </form>

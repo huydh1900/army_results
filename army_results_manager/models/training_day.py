@@ -28,6 +28,9 @@ class TrainingDay(models.Model):
     mission_name = fields.Char(related='mission_id.name', store=True)
     lesson_name = fields.Char(related='mission_id.name', store=True)
     course_id = fields.Many2one(related='mission_id.course_id', store=True)
+    subject_id = fields.Many2one(related='course_id.subject_line_id.subject_id', store=True)
+    type_training = fields.Selection(related='course_id.subject_line_id.type_training', store=True)
+    subject_name = fields.Char(related='course_id.subject_line_id.subject_id.name', store=True)
     course_name = fields.Char(related='course_id.subject_line_id.name', store=True)
     weekday = fields.Char(string="Thứ", compute='_compute_name', store=True)
     total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True, group_operator=False)
@@ -256,6 +259,12 @@ class TrainingDayComment(models.Model):
         related='day_id.training_officer_ids',
         store=True
     )
+
+    proposal_solution = fields.Text(string="Đề xuất giải pháp huấn luyện nâng cao")
+
+
+    def action_gen_proposal_solution(self):
+        return
 
     @api.depends('strength', 'weakness')
     def _compute_comment(self):

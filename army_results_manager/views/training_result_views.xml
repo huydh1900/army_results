@@ -9,6 +9,7 @@
                 <field name="score"/>
                 <field name="result"/>
                 <field name="note"/>
+                <field name="note_tmp"/>
                 <button name="action_generate_note_by_ai"
                         type="object"
                         string="Đánh giá AI"
@@ -45,6 +46,7 @@
                         <field name="score"/>
                         <field name="result"/>
                         <field name="note"/>
+                        <field name="note_tmp"/>
                     </group>
                 </group>
                 <notebook>
