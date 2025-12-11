@@ -50,7 +50,11 @@ class TrainingResult(models.Model):
             return
 
         fastapi_url = f"{domain}/api/summarize_from_db/{self.employee_id.id}"
-        payload = {"table": "public.training_result"}
+        payload = {
+            "table": "public.training_result",
+            "training_course_id": self.training_course_id,
+            "plan_id": self.plan_id
+        }
 
         try:
             response = requests.post(fastapi_url, json=payload, timeout=30)
