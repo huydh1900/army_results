@@ -1,6 +1,9 @@
 from odoo import models, fields, api
 from odoo.exceptions import UserError
 import requests
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class TrainingResult(models.Model):
@@ -42,29 +45,37 @@ class TrainingResult(models.Model):
 
         if not domain:
             self.note = 'Chưa cấu hình server domain!'
+            _logger.warning("action_generate_note_by_ai: Chưa cấu hình server domain!")
             return
 
         if not self.employee_id:
             self.note = 'Học viên chưa được chọn, không thể tạo nhận xét AI.'
+            _logger.warning("action_generate_note_by_ai: employee_id chưa được chọn")
             return
 
-        fastapi_url = f"{domain}/api/summarize_from_db/{self.employee_id.id}"
+        fastapi_url = f"{domain}/api/summarize_from_db/5"
         payload = {
             "table": "public.training_result",
             "training_course_id": self.training_course_id.id if self.training_course_id else False,
             "plan_id": self.plan_id.id if self.plan_id else False
         }
 
+        _logger.info("Gọi API summarize_from_db: URL=%s, payload=%s", fastapi_url, payload)
+
         try:
             response = requests.post(fastapi_url, json=payload, timeout=30)
-            data = response.json()
+            _logger.info("Response status_code=%s, content=%s", response.status_code, response.text)
 
+            data = response.json()
             if data.get("status") == "success":
                 self.note = data.get("summary", "Không có nội dung nhận xét")
+                _logger.info("AI summary cập nhật thành công cho record_id=%s", self.id)
             else:
                 self.note = 'Không thể tạo nhận xét AI. Vui lòng thử lại sau.'
-        except Exception:
+                _logger.warning("API trả về lỗi hoặc status không thành công: %s", data)
+        except Exception as e:
             self.note = 'Không thể tạo nhận xét AI. Vui lòng thử lại sau.'
+            _logger.exception("Lỗi khi gọi API summarize_from_db: %s", str(e))
 
     @api.onchange("score")
     def _onchange_score(self):
