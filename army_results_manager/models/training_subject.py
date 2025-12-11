@@ -46,7 +46,7 @@ class TrainingLesson(models.Model):
     _description = 'Bài học'
 
     code = fields.Char("Mã bài học")
-    name = fields.Text(string='Tên bài học')
+    name = fields.Text(string='Tên nhiệm vụ (Bài học)')
     type = fields.Selection([
         ('squad', 'Phân đội'),
         ('officer', 'Sĩ quan')

@@ -48,8 +48,9 @@
                 <field name="student_id" string="Tên học viên" filter_domain="[('student_id.name', 'ilike', self)]"/>
                 <field name="day_date" string="Ngày" filter_domain="[('day_date', 'ilike', self)]"/>
                 <field name="score" string="Điểm số" filter_domain="[('score', 'ilike', self)]"/>
-                <filter name="group_student_id" string="Nhóm theo tên học viên" context="{'group_by':'student_id'}"/>
                 <filter name="day_date" string="Nhóm theo ngày" context="{'group_by':'day_date'}"/>
+                <filter name="lesson_name" string="Nhóm theo nhiệm vụ huấn luyện" context="{'group_by':'lesson_name'}"/>
+                <filter name="group_student_id" string="Nhóm theo tên học viên" context="{'group_by':'student_id'}"/>
             </search>
         </field>
     </record>

@@ -3,18 +3,11 @@ from odoo import models, fields, api
 from odoo.modules.module import get_module_resource
 from io import BytesIO
 import base64
-import string
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.enum.table import WD_ALIGN_VERTICAL
 from datetime import date
 from odoo.exceptions import UserError
-from collections import defaultdict
-from docx.shared import Cm
-from docx.oxml import OxmlElement
-from docx.oxml.ns import qn
-from docx.shared import Inches
-from docx.shared import Pt
+from copy import deepcopy
 
 
 class PrintWordWizard(models.TransientModel):
@@ -465,9 +458,19 @@ class PrintWordWizard(models.TransientModel):
                             for paragraph in cell.paragraphs:
                                 paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-            self.print_table(doc, 1)
+            # self.print_table(doc, 1)
 
             # --- MAP CHUYỂN CHUỖI THỨ → SỐ ---
+            # --- KHUNG 21 CỘT ---
+            def make_time_slots():
+                return {
+                    1: [None] * 5,  # Tuần 1: T2-T6
+                    2: [None] * 5,
+                    3: [None] * 5,
+                    4: [None] * 5,
+                    5: [None] * 1,  # Tuần 5: chỉ T2
+                }
+
             weekday_map = {
                 "thứ hai": 1,
                 "thứ ba": 2,
@@ -477,24 +480,32 @@ class PrintWordWizard(models.TransientModel):
             }
 
             # --- BƯỚC 1: GOM NHÓM THEO MÔN HỌC VÀ BÀI HỌC ---
-            grouped_data_table_1 = {}
+            grouped_data_table_1 = {
+                "common_training": {},
+                "private_training": {}
+            }
 
+            # --- Nhóm dữ liệu ---
             for rec in records:
+                type_training = rec.type_training or "common_training"
                 course = rec.course_name or "Không xác định"
                 lesson_name = rec.lesson_name or "Không xác định"
                 lesson_metadata_source = rec.course_id
 
-                # Nhóm Môn học
-                if course not in grouped_data_table_1:
-                    grouped_data_table_1[course] = {
+                # Nhóm theo type_training
+                if course not in grouped_data_table_1[type_training]:
+                    grouped_data_table_1[type_training][course] = {
                         "lessons": {},
                         "course_total_hours": 0,
+                        "plan_name": rec.plan_name or ""
                     }
-                grouped_data_table_1[course]["course_total_hours"] += rec.total_hours or 0
 
-                # Nhóm Bài học
-                if lesson_name not in grouped_data_table_1[course]["lessons"]:
-                    grouped_data_table_1[course]["lessons"][lesson_name] = {
+                grouped_data_table_1[type_training][course]["course_total_hours"] += rec.total_hours or 0
+
+                # Nhóm bài học
+                lessons = grouped_data_table_1[type_training][course]["lessons"]
+                if lesson_name not in lessons:
+                    lessons[lesson_name] = {
                         "total_hours": 0,
                         "participant": lesson_metadata_source.participant_category_id.name or '',
                         "responsible": lesson_metadata_source.responsible_level_id.name or '',
@@ -502,121 +513,167 @@ class PrintWordWizard(models.TransientModel):
                         "time_data_records": [],
                     }
 
-                lesson_group = grouped_data_table_1[course]["lessons"][lesson_name]
+                lesson_group = lessons[lesson_name]
                 lesson_group["total_hours"] += rec.total_hours or 0
-
-                # Lưu record thời gian
                 lesson_group["time_data_records"].append({
                     "week": rec.week,
                     "weekday": rec.weekday,  # string kiểu "thứ hai", "thứ ba"
                     "hours": rec.total_hours or 0
                 })
 
-            # --- BƯỚC 2: TẠO DỮ LIỆU CHO WORD ---
+            # --- Hàm thêm môn học (đánh số linh hoạt) ---
+            def add_course_rows(course_dict, start_course_idx=1, start_lesson_idx=None, is_private=False):
+                rows = []
+                course_idx = start_course_idx
+
+                for course_name, course_data in sorted(course_dict.items(), key=lambda x: x[0]):
+                    # Nếu là private, TT là số (1,2,..)
+                    tt_course = str(course_idx) if is_private else str(course_idx)
+                    course_row = {
+                        'TT': tt_course,
+                        'Nội dung huấn luyện': course_name.upper(),
+                        'Thành phần tham gia': '',
+                        'Cấp phụ trách': '',
+                        'Tổng số (giờ)': format_hours(course_data["course_total_hours"]),
+                        'Thời gian': [""] * 21,
+                        'Biện pháp tiến hành': ''
+                    }
+                    rows.append(course_row)
+
+                    # Các bài học (a,b,c) với khung số liệu 1.1, 1.2,...
+                    lessons_list = sorted(course_data["lessons"].items(), key=lambda x: x[0])
+                    for lesson_idx, (lesson_name, data) in enumerate(lessons_list, start=1):
+                        # Tạo slot 21 cột
+                        slots = make_time_slots()
+                        for item in data["time_data_records"]:
+                            week = int(item["week"]) if item["week"] else 0
+                            weekday_str = (item["weekday"] or "").strip().lower()
+                            weekday = weekday_map.get(weekday_str, 0)
+                            hours = item["hours"]
+
+                            if week in slots:
+                                if week == 5:
+                                    if weekday == 1:
+                                        slots[5][0] = format_hours(hours)
+                                else:
+                                    if 1 <= weekday <= 5:
+                                        slots[week][weekday - 1] = format_hours(hours)
+
+                        flat_time_list = slots[1] + slots[2] + slots[3] + slots[4] + slots[5]
+                        flat_time_list = [v if v else "" for v in flat_time_list]
+
+                        lesson_tt = f"{course_idx}.{lesson_idx}" if is_private else get_lower_letter(lesson_idx - 1)
+                        lesson_row = {
+                            'TT': lesson_tt,
+                            'Nội dung huấn luyện': lesson_name,
+                            'Thành phần tham gia': data['participant'],
+                            'Cấp phụ trách': data['responsible'],
+                            'Tổng số (giờ)': format_hours(data['total_hours']),
+                            'Thời gian': flat_time_list,
+                            'Biện pháp tiến hành': data['measure']
+                        }
+                        rows.append(lesson_row)
+
+                    course_idx += 1
+
+                return rows, course_idx
+
+            # --- Bước 2: tạo dữ liệu cho Word ---
             all_rows_to_write = []
             course_idx = 1
 
-            for course_name, course_data in grouped_data_table_1.items():
-                # Hàng Môn học
-                course_row = {
-                    'TT': str(course_idx),
-                    'Nội dung huấn luyện': course_name.upper(),
+            # Thêm môn huấn luyện chung
+            rows, course_idx = add_course_rows(grouped_data_table_1["common_training"], start_course_idx=course_idx)
+            all_rows_to_write += rows
+
+            # Thêm môn huấn luyện riêng
+            if grouped_data_table_1["private_training"]:
+                # Dòng B ở cột TT, HUẤN LUYỆN RIÊNG CÁC ĐỐI TƯỢNG ở nội dung huấn luyện, in đậm
+                all_rows_to_write.append({
+                    'TT': 'B',
+                    'Nội dung huấn luyện': 'HUẤN LUYỆN RIÊNG CÁC ĐỐI TƯỢNG',
                     'Thành phần tham gia': '',
                     'Cấp phụ trách': '',
-                    'Tổng số (giờ)': format_hours(course_data["course_total_hours"]),
+                    'Tổng số (giờ)': '',
                     'Thời gian': [""] * 21,
                     'Biện pháp tiến hành': ''
-                }
-                all_rows_to_write.append(course_row)
-                course_idx += 1
+                })
 
-                # Hàng Bài học
-                lessons_list = sorted(course_data["lessons"].items(), key=lambda item: item[0])
-                for lesson_idx, (lesson_name, data) in enumerate(lessons_list):
-                    slots = make_time_slots()
+                # Đánh số khóa huấn luyện bắt đầu từ 1
+                rows, _ = add_course_rows(grouped_data_table_1["private_training"], start_course_idx=1, is_private=True)
+                all_rows_to_write += rows
 
-                    # Điền dữ liệu vào slot
-                    for item in data["time_data_records"]:
-                        week = int(item["week"]) if item["week"] else 0
-                        weekday_str = (item["weekday"] or "").strip().lower()
-                        weekday = weekday_map.get(weekday_str, 0)
-                        hours = item["hours"]
-
-                        if week in slots:
-                            if week == 5:
-                                # Tuần 5 chỉ có T2
-                                if weekday == 1:
-                                    slots[5][0] = format_hours(hours)
-                            else:
-                                if 1 <= weekday <= 5:
-                                    slots[week][weekday - 1] = format_hours(hours)
-
-                    # Gộp slot thành list 21 phần tử
-                    flat_time_list = slots[1] + slots[2] + slots[3] + slots[4] + slots[5]
-                    flat_time_list = [v if v else "" for v in flat_time_list]
-
-                    lesson_row = {
-                        'TT': get_lower_letter(lesson_idx),
-                        'Nội dung huấn luyện': lesson_name,
-                        'Thành phần tham gia': data['participant'],
-                        'Cấp phụ trách': data['responsible'],
-                        'Tổng số (giờ)': format_hours(data['total_hours']),
-                        'Thời gian': flat_time_list,
-                        'Biện pháp tiến hành': data['measure']
-                    }
-                    all_rows_to_write.append(lesson_row)
-
-            # --- BƯỚC 3: GHI VÀO WORD TABLE ---
+            # --- Bước 3: ghi vào Word ---
             target_table = doc.tables[1]
             start_row_index = 4
             current_row_index = start_row_index - 1
 
             for data_row in all_rows_to_write:
                 current_row_index += 1
-
                 while current_row_index >= len(target_table.rows):
                     target_table.add_row()
-
                 word_row = target_table.rows[current_row_index]
 
                 values = [
-                         data_row['TT'],
-                         data_row['Nội dung huấn luyện'],
-                         data_row['Thành phần tham gia'],
-                         data_row['Cấp phụ trách'],
-                         data_row['Tổng số (giờ)'],
-                     ] + data_row['Thời gian'] + [
-                         data_row['Biện pháp tiến hành']
+                             data_row['TT'],
+                             data_row['Nội dung huấn luyện'],
+                             data_row['Thành phần tham gia'],
+                             data_row['Cấp phụ trách'],
+                             data_row['Tổng số (giờ)'],
+                         ] + data_row['Thời gian'] + [
+                             data_row['Biện pháp tiến hành']
                          ]
 
-                for col_idx, val in enumerate(values):
-                    word_row.cells[col_idx].text = str(val)
-
-                # Ghi vào Word cell
-                for col_idx, val in enumerate(values):
-                    word_row.cells[col_idx].text = str(val)
-
                 for col_idx, value in enumerate(values):
-
                     if col_idx < len(word_row.cells):
                         cell = word_row.cells[col_idx]
                         cell.text = str(value) if value else ""
 
-                        # Căn giữa cho cột TT (0), Tổng số giờ (4), và các cột Thời gian (5 đến 25)
+                        if data_row['TT'] == 'B' and col_idx == 1:
+                            for paragraph in cell.paragraphs:
+                                for run in paragraph.runs:
+                                    run.font.bold = True
+
+                        # Căn giữa cho cột TT (0), Tổng số giờ (4), và các cột Thời gian (5-25)
                         if col_idx == 0 or col_idx == 4 or (5 <= col_idx <= 25):
                             for paragraph in cell.paragraphs:
                                 paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
                         else:
-                            # Căn trái cho các cột chữ
                             for paragraph in cell.paragraphs:
                                 paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
 
             # table_1_data đã sẵn sàng để ghi vào doc.tables[1]
 
         elif self.report_type == 'year':
+            def add_column(table):
+                for row in table.rows:
+                    last_cell = row.cells[-1]._tc
+                    new_cell = deepcopy(last_cell)
+                    row._tr.append(new_cell)
+
+                    # CLEAR TEXT TRONG CELL COPY
+                    cell_obj = row.cells[-1]
+                    for p in cell_obj.paragraphs:
+                        for run in p.runs:
+                            run.text = ""
+                        p.text = ""
+
+            def merge_header_time(table, from_col, to_col):
+                row = table.rows[0]
+                start_cell = row.cells[from_col]
+                for col in range(from_col + 1, to_col + 1):
+                    start_cell.merge(row.cells[col])
+
+            def center_cell(cell):
+                for p in cell.paragraphs:
+                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+            def fmt(dt):
+                if not dt:
+                    return ""
+                return dt.strftime("%d/%m/%Y")
 
             self.replace_placeholder_with_text(doc, "{{year}}", self.year)
-
 
             TrainingDay = self.env['training.day']
             domain = [('year', '=', self.year), ('state', '=', 'approved')]
@@ -625,8 +682,110 @@ class PrintWordWizard(models.TransientModel):
             if not records:
                 raise UserError('Không tìm thấy dữ liệu!')
 
-            # Lấy set của tất cả plan_id (unique plans)
+            self.print_table(doc, 0)
 
+            grouped = {}
+            for rec in records:
+                if rec.plan_name not in grouped:
+                    grouped[rec.plan_name] = rec
+                else:
+                    grouped[rec.plan_name] |= rec
+
+            table = doc.tables[0]
+
+            # =============================
+            # 1. ADD COLUMNS IF NEEDED
+            default_time_cols = 2
+            needed_time_cols = len(grouped)
+
+            # Số cột thời gian cần thêm
+            extra_cols = needed_time_cols - default_time_cols
+            if extra_cols > 0:
+                for _ in range(extra_cols):
+                    add_column(table)
+
+            merge_header_time(table, 2, 1 + needed_time_cols)
+
+            # =============================
+            # 2. Fill plan_name vào dòng 1
+            # =============================
+            col_index = 2
+            for plan_name in grouped.keys():
+                cell = table.rows[1].cells[col_index]
+                cell.text = plan_name
+                center_cell(cell)
+                col_index += 1
+
+            # =============================
+            # 3. Fill data
+            # =============================
+
+            col_index = 2
+            for plan_name, items in grouped.items():
+                start_date = min(items.mapped('plan_id.start_date'))
+                end_date = max(items.mapped('plan_id.end_date'))
+
+                # ----- Row 2: Bắt đầu -----
+                cell = table.rows[2].cells[col_index]
+                cell.text = fmt(start_date)
+                center_cell(cell)
+
+                # ----- Row 3: Kết thúc -----
+                cell = table.rows[3].cells[col_index]
+                cell.text = fmt(end_date)
+                center_cell(cell)
+
+                # ----- Row 4: Tổng số thời gian (số ngày) -----
+                total_days = (end_date - start_date).days + 1
+                cell = table.rows[4].cells[col_index]
+                cell.text = str(total_days) + " ngày"
+                center_cell(cell)
+
+                col_index += 1
+
+            # grouped = {}
+            #
+            # for rec in records:
+            #     if rec.plan_name not in grouped:
+            #         grouped[rec.plan_name] = rec
+            #     else:
+            #         grouped[rec.plan_name] |= rec
+            #
+            # table = doc.tables[0]
+            #
+            # # Add columns if needed
+            # required_cols = 2 + len(grouped)
+            # current_cols = len(table.rows[0].cells)
+            # if required_cols > current_cols:
+            #     diff = required_cols - current_cols
+            #     for _ in range(diff):
+            #         add_column(table)
+            #
+            # # Fill plan_name into row[1]
+            # col_index = 2
+            # for plan_name in grouped.keys():
+            #     table.rows[1].cells[col_index].text = plan_name
+            #     col_index += 1
+            #
+            # # Fill data for each plan_name
+            # col_index = 2
+            # for plan_name, items in grouped.items():
+            #     start_date = min(items.mapped('plan_id.start_date'))
+            #     end_date = max(items.mapped('plan_id.end_date'))
+            #     # total_days = sum(items.mapped('total_days'))
+            #     # weeks = total_days // 7
+            #     # holidays = sum(items.mapped('holidays'))
+            #
+            #     table.rows[2].cells[col_index].text = str(start_date)
+            #     table.rows[3].cells[col_index].text = str(end_date)
+            #     # table.rows[4].cells[col_index].text = str(total_days)
+            #     # table.rows[5].cells[col_index].text = str(weeks)
+            #     # table.rows[6].cells[col_index].text = str(total_days)
+            #     # table.rows[7].cells[col_index].text = str(holidays)
+            #
+            #     col_index += 1
+
+            # Lấy set của tất cả plan_id (unique plans)
 
         file_data = BytesIO()
         doc.save(file_data)

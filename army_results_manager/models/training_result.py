@@ -1,7 +1,6 @@
 from odoo import models, fields, api
 from odoo.exceptions import UserError
 import requests
-from openai import OpenAI
 
 
 class TrainingResult(models.Model):
@@ -35,48 +34,34 @@ class TrainingResult(models.Model):
             comments = rec.day_comment_ids.mapped('comment')
             rec.note_tmp = "\n".join(c for c in comments if c)
 
-
     def action_generate_note_by_ai(self):
-        """Chuyển đến controller để tạo nhận xét AI"""
+        """Tạo nhận xét AI trực tiếp, chỉ cập nhật khi thành công"""
         self.ensure_one()
 
-        return {
-            'type': 'ir.actions.act_url',
-            'url': f'/ai/generate_note/{self.id}',
-            'target': 'self',  # Mở trong cùng tab
-        }
+        # Lấy domain server (ví dụ: http://118.70.177.132:8000)
+        domain = self.env['ir.config_parameter'].sudo().get_param('openai.api_key')
 
-    # def action_generate_note_by_ai(self):
-    #     # Lấy key 1 lần duy nhất
-    #     openai_api_key = self.env['ir.config_parameter'].sudo().get_param('openai.api_key')
-    #     if not openai_api_key:
-    #         return
-    #
-    #     # Khởi tạo client 1 lần duy nhất
-    #     client = OpenAI(
-    #         api_key=openai_api_key,
-    #         base_url="https://openrouter.ai/api/v1"
-    #     )
-    #
-    #     # Cache prompt template để giảm thao tác string
-    #     prompt_template = (
-    #         "Bạn là cán bộ huấn luyện quân đội. Hãy viết nhận xét ngắn (1–2 câu)** "
-    #         "về học viên có điểm {score} trong khóa huấn luyện {training_course_name}:\n"
-    #         "Không nhắc lại điểm số, không mở đầu bằng “Học viên có điểm…”.\n"
-    #         "Giữ giọng điệu trang nghiêm, nghiêm khắc phê bình, rút kinh nghiệm, điểm cao thì khen cố gắng phát huy, mang tính quân đội."
-    #     )
-    #
-    #     for rec in self.filtered(lambda r: r.result):
-    #         try:
-    #             prompt = prompt_template.format(score=rec.score, training_course_name = rec.training_course_id.name)
-    #             response = client.chat.completions.create(
-    #                 model="gpt-4o-mini",
-    #                 messages=[{"role": "user", "content": prompt}],
-    #             )
-    #             note_text = response.choices[0].message.content.strip()
-    #             rec.note = note_text or "Không thể tạo nhận xét tự động."
-    #         except Exception as e:
-    #             rec.note = f"Không thể tạo nhận xét tự động (lỗi: {str(e)[:100]})."
+        if not domain:
+            self.note = 'Lỗi: Chưa cấu hình server domain!'
+            return
+
+        if not self.employee_id:
+            self.note = 'Lỗi: Học viên không hợp lệ!'
+            return
+
+        fastapi_url = f"{domain}/api/summarize_from_db/{self.employee_id.id}"
+        payload = {"table": "public.training_result"}
+
+        try:
+            response = requests.post(fastapi_url, json=payload, timeout=30)
+            data = response.json()
+
+            if data.get("status") == "success":
+                self.note = data.get("summary", "Không có nội dung nhận xét")
+            else:
+                self.note = 'Không thể tạo nhận xét AI. Vui lòng thử lại sau.'
+        except Exception:
+            self.note = 'Không thể tạo nhận xét AI. Vui lòng thử lại sau.'
 
     @api.onchange("score")
     def _onchange_score(self):

@@ -34,10 +34,29 @@
 
         <!-- Actions -->
         <record id="action_training_schedule" model="ir.actions.act_window">
-            <field name="name">Kế hoạch huấn luyện</field>
+            <field name="name">Xây dựng Kế hoạch huấn luyện</field>
             <field name="res_model">training.schedule</field>
             <field name="view_mode">tree,form</field>
+            <field name="context">{'group_by': ['plan_type']}</field>
         </record>
+
+        <record id="action_training_schedule_posted" model="ir.actions.act_window">
+            <field name="name">Kế hoạch huấn luyện chờ duyệt</field>
+            <field name="res_model">training.schedule</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'group_by': ['plan_type']}</field>
+            <field name="domain">[('state', 'in', ['posted', 'to_modify'])]</field>
+        </record>
+
+        <record id="action_training_schedule_approved" model="ir.actions.act_window">
+            <field name="name">Kế hoạch huấn luyện đã duyệt</field>
+            <field name="res_model">training.schedule</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'group_by': ['plan_type']}</field>
+            <field name="domain">[('state', '=', 'approved')]</field>
+        </record>
+
+
 
         <record id="action_training_subject_common" model="ir.actions.act_window">
             <field name="name">Môn học (HL chung)</field>
@@ -324,8 +343,30 @@
         <menuitem id="menu_training_course"
                   name="Kế hoạch huấn luyện"
                   parent="menu_military_root"
+                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer,army_results_manager.group_training_commander_assistant"
+                  sequence="3"/>
+
+        <menuitem id="menu_training_course_list"
+                  name="Xây dựng Kế hoạch huấn luyện"
+                  parent="menu_training_course"
                   groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer,army_results_manager.group_training_commander,army_results_manager.group_training_commander_assistant"
                   action="action_training_schedule"
+                  sequence="1"/>
+
+
+        <menuitem id="menu_training_course_list_posted"
+                  name="Kế hoạch huấn luyện chờ duyệt"
+                  parent="menu_training_course"
+                  groups="army_results_manager.group_admin,army_results_manager.group_training_commander"
+                  action="action_training_schedule_posted"
+                  sequence="2"/>
+
+
+        <menuitem id="menu_training_course_list_approved"
+                  name="Kế hoạch huấn luyện đã duyệt"
+                  parent="menu_training_course"
+                  groups="army_results_manager.group_admin,army_results_manager.group_training_commander"
+                  action="action_training_schedule_approved"
                   sequence="3"/>
 
         <menuitem id="menu_training_stage_result"

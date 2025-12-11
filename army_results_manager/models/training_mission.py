@@ -8,12 +8,13 @@ class TrainingMission(models.Model):
     _inherit = ['mail.thread']
     _description = 'Bài huấn luyện'
 
-    name = fields.Char(string="Tên bài học")
+    name = fields.Char(string="Bài học")
     description = fields.Text(string="Mô tả")
+    goal = fields.Text(string="Mục tiêu")
     total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True)
     participants_ids = fields.Many2many('hr.department', string="Đối tượng tham gia")
     material_ids = fields.One2many('training.material', 'mission_id', string="Tài liệu / Video")
-    course_id = fields.Many2one('training.course', ondelete='cascade')
+    course_id = fields.Many2one('training.course', ondelete='cascade', string='Môn học', domain="[('plan_id.state', 'not in', ['approved', 'cancel', 'posted'])]")
     student_ids = fields.Many2many('hr.employee', string='Học viên', compute='_compute_student_ids', store=True)
     state = fields.Selection([
         ('draft', 'Dự thảo'),

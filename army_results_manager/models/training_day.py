@@ -1,5 +1,6 @@
 from odoo import models, fields, api
 from odoo.exceptions import UserError
+import requests
 
 
 class TrainingDay(models.Model):
@@ -262,9 +263,38 @@ class TrainingDayComment(models.Model):
 
     proposal_solution = fields.Text(string="Đề xuất giải pháp huấn luyện nâng cao")
 
-
     def action_gen_proposal_solution(self):
-        return
+        """Gọi API để lấy đề xuất giải pháp nâng cao"""
+        self.ensure_one()
+
+        # Lấy domain server và API key
+        domain = self.env['ir.config_parameter'].sudo().get_param('openai.api_key')
+
+        if not domain:
+            raise UserError("Chưa cấu hình server domain!")
+
+        # Kiểm tra các thông tin cần thiết
+        if not self.lesson_name or not self.day_date:
+            raise UserError("Thiếu thông tin Bài học hoặc Ngày học!")
+
+        # URL API
+        fastapi_url = f"{domain}/api/recommend_advanced/{self.employee_id.id}"
+        payload = {
+            "table": "public.training_day_comment",
+            "lesson_name": self.lesson_name,
+            "day_date": self.day_date.strftime('%d-%m-%Y') if hasattr(self.day_date, 'strftime') else self.day_date
+        }
+
+        try:
+            response = requests.post(fastapi_url, json=payload, timeout=30)
+            data = response.json()
+
+            if data.get("status") == "success":
+                self.proposal_solution = data.get("summary", "Không có đề xuất")
+            else:
+                self.proposal_solution = "Không thể tạo đề xuất tự động. Vui lòng thử lại sau."
+        except Exception:
+            self.proposal_solution = "Không thể kết nối đến server. Vui lòng thử lại sau."
 
     @api.depends('strength', 'weakness')
     def _compute_comment(self):
