@@ -38,22 +38,21 @@ class TrainingResult(models.Model):
         """Tạo nhận xét AI trực tiếp, chỉ cập nhật khi thành công"""
         self.ensure_one()
 
-        # Lấy domain server (ví dụ: http://118.70.177.132:8000)
         domain = self.env['ir.config_parameter'].sudo().get_param('openai.api_key')
 
         if not domain:
-            self.note = 'Lỗi: Chưa cấu hình server domain!'
+            self.note = 'Chưa cấu hình server domain!'
             return
 
         if not self.employee_id:
-            self.note = 'Lỗi: Học viên không hợp lệ!'
+            self.note = 'Học viên chưa được chọn, không thể tạo nhận xét AI.'
             return
 
         fastapi_url = f"{domain}/api/summarize_from_db/{self.employee_id.id}"
         payload = {
             "table": "public.training_result",
-            "training_course_id": self.training_course_id,
-            "plan_id": self.plan_id
+            "training_course_id": self.training_course_id.id if self.training_course_id else False,
+            "plan_id": self.plan_id.id if self.plan_id else False
         }
 
         try:
