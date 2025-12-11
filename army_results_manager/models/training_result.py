@@ -53,7 +53,7 @@ class TrainingResult(models.Model):
             _logger.warning("action_generate_note_by_ai: employee_id chưa được chọn")
             return
 
-        fastapi_url = f"{domain}/api/summarize_from_db/5"
+        fastapi_url = f"{domain}/api/summarize_from_db/{self.empoyee_id.id}"
         payload = {
             "table": "public.training_result",
             "training_course_id": self.training_course_id.id if self.training_course_id else False,

@@ -256,7 +256,7 @@ class TrainingDayComment(models.Model):
         'training_day_comment_rel',
         'day_comment_id',
         'employee_id',
-        string='Giảng viên',
+        string='Người huấn luyện',
         related='day_id.training_officer_ids',
         store=True
     )

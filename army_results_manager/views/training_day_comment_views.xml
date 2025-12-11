@@ -8,6 +8,7 @@
                 <field name="score"/>
                 <field name="comment"/>
                 <field name="training_officer_ids" widget="many2many_tags"/>
+                <field name="proposal_solution"/>
                 <button name="action_open_comment"
                         string="Nhận xét"
                         type="object"
