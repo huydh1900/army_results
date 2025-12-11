@@ -278,7 +278,7 @@ class TrainingDayComment(models.Model):
             raise UserError("Thiếu thông tin Bài học hoặc Ngày học!")
 
         # URL API
-        fastapi_url = f"{domain}/api/recommend_advanced/{self.employee_id.id}"
+        fastapi_url = f"{domain}/api/recommend_advanced/{self.student_id.id}"
         payload = {
             "table": "public.training_day_comment",
             "lesson_name": self.lesson_name,
