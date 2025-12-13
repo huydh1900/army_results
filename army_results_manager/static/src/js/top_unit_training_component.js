@@ -12,7 +12,13 @@ export class TopUnitTrainingComponent extends Component {
     }
 
     async renderChart() {
-        const ctx = this.canvasRef.el.getContext("2d");
+        const canvas = this.canvasRef.el;
+        if (!canvas) {
+            console.warn("Canvas not found");
+            return;
+        }
+        const ctx = canvas.getContext("2d");
+
 
         if (!window.Chart) {
             return;
@@ -22,6 +28,12 @@ export class TopUnitTrainingComponent extends Component {
             "get_top_department_training",
             []
         );
+
+        if (!chartData || !chartData.length) {
+            console.warn("No data for chart");
+            return;
+        }
+
 
         const data = {
             labels: chartData.map(d => d.label),
@@ -44,15 +56,15 @@ export class TopUnitTrainingComponent extends Component {
                 legend: {display: false},
                 tooltip: {enabled: true},
             },
-            y: {
-                beginAtZero: true,
-                grid: {display: true},
-                ticks: {
-                    stepSize: 1,
-                    precision: 0,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {display: true},
+                    ticks: {stepSize: 1, precision: 0},
                 },
             },
         };
+
 
         new Chart(ctx, {type: "bar", data, options});
     }

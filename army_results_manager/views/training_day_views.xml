@@ -97,12 +97,6 @@
                        decoration-muted="state == 'draft'"
                        decoration-success="state == 'approved'"
                        decoration-warning="state == 'to_modify'"/>
-                <button name="action_open_modify_wizard"
-                        string="Yêu cầu chỉnh sửa"
-                        type="object"
-                        states="posted"
-                        class="btn-warning"
-                        groups="army_results_manager.group_admin,army_results_manager.group_training_commander"/>
             </tree>
         </field>
     </record>

@@ -4,9 +4,9 @@ from odoo import models, fields, api
 class TrainingSubject(models.Model):
     _name = 'training.subject'
     _rec_name = 'name'
-    _description = 'Chủ đề'
+    _description = 'Chuyên đề'
 
-    name = fields.Char("Chủ đề", required=True)
+    name = fields.Char("Chuyên đề", required=True)
     code = fields.Char("Mã chủ đề")
     type_training = fields.Selection([
         ('common_training', 'Huấn luyện chung'),
@@ -26,6 +26,26 @@ class TrainingSubjectLine(models.Model):
     lesson_ids = fields.One2many('training.lesson', 'subject_line_id', string='Tên bài học')
     type_training = fields.Selection(related='subject_id.type_training', store=True, string="Loại huấn luyện")
     stage_ids = fields.One2many('training.stage', 'subject_line_id', string="Giai đoạn")
+    attachment_ids = fields.Many2many(
+        'ir.attachment',
+        string='Tài liệu, bài tập huấn luyện mẫu',
+    )
+
+    def write(self, vals):
+        if 'attachment_ids' in vals:
+            # Lấy danh sách attachment hiện tại
+            old_attachments = self.attachment_ids
+            # Lấy id attachment mới (nếu là command 6)
+            new_ids = set()
+            for cmd in vals['attachment_ids']:
+                if isinstance(cmd, (list, tuple)) and cmd[0] == 6:
+                    new_ids = set(cmd[2])
+
+            # Những attachment nào cũ không còn trong danh sách mới -> xóa
+            to_unlink = old_attachments.filtered(lambda att: att.id not in new_ids)
+            if to_unlink:
+                to_unlink.unlink()
+        return super().write(vals)
 
     @api.onchange('stage_ids')
     def _onchange_stage_ids(self):
@@ -54,6 +74,8 @@ class TrainingLesson(models.Model):
     subject_line_id = fields.Many2one('training.subject.line', string='Tên môn học')
     type_training = fields.Selection(related='subject_line_id.type_training', store=True, string="Loại huấn luyện")
     stage_id = fields.Many2one('training.stage', string='Giai đoạn')
+    resource_ids = fields.One2many('training.resource', 'lesson_id')
+
 
 class TrainingStage(models.Model):
     _name = 'training.stage'

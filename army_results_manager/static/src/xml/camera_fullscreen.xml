@@ -16,6 +16,9 @@
                 <t t-if="!cam.empty">
                     <div class="camera-item">
                         <iframe t-att-src="cam.stream_url" class="camera-frame"/>
+                        <button class="open-camera-btn"
+                                t-on-click="() => this.openCamera(cam)">Mở
+        </button>
                     </div>
                 </t>
                 <!-- Ô trống -->
@@ -23,9 +26,7 @@
                     <div class="camera-item"/>
                 </t>
             </t>
-
         </div>
-
     </div>
 </t>
 

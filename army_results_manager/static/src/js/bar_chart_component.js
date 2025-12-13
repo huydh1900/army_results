@@ -18,7 +18,7 @@ export class BarChartComponent extends Component {
             console.error("Chart.js chưa load!");
             return;
         }
-        const chartData = await this.orm.call("training.plan", "get_training_state_summary", []);
+        const chartData = await this.orm.call("training.schedule", "get_training_state_summary", []);
 
         const data = {
             labels: chartData.map(d => d.label),
@@ -65,7 +65,7 @@ export class BarChartComponent extends Component {
         this.actionService.doAction({
             type: "ir.actions.act_window",
             name: "Kế hoạch huấn luyện",
-            res_model: "training.plan",
+            res_model: "training.schedule",
             views: [[false, "list"], [false, "form"]],
             domain: [["state", "=", state]],
         });

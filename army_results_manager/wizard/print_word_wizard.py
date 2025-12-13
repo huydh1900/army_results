@@ -29,10 +29,11 @@ class PrintWordWizard(models.TransientModel):
     report_type = fields.Selection([
         ('week', 'Theo tuần'),
         ('month', 'Theo tháng'),
-        ('year', 'Theo năm'),
+        # ('year', 'Theo năm'),
     ], string="Loại báo cáo", default='week')
 
     year = fields.Char(string="Năm", default=lambda self: date.today().year)
+
     month = fields.Selection([
         ('1', 'Tháng 1'), ('2', 'Tháng 2'), ('3', 'Tháng 3'),
         ('4', 'Tháng 4'), ('5', 'Tháng 5'), ('6', 'Tháng 6'),

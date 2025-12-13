@@ -24,6 +24,7 @@
         "security/training_mission_security.xml",
         "security/training_day_comment_security.xml",
         "security/training_course_security.xml",
+        "security/training_schedule_security.xml",
         "security/ir.model.access.csv",
         'views/remove_odoo_title.xml',
 

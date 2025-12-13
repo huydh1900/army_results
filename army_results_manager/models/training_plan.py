@@ -9,12 +9,12 @@ class TrainingPlan(models.Model):
     _inherit = ['mail.thread']
     _description = "Khóa huấn luyện"
 
-    plan_code = fields.Char(string='Mã khóa huấn luyện', required=True)
-    name = fields.Char(string='Tên khóa huấn luyện', required=True)
+    plan_code = fields.Char(string='Mã', required=True)
+    name = fields.Char(string='Khóa huấn luyện', required=True)
     description = fields.Text(string="Mô tả")
     start_date = fields.Date(string="Thời gian bắt đầu", required=True)
     end_date = fields.Date(string="Thời gian kết thúc", required=True)
-    participants_ids = fields.Many2many('hr.department', string="Đơn vị quản lý")
+    participants_ids = fields.Many2many('hr.department', string="Đơn vị quản lý", required=True)
     state = fields.Selection([
         ('draft', 'Soạn thảo'),
         ('to_modify', 'Cần chỉnh sửa'),
@@ -23,7 +23,7 @@ class TrainingPlan(models.Model):
         ('cancel', 'Hủy'),
     ], string="Trạng thái", default="draft", tracking=True)
 
-    student_ids = fields.Many2many('hr.employee', string='Học viên', domain="[('role', '=', 'student')]")
+    student_ids = fields.Many2many('hr.employee', string='Học viên', domain="[('role', '=', 'student')]", required=True)
     training_content = fields.Char(string='Nội dung huấn luyện')
     reason_modify = fields.Text(string='Lý do chỉnh sửa', tracking=True)
     course_ids = fields.One2many('training.course', 'plan_id')
@@ -39,6 +39,7 @@ class TrainingPlan(models.Model):
 
     schedule_id = fields.Many2one(
         "training.schedule",
+        ondelete='cascade',
         string="Kế hoạch huấn luyện", required=True
     )
 
@@ -49,8 +50,8 @@ class TrainingPlan(models.Model):
         domain=[('is_common', '=', False)],
         string='Môn huấn luyện riêng'
     )
-    approver_id = fields.Many2one('hr.employee', string='Cán bộ phê duyệt',
-                                  domain=[('role', '=', 'commanding_officer')])
+    approver_id = fields.Many2one(related='schedule_id.approver_id', string='Cán bộ phê duyệt', readonly=True,
+                                  store=True)
     count_rec_training_day = fields.Integer(compute='_compute_count_rec_training_day')
 
     def _compute_count_rec_training_day(self):
@@ -128,23 +129,6 @@ class TrainingPlan(models.Model):
         for rec in self:
             if rec.start_date > rec.end_date:
                 raise UserError('Ngày bắt đầu phải nhỏ hơn ngay kết thúc.')
-
-    @api.model
-    def get_training_state_summary(self):
-        """Trả dữ liệu tổng hợp theo state"""
-        states = [
-            ('draft', 'Soạn thảo'),
-            ('to_modify', 'Cần chỉnh sửa'),
-            ('not_done', 'Chưa hoàn thành'),
-            ('posted', 'Chờ duyệt'),
-            ('approved', 'Đã duyệt'),
-            ('cancel', 'Hủy'),
-        ]
-        result = []
-        for state, label in states:
-            count = self.search_count([('state', '=', state)])
-            result.append({'state': state, 'label': label, 'value': count})
-        return result
 
     def action_post(self):
         if not self.approver_id:

@@ -74,7 +74,26 @@ class TrainingSchedule(models.Model):
         "schedule_id",
         string="Các khóa huấn luyện"
     )
-    reason_modify = fields.Text(string='Lý do chỉnh sửa', tracking=True)
+    reason_modify = fields.Text(string='Lý do chỉnh sửa', tracking=True, readonly=True)
+    approver_id = fields.Many2one('hr.employee', string='Cán bộ phê duyệt', required=True,
+                                  domain=[('role', '=', 'commanding_officer')])
+
+    @api.model
+    def get_training_state_summary(self):
+        """Trả dữ liệu tổng hợp theo state"""
+        states = [
+            ('draft', 'Soạn thảo'),
+            ('to_modify', 'Cần chỉnh sửa'),
+            ('not_done', 'Chưa hoàn thành'),
+            ('posted', 'Chờ duyệt'),
+            ('approved', 'Đã duyệt'),
+            ('cancel', 'Hủy'),
+        ]
+        result = []
+        for state, label in states:
+            count = self.search_count([('state', '=', state)])
+            result.append({'state': state, 'label': label, 'value': count})
+        return result
 
     def action_need_edit(self):
         return {
@@ -90,6 +109,8 @@ class TrainingSchedule(models.Model):
         for rec in self:
             if rec.state == "approved":
                 raise UserError("Không thể xóa kế hoạch đã được duyệt.")
+            if rec.state != "cancel" and rec.state != "draft":
+                raise UserError("Bạn phải Hủy kế hoạch trước khi xóa!")
         return super(TrainingSchedule, self).unlink()
 
     # --- COMPUTE ---
@@ -129,14 +150,26 @@ class TrainingSchedule(models.Model):
             self.week_number = False
 
         elif self.plan_type == "week":
-            # ensure month is required, but don't delete it
             pass
 
     def action_submit(self):
+        if not self.plan_ids:
+            raise UserError('Phải có ít nhất 1 khóa huấn luyện trước khi Gửi duyệt!')
+
+        for rec in self:
+            for plan in rec.plan_ids:
+                plan.action_post()
+                plan.write({"state": "posted"})
+
         self.write({"state": "posted"})
 
     def action_approve(self):
-        self.write({"state": "approved"})
+        action = self.sudo().env.ref('army_results_manager.action_training_day_posted').read()[0]
+        action['target'] = 'current'
+        return action
 
     def action_cancel(self):
+        for rec in self:
+            for plan in rec.plan_ids:
+                plan.action_cancel()
         self.write({"state": "cancel"})

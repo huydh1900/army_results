@@ -14,7 +14,8 @@ class TrainingMission(models.Model):
     total_hours = fields.Float(string='Số giờ', compute='_compute_total_hours', store=True)
     participants_ids = fields.Many2many('hr.department', string="Đối tượng tham gia")
     material_ids = fields.One2many('training.material', 'mission_id', string="Tài liệu / Video")
-    course_id = fields.Many2one('training.course', ondelete='cascade', string='Môn học', domain="[('plan_id.state', 'not in', ['approved', 'cancel', 'posted'])]")
+    course_id = fields.Many2one('training.course', ondelete='cascade', string='Môn học',
+                                domain="[('plan_id.state', 'not in', ['approved', 'cancel', 'posted'])]")
     student_ids = fields.Many2many('hr.employee', string='Học viên', compute='_compute_student_ids', store=True)
     state = fields.Selection([
         ('draft', 'Dự thảo'),
@@ -25,14 +26,8 @@ class TrainingMission(models.Model):
         default=False
     )
     training_officer_ids_domain = fields.Binary(compute='_compute_training_officer_ids_domain')
-    training_officer_ids = fields.Many2many(
-        'hr.employee',
-        'training_mission_rel',
-        'mission_id',
-        'employee_id',
-        string='Giảng viên',
-        required=True,
-    )
+    training_officer_ids = fields.Many2many(related='course_id.training_officer_ids',
+                                            string='Cán bộ phụ trách huấn luyện', required=True, readonly=False)
     lesson_id = fields.Many2one('training.lesson', string="Tên bài học")
     day_ids = fields.One2many('training.day', 'mission_id', string='Thời gian huấn luyện', ondelete='cascade')
     camera_ids = fields.Many2many('camera.device', string="Camera giám sát")
@@ -41,6 +36,10 @@ class TrainingMission(models.Model):
     start_date = fields.Date(string="Thời gian bắt đầu")
     end_date = fields.Date(string="Thời gian kết thúc")
     percent_done = fields.Float(string="Tiến độ (%)", default=0.0)
+    attachment_ids = fields.Many2many(
+        'ir.attachment',
+        string='Kịch bản, tình huống huấn luyện',
+    )
 
     @api.model
     def cron_update_mission_progress(self):

@@ -49,6 +49,10 @@ class TrainingCourse(models.Model):
         ('officer', 'Sĩ quan')
     ], string="Loại huấn luyện", required=True, default="squad"
     )
+    attachment_ids = fields.Many2many(
+        'ir.attachment',
+        string='Tài liệu mẫu',
+    )
 
     def name_get(self):
         result = []
@@ -61,17 +65,26 @@ class TrainingCourse(models.Model):
     @api.constrains('type')
     def onchange_type(self):
         for rec in self:
-        # Tìm các bài học phù hợp type + môn
+            # Tìm các bài học phù hợp type + môn
             lessons = self.env['training.lesson'].search([
                 ('type', '=', rec.type),
                 ('subject_line_id', '=', rec.subject_line_id.id)
             ])
             # # Xóa danh sách mission cũ
             rec.mission_ids = [(5, 0, 0)]
+            subject_attachments = self.env['ir.attachment'].search([
+                ('res_model', '=', 'training.subject.line'),
+                ('res_id', '=', self.subject_line_id.id),
+            ])
+
+            rec.attachment_ids = [(6, 0, subject_attachments.ids)]
 
             # Tạo danh sách mission mới
             missions_vals = []
             for lesson in lessons:
+                # Lấy tất cả attachment của lesson
+
+                # Chuẩn bị dữ liệu mission
                 missions_vals.append(
                     (0, 0, {
                         'name': lesson.name,

@@ -36,21 +36,6 @@
                     </div>
                     <header>
                         <field name="state" widget="statusbar" statusbar_visible="draft,to_modify,posted,approved"/>
-
-                        <button name="action_post"
-                                string="Gửi duyệt"
-                                type="object"
-                                states="draft,to_modify"
-                                groups="army_results_manager.group_data_entry_officer,army_results_manager.group_admin"
-                                class="btn-primary"/>
-
-                        <button name="action_cancel"
-                                string="Hủy"
-                                type="object"
-                                states="posted,to_modify"
-                                groups="army_results_manager.group_data_entry_officer,army_results_manager.group_admin"
-                                confirm="Bạn có chắc muốn Hủy kế hoạch này?"
-                                class="btn-danger"/>
                     </header>
                     <!-- GROUPED INPUTS -->
                     <group col="2" class="mt16">
@@ -76,8 +61,7 @@
                                    attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
 
                             <field name="approver_id"
-                                   options='{"no_create": True, "no_open": True}'
-                                   attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
+                                   options='{"no_create": True, "no_open": True}'/>
 
                             <field name="total_hours"/>
 

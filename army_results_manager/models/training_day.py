@@ -48,7 +48,7 @@ class TrainingDay(models.Model):
         'training_day_rel',
         'day_id',
         'employee_id',
-        string='Giảng viên',
+        string='Cán bộ huấn luyện',
         related='mission_id.training_officer_ids',
     )
     reason_modify = fields.Text(string='Lý do chỉnh sửa')
@@ -166,6 +166,15 @@ class TrainingDay(models.Model):
             if len(all_mission_days) == len(approved_mission_days):
                 mission.sudo().write({'state': 'approved'})
 
+        # --- CẬP NHẬT TRẠNG THÁI SCHEDULE ---
+        schedule_ids = plan_ids.mapped('schedule_id').filtered(lambda s: s)
+        for schedule in schedule_ids:
+            all_plans = schedule.plan_ids
+            approved_plans = all_plans.filtered(lambda p: p.state == 'approved')
+
+            if len(all_plans) == len(approved_plans):
+                schedule.sudo().write({'state': 'approved'})
+
     @api.depends('month', 'week', 'mission_id', 'day')
     def _compute_name(self):
         weekday_map = {
@@ -251,6 +260,7 @@ class TrainingDayComment(models.Model):
     strength = fields.Text(string='Điểm mạnh')
     weakness = fields.Text(string='Điểm yếu')
     video = fields.Binary(string="Video", attachment=True)
+    resource_ids = fields.One2many('training.resource', 'day_comment_id')
     training_officer_ids = fields.Many2many(
         'hr.employee',
         'training_day_comment_rel',

@@ -2,6 +2,9 @@
 <odoo>
     <data>
 
+        <menuitem action="base.action_res_groups" id="menu_action_res_groups" parent="base.menu_users" groups="army_results_manager.group_admin,base.group_no_one" name="Nhóm" sequence="3"/>
+
+
         <record id="army_res_users_view_form_profile_inherit" model="ir.ui.view">
             <field name="name">res.users.preferences.form.inherit</field>
             <field name="model">res.users</field>

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
 from odoo.exceptions import UserError
 from odoo import fields, models
 
@@ -9,35 +7,28 @@ class ModifyReasonWizard(models.TransientModel):
     _description = "Wizard nhập lý do chỉnh sửa"
 
     reason = fields.Text(string="Lý do chỉnh sửa", required=True)
-    training_plan_id = fields.Many2one('training.plan')
+    training_schedule_id = fields.Many2one('training.schedule')
 
     def action_confirm(self):
         self.ensure_one()
 
         if not self.reason:
             raise UserError("Bạn phải nhập lý do chỉnh sửa trước khi xác nhận.")
-        active_id = self.env.context.get("active_id")
-        record = self.sudo().env["training.day"].browse(active_id)
 
-        record.write({
-            'state': 'to_modify',
-            'reason_modify': self.reason
-        })
+        schedule = self.training_schedule_id or self.env['training.schedule'].browse(self.env.context.get("active_id"))
 
-        plan = record.plan_id
-        if plan:
-            day_str = record.day.strftime('%d-%m-%Y') if record.day else 'Chưa xác định ngày'
-            new_note = f"{day_str}: {self.reason}"
+        if not schedule:
+            raise UserError("Không tìm thấy kế hoạch huấn luyện.")
 
-            # Nếu plan.reason_modify đã có nội dung, thêm xuống dòng mới
-            if plan.reason_modify:
-                updated_note = f"{plan.reason_modify}\n{new_note}"
-            else:
-                updated_note = new_note
+        schedule.sudo().write({'state': 'to_modify'})
 
-            plan.sudo().write({
-                'state': 'to_modify',
-                'reason_modify': updated_note,
-            })
+        # Thêm lý do mới vào reason_modify, kèm ngày giờ hiện tại
+        now_str = fields.Datetime.now().strftime('%d-%m-%Y %H:%M')
+        new_entry = f"[{now_str}] {self.reason}"
+
+        if schedule.reason_modify:
+            schedule.reason_modify = f"{schedule.reason_modify}\n{new_entry}"
+        else:
+            schedule.reason_modify = new_entry
 
         return {'type': 'ir.actions.act_window_close'}

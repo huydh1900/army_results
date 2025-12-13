@@ -35,8 +35,25 @@
                     <field name="strength"/>
                     <field name="weakness"/>
                     <field name="proposal_solution"/>
-                    <field name="video" widget="video" filename="filename"/>
+
+
+                    <!--                    <field name="video" widget="video" filename="filename"/>-->
                 </group>
+                <notebook>
+                    <page name="Danh sách hình ảnh, video">
+                        <field name="resource_ids">
+                            <tree editable="bottom">
+                                <field name="name"/>
+                                <field name="description"/>
+                                <field name="type"/>
+                                <field name="file" filename="file_name" widget="binary"
+                                       attrs="{'invisible':[('type','=','video')]}"/>
+                                <field name="video" widget="video" filename="file_name"
+                                       attrs="{'invisible':[('type','=','document')]}"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
             </form>
         </field>
     </record>

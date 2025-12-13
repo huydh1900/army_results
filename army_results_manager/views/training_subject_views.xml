@@ -37,20 +37,46 @@
                         <field name="code"/>
                         <field name="name"/>
                         <field name="type_training" invisible="1"/>
-                        <field name="stage_ids" widget="many2many_tags" attrs="{'invisible': [('type_training', '=', 'common_training')]}"/>
+                        <field name="stage_ids" widget="many2many_tags"
+                               attrs="{'invisible': [('type_training', '=', 'common_training')]}"/>
+                        <field name="attachment_ids" widget="many2many_binary"/>
                     </group>
                     <notebook>
                         <page string="Bài học">
                             <field name="lesson_ids">
-                                <tree editable="bottom">
+                                <tree>
                                     <field name="code"/>
                                     <field name="name"/>
-                                    <field name="stage_id" attrs="{'column_invisible': [('parent.type_training', '=', 'common_training')]}"/>
+                                    <field name="stage_id"
+                                           attrs="{'column_invisible': [('parent.type_training', '=', 'common_training')]}"/>
                                     <field name="type"/>
                                 </tree>
                             </field>
                         </page>
                     </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_training_lesson_form" model="ir.ui.view">
+        <field name="name">training.lesson.form</field>
+        <field name="model">training.lesson</field>
+        <field name="arch" type="xml">
+            <form string="Bài học">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="name"/>
+                            <field name="type"/>
+                            <field name="subject_line_id"/>
+                        </group>
+                        <group>
+                            <field name="type_training" readonly="1"/>
+                            <field name="stage_id"/>
+                        </group>
+                    </group>
                 </sheet>
             </form>
         </field>

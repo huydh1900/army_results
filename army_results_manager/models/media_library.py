@@ -12,6 +12,8 @@ class MediaLibrary(models.Model):
         ("video", "Video"),
     ], string="Loại", required=True, default="image")
 
+    active = fields.Boolean(default=True)
+
     attachment_id = fields.Many2one(
         "ir.attachment",
         string="Tập tin đính kèm",

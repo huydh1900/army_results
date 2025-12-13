@@ -76,6 +76,9 @@
                                 </tree>
                             </field>
                         </page>
+                        <page string="Tài liệu, bài tập huấn luyện mẫu">
+                            <field name="attachment_ids" widget="many2many_binary"  readonly="1"/>
+                        </page>
                     </notebook>
                 </sheet>
 

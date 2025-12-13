@@ -6,29 +6,29 @@
         <field name="name">training.schedule.form</field>
         <field name="model">training.schedule</field>
         <field name="arch" type="xml">
+
             <form string="Kế hoạch huấn luyện">
 
-                <!-- STATUS BAR -->
                 <header>
                     <field name="state" widget="statusbar"
                            statusbar_visible="draft,posted,to_modify,approved,cancel"/>
 
                     <button name="action_approve" string="Duyệt" type="object"
                             class="btn-primary"
+                            groups="army_results_manager.group_admin,army_results_manager.group_training_commander"
                             states="posted"/>
 
-                    <!-- Người lập gửi duyệt -->
                     <button name="action_submit" string="Gửi duyệt" type="object"
                             class="oe_highlight"
-                            group="army_results_manager.group_admin,army_results_manager.group_data_entry_officer"
+                            groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer"
                             states="draft,to_modify"/>
 
                     <button name="action_need_edit"
-                        string="Yêu cầu chỉnh sửa"
-                        type="object"
-                        states="posted"
-                        class="btn-warning"
-                        groups="army_results_manager.group_admin,army_results_manager.group_training_commander,army_results_manager.group_data_entry_officer"/>
+                            string="Yêu cầu chỉnh sửa"
+                            type="object"
+                            states="posted"
+                            class="btn-warning"
+                            groups="army_results_manager.group_admin,army_results_manager.group_training_commander,army_results_manager.group_data_entry_officer"/>
 
                     <button name="action_cancel"
                             string="Hủy"
@@ -37,37 +37,45 @@
                             groups="army_results_manager.group_data_entry_officer,army_results_manager.group_admin"
                             confirm="Bạn có chắc muốn Hủy kế hoạch này?"
                             class="btn-danger"/>
+
                 </header>
 
                 <sheet>
                     <group>
                         <group>
-                            <field name="name"/>
-                            <field name="plan_type"/>
+                            <field name="name" attrs="{'readonly': [('state','in',['approved','posted'])]}"/>
+                            <field name="plan_type" attrs="{'readonly': [('state','in',['approved','posted'])]}"/>
+                            <field name="year" attrs="{'readonly': [('state','in',['approved','posted'])]}"/>
 
-                            <field name="year"/>
-
-                            <!-- MONTH -->
                             <field name="month_number"
-                                   attrs="{'invisible': [('plan_type','=','year')]}"/>
+                                   attrs="{
+                                   'readonly': [('state','in',['approved','posted'])],
+                                   'invisible': [('plan_type','=','year')]
+                               }"/>
 
-                            <!-- WEEK -->
                             <field name="week_number"
-                                   attrs="{'invisible': [('plan_type','!=','week')]}"/>
+                                   attrs="{
+                                   'readonly': [('state','in',['approved','posted'])],
+                                   'invisible': [('plan_type','!=','week')]
+                               }"/>
+
                             <field name="description"/>
                         </group>
 
                         <group>
-                            <field name="start_date"/>
-                            <field name="end_date"/>
+                            <field name="start_date" attrs="{'readonly': [('state','in',['approved','posted'])]}"/>
+                            <field name="end_date" attrs="{'readonly': [('state','in',['approved','posted'])]}"/>
                             <field name="duration_days" readonly="1"/>
+                            <field name="approver_id" options='{"no_create": True, "no_open": True}'
+                                   attrs="{'readonly': [('state','in',['approved','posted'])]}"/>
                         </group>
                     </group>
 
                     <notebook>
                         <page string="Khóa huấn luyện">
-                            <field name="plan_ids">
-                                <tree editable="bottom">
+                            <field name="plan_ids" attrs="{'readonly': [('state','in',['approved','posted'])]}">
+                                <tree>
+                                    <field name="plan_code"/>
                                     <field name="name"/>
                                     <field name="start_date"/>
                                     <field name="end_date"/>
@@ -77,17 +85,44 @@
                         </page>
 
                         <page string="Lý do chỉnh sửa">
-                            <field name="description"/>
+                            <field name="reason_modify"/>
                         </page>
                     </notebook>
+
                     <div class="oe_chatter">
                         <field name="message_follower_ids" groups="base.group_user"/>
                         <field name="message_ids"/>
                     </div>
                 </sheet>
+
             </form>
+
         </field>
     </record>
+
+    <record id="view_training_schedule_search" model="ir.ui.view">
+        <field name="name">training.schedule.search</field>
+        <field name="model">training.schedule</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm kế hoạch huấn luyện">
+                <!-- Tìm kiếm theo trạng thái -->
+                <filter name="filter_draft" string="Soạn thảo" domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_posted" string="Chờ duyệt" domain="[('state', '=', 'posted')]"/>
+                <filter name="filter_approved" string="Đã duyệt" domain="[('state', '=', 'approved')]"/>
+                <filter name="filter_cancel" string="Hủy" domain="[('state', '=', 'cancel')]"/>
+
+                <!-- Tìm kiếm theo năm -->
+<!--                <field name="year" string="Năm huấn luyện" filter_domain="[]"/>-->
+
+                <!-- Tìm kiếm theo loại kế hoạch -->
+                <!-- Tìm kiếm nâng cao: khoảng ngày -->
+<!--                <group expand="1" string="Ngày bắt đầu / kết thúc">-->
+<!--                    <filter string="Bắt đầu" domain="[]" context="{'group_by':'start_date'}"/>-->
+<!--                </group>-->
+            </search>
+        </field>
+    </record>
+
 
     <!-- TREE VIEW -->
     <record id="view_training_schedule_tree" model="ir.ui.view">
@@ -103,7 +138,7 @@
                 <field name="week_number"/>
                 <field name="start_date"/>
                 <field name="end_date"/>
-                <field name="duration_days"/>
+                <field name="approver_id"/>
 
                 <!-- STATE với màu pill -->
                 <field name="state" widget="badge"

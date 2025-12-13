@@ -56,6 +56,7 @@
                             <field name="training_officer_ids" widget="many2many_tags"
                                    domain="[('id', 'in', training_officer_ids_domain)]" options="{'no_create':True}"/>
                             <field name="student_ids" widget="many2many_tags"/>
+                            <field name="attachment_ids" widget="many2many_binary"/>
                         </group>
                     </group>
                     <notebook>
@@ -77,12 +78,13 @@
                                 </tree>
                             </field>
                         </page>
-                        <page string="Tài liệu/Video">
+                        <page string="Tài liệu/Video Ghi Lại">
                             <field name="material_ids">
                                 <tree editable="bottom">
                                     <field name="name"/>
                                     <field name="type"/>
                                     <field name="video" widget="video" filename="filename"/>
+                                    <field name="file" filename="filename"/>
                                 </tree>
                             </field>
                         </page>

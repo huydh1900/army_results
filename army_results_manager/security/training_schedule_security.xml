@@ -1,0 +1,21 @@
+<odoo>
+    <!--    Cán bộ chỉ huy chỉ xem và duyệt những kế hoạch mà họ được gắn tên-->
+    <record id="training_plan_rule_training_commander" model="ir.rule">
+        <field name="name">CBCH: Xem và duyệt những kế hoạch gắn tên họ</field>
+        <field name="model_id" ref="army_results_manager.model_training_schedule"/>
+        <field name="groups" eval="[(4, ref('army_results_manager.group_training_commander'))]"/>
+        <field name="domain_force">[('approver_id.user_id', '=', user.id)]</field>
+        <field name="perm_read">1</field>
+        <field name="perm_write">1</field>
+        <field name="perm_create">1</field>
+        <field name="perm_unlink">1</field>
+    </record>
+
+<!--    <record id="training_plan_rule_commander_assistant" model="ir.rule">-->
+<!--        <field name="name">CBHL: Xem tất cả kế hoạch ở trạng thái đã duyệt và được gắn với tên mình</field>-->
+<!--        <field name="model_id" ref="army_results_manager.model_training_schedule"/>-->
+<!--        <field name="domain_force">[('state', '=', 'approved')]</field>-->
+<!--        <field name="groups" eval="[(4, ref('army_results_manager.group_training_commander_assistant'))]"/>-->
+<!--        <field name="perm_read">1</field>-->
+<!--    </record>-->
+</odoo>
