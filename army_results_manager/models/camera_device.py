@@ -21,6 +21,11 @@ class CameraDevice(models.Model):
         ('not_connect', 'Chưa kết nối'),
         ('error', 'Lỗi kết nối'),
     ], string="Trạng thái", default="not_connect")
+    media_ids = fields.One2many(
+        'media.library',
+        'camera_id',
+        string='Thư viện media'
+    )
 
     # def check_camera_status_digest(self):
     #     username = self.username

@@ -78,6 +78,25 @@ class TrainingSchedule(models.Model):
     approver_id = fields.Many2one('hr.employee', string='Cán bộ phê duyệt', required=True,
                                   domain=[('role', '=', 'commanding_officer')])
 
+    def write(self, vals):
+        for rec in self:
+            if rec.state == 'to_modify':
+                # Nếu là Cán bộ chỉ huy
+                if self.env.user.has_group('army_results_manager.group_training_commander'):
+                    # Chỉ cho phép ghi chatter
+                    allowed_fields = {
+                        'message_ids',
+                        'message_follower_ids',
+                        'activity_ids',
+                    }
+
+                    # Nếu sửa field nghiệp vụ → chặn
+                    forbidden = set(vals) - allowed_fields
+                    if forbidden:
+                        raise UserError(
+                            "Kế hoạch đang ở trạng thái Cần chỉnh sửa. Cán bộ chỉ huy chỉ được phép ghi chú hoặc nhắn tin.")
+        return super().write(vals)
+
     @api.model
     def get_training_state_summary(self):
         """Trả dữ liệu tổng hợp theo state"""
