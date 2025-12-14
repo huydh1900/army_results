@@ -21,6 +21,8 @@ class ModifyReasonWizard(models.TransientModel):
             raise UserError("Không tìm thấy kế hoạch huấn luyện.")
 
         schedule.sudo().write({'state': 'to_modify'})
+        for plan in schedule.plan_ids:
+            plan.sudo().write({'state': 'to_modify'})
 
         # Thêm lý do mới vào reason_modify, kèm ngày giờ hiện tại
         now_str = fields.Datetime.now().strftime('%d-%m-%Y %H:%M')

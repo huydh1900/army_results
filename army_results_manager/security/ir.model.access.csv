@@ -62,7 +62,14 @@ access_training_result_commander,access_training_result_commander,model_training
 access_training_result_group_admin,access_training_result_group_admin,model_training_result,group_admin,1,1,1,1
 
 
-access_support_contact,access_support_contact,model_support_contact,,1,1,1,1
+access_support_contact_student,access_support_contact_student,model_support_contact,group_training_student,1,0,0,0
+access_support_contact_manager,access_support_contact_manager,model_support_contact,group_training_commander_assistant,1,0,0,0
+access_support_contact_officer,access_support_contact_officer,model_support_contact,group_data_entry_officer,1,1,1,1
+access_support_contact_admin,access_support_contact_admin,model_support_contact,group_admin,1,1,1,1
+access_support_contact_commander,access_support_contact_commander,model_support_contact,group_training_commander,1,0,0,0
+
+
+
 access_training_warning_log,access_training_warning_log,model_training_warning_log,,1,1,1,1
 
 access_training_time,access_training_time,model_training_time,,1,1,1,1

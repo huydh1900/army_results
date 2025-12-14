@@ -344,7 +344,7 @@
         <menuitem id="menu_training_course_list_approved"
                   name="Kế hoạch đã duyệt"
                   parent="menu_training_course"
-                  groups="army_results_manager.group_admin,army_results_manager.group_training_commander"
+                  groups="army_results_manager.group_admin,army_results_manager.group_training_commander,army_results_manager.group_data_entry_officer"
                   action="action_training_schedule_approved"
                   sequence="3"/>
 
@@ -415,7 +415,7 @@
                   name="Trợ giúp"
                   parent="menu_military_root"
                   action="action_view_support_contact"
-                  groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer,army_results_manager.group_training_commander_assistant,army_results_manager.group_training_commander"
+                  groups="army_results_manager.group_admin,army_results_manager.group_training_student,army_results_manager.group_data_entry_officer,army_results_manager.group_training_commander_assistant,army_results_manager.group_training_commander"
                   sequence="8"/>
 
         <menuitem id="menu_data_source"

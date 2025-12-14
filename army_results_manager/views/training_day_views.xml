@@ -106,10 +106,11 @@
         <field name="model">training.day</field>
         <field name="arch" type="xml">
             <search>
-                <filter name="group_year" string="Nhóm theo năm" context="{'group_by':'year'}"/>
-                <filter name="group_month" string="Nhóm theo tháng" context="{'group_by':'month_name'}"/>
-                <filter name="group_week" string="Nhóm theo tuần" context="{'group_by':'week'}"/>
-                <filter name="group_weekday" string="Nhóm theo thứ" context="{'group_by':'weekday'}"/>
+                <filter name="group_lesson_name" string="Nhóm theo Bài học" context="{'group_by':'lesson_name'}"/>
+                <filter name="group_year" string="Nhóm theo Năm" context="{'group_by':'year'}"/>
+                <filter name="group_month" string="Nhóm theo Tháng" context="{'group_by':'month_name'}"/>
+                <filter name="group_week" string="Nhóm theo Tuần" context="{'group_by':'week'}"/>
+                <filter name="group_weekday" string="Nhóm theo Thứ" context="{'group_by':'weekday'}"/>
             </search>
         </field>
     </record>

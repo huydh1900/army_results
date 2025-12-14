@@ -10,6 +10,8 @@ export class ReportListController extends ListController {
     setup() {
         super.setup();
         this.actionService = useService("action");
+        this.user = useService("user");
+        this.isStudent = false;
         this.state = useState({
             countWait: 0,
             countWaitPlan: 0,
@@ -19,6 +21,9 @@ export class ReportListController extends ListController {
         });
         onWillStart(async () => {
             await this.fetchDocumentCounts();
+            this.isStudent = await this.user.hasGroup(
+                "army_results_manager.group_training_student"
+            );
         });
     }
 
@@ -36,22 +41,6 @@ export class ReportListController extends ListController {
         });
     }
 
-    async loadCameras() {
-        this.state.cameras = await this.env.services.orm.searchRead(
-            "camera.device",
-            [],
-            ["id", "name", "ip_address"]
-        );
-
-        // Convert to stream URL
-        this.state.cameras = this.state.cameras.map(c => {
-            return {
-                ...c,
-                stream_url: `/camera/proxy/{id}`
-            };
-        });
-    }
-
     OnOpenWizard() {
         this.actionService.doAction({
             type: 'ir.actions.act_window',
@@ -66,30 +55,40 @@ export class ReportListController extends ListController {
         });
     }
 
-    openFullscreen(rows, cols) {
+    async openFullscreen(rows, cols) {
         const totalSlots = rows * cols;
         const records = this.model.root.records;
+        const cameraIds = records.map(r => r.resId);
+        const camerasData = await this.env.services.orm.searchRead(
+            "camera.device",
+            [["id", "in", cameraIds]],
+            ["id", "name", "ip_address"]
+        );
 
+        // Chuyển dữ liệu camera
         let cameras = records.map(r => {
-            const id = r.resId;
+            const cam = camerasData.find(c => c.id === r.resId);
             return {
-                id: id,
+                id: r.resId,
                 empty: false,
-                name: r.data.name,
-                stream_url: `/camera/proxy/${id}`,
+                name: cam ? cam.name : r.data.name,
+                mjpeg_url: `/camera/proxy/${r.resId}`,
+                axis_url: cam ? `http://${cam.ip_address}` : "#",
             };
         });
 
-        // bổ sung slot trống
+        // Thêm slot trống nếu thiếu
         while (cameras.length < totalSlots) {
             cameras.push({
-                id: `empty_${cameras.length}`,   // đảm bảo không trùng
+                id: `empty_${cameras.length}`,
                 empty: true,
             });
         }
 
+        // Giới hạn số camera đúng totalSlots
         cameras = cameras.slice(0, totalSlots);
 
+        // Mở fullscreen view
         this.actionService.doAction({
             type: "ir.actions.client",
             tag: "camera.fullscreen",

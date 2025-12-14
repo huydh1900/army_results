@@ -4,12 +4,16 @@
         <field name="model">camera.device</field>
         <field name="arch" type="xml">
             <form string="Camera">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button name="view_camera"
                                 type="object"
                                 class="oe_stat_button"
                                 icon="fa-video-camera"
+                                attrs="{'invisible': [('state', '!=', 'ok')]}"
                                 string="Xem camera"/>
                         <button name="check_camera_status_digest"
                                 type="object"
@@ -24,7 +28,6 @@
                             <field name="username"/>
                             <field name="password" password="True"/>
                             <field name="location_id"/>
-                            <field name="state" readonly="True"/>
                         </group>
                     </group>
                 </sheet>
@@ -39,7 +42,10 @@
             <tree string="Camera">
                 <field name="name"/>
                 <field name="location_id"/>
-                <field name="state" readonly="True"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'ok'"
+                       decoration-danger="state == 'error'"
+                       decoration-warning="state == 'not_connect'"/>
             </tree>
         </field>
     </record>

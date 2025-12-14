@@ -4,7 +4,6 @@ import {registry} from "@web/core/registry";
 
 const digitalSignatureAction = async (env, params) => {
 
-    console.log("JS chạy với params:", params);
     const action = env.services.action;
 
     let attachment_id = params.params.attachment_id;

@@ -24,6 +24,8 @@ class MediaLibrary(models.Model):
         domain="[('location_id','=',location_id)]"
     )
 
+    active =fields.Boolean(default=True)
+
     attachment_ids = fields.Many2many(
         'ir.attachment',
         string='Hình ảnh, video',
