@@ -26,8 +26,17 @@ class TrainingMission(models.Model):
         default=False
     )
     training_officer_ids_domain = fields.Binary(compute='_compute_training_officer_ids_domain')
-    training_officer_ids = fields.Many2many(related='course_id.training_officer_ids',
-                                            string='Cán bộ phụ trách huấn luyện', required=True, readonly=False)
+
+    plan_id = fields.Many2one(related='course_id.plan_id', string='Khóa huấn luyện')
+    training_officer_ids = fields.Many2many(
+        'hr.employee',
+        related='course_id.training_officer_ids',
+        string='Cán bộ phụ trách huấn luyện',
+        readonly=False,
+        required=True,
+        domain=lambda self: self._get_training_officer_domain()
+    )
+
     lesson_id = fields.Many2one('training.lesson', string="Tên bài học")
     day_ids = fields.One2many('training.day', 'mission_id', string='Thời gian huấn luyện', ondelete='cascade')
     camera_ids = fields.Many2many('camera.device', string="Camera giám sát")
@@ -40,6 +49,14 @@ class TrainingMission(models.Model):
         'ir.attachment',
         string='Kịch bản, tình huống huấn luyện',
     )
+
+    def _get_training_officer_domain(self):
+        # Nếu là admin thì không áp domain
+        if self.env.user.has_group('base.group_system'):
+            return []
+        else:
+            # User thường: lọc theo user hiện tại
+            return [('user_id', '=', self.env.uid)]
 
     @api.model
     def cron_update_mission_progress(self):
@@ -99,12 +116,12 @@ class TrainingMission(models.Model):
 
         return {
             "type": "ir.actions.act_window",
-            "name": "Danh mục camera",
+            "name": "Camera",
             "res_model": "camera.device",
-            "view_mode": "tree",
-            "domain": [('id', '=', self.camera_ids.ids)],
-            "target": "new",
-            'context': {
+            "view_mode": "tree,form",
+            "domain": [('id', 'in', self.camera_ids.ids)],  # dùng 'in' cho nhiều record
+            "target": "self",  # pop-up
+            "context": {
                 'create': False,
                 'delete': False,
                 'default_action': 'camera_device_view',

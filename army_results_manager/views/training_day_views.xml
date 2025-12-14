@@ -36,6 +36,16 @@
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
+                    <div name="button_box" class="oe_button_box">
+                        <button name="action_open_camera"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-video-camera"
+                                string="Mở camera"
+                                attrs="{'invisible': [('camera_count', '=', 0)]}">
+                            <field name="camera_count" widget="statinfo" string="Camera"/>
+                        </button>
+                    </div>
                     <group>
                         <group>
                             <field name="day" readonly="True"/>
@@ -51,16 +61,13 @@
                     </group>
                     <notebook>
                         <page string="Thời gian huấn luyện">
-                            <field name="time_ids" editable="bottom">
+                            <field name="time_ids">
                                 <tree editable="bottom">
                                     <field name="start_time" widget="float_time"/>
                                     <field name="end_time" widget="float_time"/>
                                     <field name="duration_hours"/>
                                 </tree>
                             </field>
-                        </page>
-                        <page string="Lý do chỉnh sửa">
-                            <field name="reason_modify"/>
                         </page>
                     </notebook>
                 </sheet>

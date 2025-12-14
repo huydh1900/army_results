@@ -55,8 +55,45 @@ export class ReportListController extends ListController {
         });
     }
 
+//     async openFullscreen(rows, cols) {
+//     const records = this.model.root.records;
+//     const cameraIds = records.map(r => r.resId);
+//     const camerasData = await this.env.services.orm.searchRead(
+//         "camera.device",
+//         [["id", "in", cameraIds]],
+//         ["id", "name", "ip_address"]
+//     );
+//
+//     let cameras = records.map(r => {
+//         const cam = camerasData.find(c => c.id === r.resId);
+//         return {
+//             id: r.resId,
+//             empty: false,
+//             name: cam ? cam.name : r.data.name,
+//             mjpeg_url: `/camera/proxy/${r.resId}`,
+//             axis_url: cam ? `http://${cam.ip_address}` : "#",
+//         };
+//     });
+//
+//     const totalSlots = rows * cols;
+//
+//     if (totalSlots > 1) {
+//         // Giới hạn số camera nếu >1
+//         while (cameras.length < totalSlots) {
+//             cameras.push({ id: `empty_${cameras.length}`, empty: true });
+//         }
+//         cameras = cameras.slice(0, totalSlots);
+//     }
+//     // Nếu totalSlots = 1 thì hiển thị tất cả camera, sẽ scroll xuống
+//
+//     this.actionService.doAction({
+//         type: "ir.actions.client",
+//         tag: "camera.fullscreen",
+//         params: { cameras, rows, cols },
+//     });
+// }
+
     async openFullscreen(rows, cols) {
-        const totalSlots = rows * cols;
         const records = this.model.root.records;
         const cameraIds = records.map(r => r.resId);
         const camerasData = await this.env.services.orm.searchRead(
@@ -65,7 +102,6 @@ export class ReportListController extends ListController {
             ["id", "name", "ip_address"]
         );
 
-        // Chuyển dữ liệu camera
         let cameras = records.map(r => {
             const cam = camerasData.find(c => c.id === r.resId);
             return {
@@ -73,28 +109,34 @@ export class ReportListController extends ListController {
                 empty: false,
                 name: cam ? cam.name : r.data.name,
                 mjpeg_url: `/camera/proxy/${r.resId}`,
-                axis_url: cam ? `http://${cam.ip_address}` : "#",
             };
         });
 
-        // Thêm slot trống nếu thiếu
-        while (cameras.length < totalSlots) {
-            cameras.push({
-                id: `empty_${cameras.length}`,
-                empty: true,
-            });
+        const totalSlots = rows * cols;
+        const pages = [];
+
+        // Chia camera thành các page
+        for (let i = 0; i < cameras.length; i += totalSlots) {
+            const pageCams = cameras.slice(i, i + totalSlots);
+            let emptyIndex = 0;
+            while (pageCams.length < totalSlots) {
+                pageCams.push({
+                    id: `empty_${i}_${emptyIndex}`, // tạo id duy nhất cho mỗi ô trống
+                    empty: true
+                });
+                emptyIndex++;
+            }
+            pages.push(pageCams);
         }
 
-        // Giới hạn số camera đúng totalSlots
-        cameras = cameras.slice(0, totalSlots);
 
-        // Mở fullscreen view
         this.actionService.doAction({
             type: "ir.actions.client",
             tag: "camera.fullscreen",
-            params: {cameras, rows, cols},
+            params: {pages, rows, cols},
         });
     }
+
 
     async fetchDocumentCounts() {
         const uid = this.env.services.user.userId;
@@ -164,7 +206,6 @@ export class ReportListController extends ListController {
 
     viewSignedDocumentsPlan() {
         const uid = this.env.services.user.userId;
-        console.log(this.state)
 
         this.actionService.doAction({
             type: 'ir.actions.act_window',

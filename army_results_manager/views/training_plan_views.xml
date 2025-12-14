@@ -26,14 +26,6 @@
         <field name="arch" type="xml">
             <form string="Kế hoạch huấn luyện">
                 <sheet>
-                    <div class="oe_button_box" name="button_box">
-                        <button name="action_open_training_day"
-                                type="object"
-                                class="oe_stat_button"
-                                icon="fa-calendar"
-                                attrs="{'invisible': [('count_rec_training_day', '=', 0)]}"
-                                string="Chi tiết bài học"/>
-                    </div>
                     <header>
                         <field name="state" widget="statusbar" statusbar_visible="draft,to_modify,posted,approved"/>
                     </header>
@@ -41,6 +33,7 @@
                     <group col="2" class="mt16">
                         <group>
                             <field name="schedule_id" options='{"no_create": True, "no_open": True}'
+                                   domain="[('state', '!=', 'approved')]"
                                    attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>
                             <field name="plan_code"
                                    attrs="{'readonly': [('state', 'in', ['approved', 'posted'])]}"/>

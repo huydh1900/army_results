@@ -43,7 +43,6 @@ const digitalSignatureAction = async (env, params) => {
             let result;
             try {
                 result = JSON.parse(rv);
-                console.log("Kết quả VGCA:", result);
             } catch (e) {
                 alert("Dữ liệu trả về không phải JSON:\n" + rv);
                 return;

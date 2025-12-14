@@ -23,7 +23,6 @@ export class WarningImportantComponent extends Component {
 
             // Gán dữ liệu vào state để OWL tự cập nhật UI
             this.state.warnings = logs;
-            console.log(this.state.warnings)
         } catch (error) {
             console.error("Lỗi khi tải cảnh báo:", error);
         }

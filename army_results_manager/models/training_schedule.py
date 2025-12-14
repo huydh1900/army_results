@@ -61,7 +61,8 @@ class TrainingSchedule(models.Model):
         ('cancel', 'Hủy'),
     ], string="Trạng thái", default="draft", tracking=True)
 
-    description = fields.Text(string="Mô tả")
+    description = fields.Text(string="Nội dung huấn luyện")
+    location = fields.Char(string="Địa điểm")
 
     duration_days = fields.Integer(
         string="Thời lượng (ngày)",
@@ -192,3 +193,14 @@ class TrainingSchedule(models.Model):
             for plan in rec.plan_ids:
                 plan.action_cancel()
         self.write({"state": "cancel"})
+
+    def action_open_training_day(self):
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Chi tiết bài học",
+            'view_mode': 'gantt',
+            "res_model": "training.day",
+            "domain": [('schedule_id', '=', self.id)],
+            "target": "current",
+            "context": {'group_by': ['month_name', 'week_name', 'day_name']},
+        }

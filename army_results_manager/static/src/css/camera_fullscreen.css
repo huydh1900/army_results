@@ -1,37 +1,23 @@
-/* Ô trống */
-.camera-empty {
-    background: #333; /* nền khác với camera thật */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    color: #aaa;
-    border: 2px dashed #555;
-}
-
-.camera-empty-content {
-    text-align: center;
-}
-
 .camera-container {
-    padding: 10px;
-    background-color: #111; /* nền tối để video nổi bật */
     width: 100%;
-    height: 100%;
-    overflow: hidden;
+    height: 100vh; /* mỗi màn hình full height */
+    overflow-y: auto; /* scroll xuống các page */
+    background-color: #111;
+    padding: 0;
     box-sizing: border-box;
 }
 
-/* Grid đa màn hình */
-.camera-grid {
+.camera-page {
     display: grid;
+    grid-template-columns: repeat(var(--cols, 2), 1fr);
+    grid-template-rows: repeat(var(--rows, 2), 1fr);
     gap: 10px;
-    grid-auto-rows: 1fr;
     width: 100%;
-    height: 100%;
+    height: 100vh; /* mỗi page full màn hình */
+    padding: 10px;
+    box-sizing: border-box;
 }
 
-/* Camera item */
 .camera-item {
     position: relative;
     background: #000;
@@ -42,46 +28,20 @@
     justify-content: center;
 }
 
-/* Ảnh camera */
 .camera-img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* cover toàn bộ ô */
-    transition: transform 0.3s ease;
+    object-fit: cover;
 }
 
-/* Hover zoom */
-.camera-item:hover .camera-img {
-    transform: scale(1.05);
-}
-
-/* Nút mở Axis */
 .open-camera-btn {
     position: absolute;
     bottom: 8px;
     right: 8px;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0,0,0,0.6);
     color: #fff;
     border: none;
     border-radius: 4px;
     padding: 4px 8px;
     cursor: pointer;
-    font-size: 14px;
-    transition: background 0.3s ease;
-}
-
-/* Hover nút */
-.open-camera-btn:hover {
-    background: rgba(255, 255, 255, 0.8);
-    color: #000;
-}
-
-/* Ô trống vẫn giữ kích thước */
-.camera-item:empty {
-    background: #222;
-}
-
-.camera-grid {
-    grid-template-columns: repeat(var(--cols, 3), 1fr);
-    grid-template-rows: repeat(var(--rows, 2), 1fr);
 }

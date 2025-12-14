@@ -1,32 +1,55 @@
+<!--<t t-name="camera_fullscreen_view" owl="1">-->
+<!--    <div class="camera-container">-->
+<!--        <div class="camera-grid"-->
+<!--             t-att-data-rows="this.props.action.params.rows"-->
+<!--             t-att-style="`-->
+<!--                &#45;&#45;rows:${this.props.action.params.rows};-->
+<!--                &#45;&#45;cols:${this.props.action.params.cols};-->
+<!--             `">-->
+
+<!--            <t t-set="cams" t-value="this.props.action?.params?.cameras || []"/>-->
+<!--            <t t-foreach="cams" t-as="cam" t-key="cam.id or cam.stream_url">-->
+
+<!--                <t t-if="!cam.empty">-->
+<!--                    <div class="camera-item">-->
+<!--                        <img t-att-src="cam.mjpeg_url" class="camera-img"/>-->
+<!--                        <button class="open-camera-btn"-->
+<!--                                t-on-click="() => this.openCamera(cam)">🔍</button>-->
+<!--                    </div>-->
+<!--                </t>-->
+
+<!--                <t t-if="cam.empty">-->
+<!--                    <div class="camera-item camera-empty">-->
+<!--                        <div class="camera-empty-content">-->
+<!--                            <span>❌ Không có camera</span>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </t>-->
+
+<!--            </t>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</t>-->
+
 <t t-name="camera_fullscreen_view" owl="1">
     <div class="camera-container">
-        <div class="camera-grid"
-             t-att-data-rows="this.props.action.params.rows"
-             t-att-style="`
-                --rows:${this.props.action.params.rows};
-                --cols:${this.props.action.params.cols};
-             `">
-
-            <t t-set="cams" t-value="this.props.action?.params?.cameras || []"/>
-            <t t-foreach="cams" t-as="cam" t-key="cam.id or cam.stream_url">
-
-                <t t-if="!cam.empty">
-                    <div class="camera-item">
+        <t t-foreach="this.props.action.params.pages" t-as="page" t-key="page[0].id">
+            <div class="camera-page"
+                 t-att-style="`
+                    --rows: ${this.props.action.params.rows};
+                    --cols: ${this.props.action.params.cols};
+                 `">
+                <t t-foreach="page" t-as="cam" t-key="cam.id">
+                    <div t-if="!cam.empty" class="camera-item">
                         <img t-att-src="cam.mjpeg_url" class="camera-img"/>
-                        <button class="open-camera-btn"
-                                t-on-click="() => this.openCamera(cam)">🔍</button>
+                        <button class="open-camera-btn" t-on-click="() => this.openCamera(cam)">🔍</button>
+                    </div>
+                    <div t-else="" class="camera-item camera-empty">
+                        <div class="camera-empty-content">❌ Không có camera</div>
                     </div>
                 </t>
-
-                <t t-if="cam.empty">
-                    <div class="camera-item camera-empty">
-                        <div class="camera-empty-content">
-                            <span>❌ Không có camera</span>
-                        </div>
-                    </div>
-                </t>
-
-            </t>
-        </div>
+            </div>
+        </t>
     </div>
 </t>
+

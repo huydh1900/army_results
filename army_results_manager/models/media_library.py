@@ -17,6 +17,8 @@ class MediaLibrary(models.Model):
         required=True
     )
 
+    location_name = fields.Char(related='location_id.name')
+
     camera_id = fields.Many2one(
         'camera.device',
         string='Camera',
@@ -30,11 +32,6 @@ class MediaLibrary(models.Model):
         'ir.attachment',
         string='Hình ảnh, video',
         required=True
-    )
-
-    capture_time = fields.Datetime(
-        string="Thời gian ghi nhận",
-        default=fields.Datetime.now
     )
 
     description = fields.Text(string="Mô tả")

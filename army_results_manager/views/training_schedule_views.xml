@@ -41,6 +41,14 @@
                 </header>
 
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_training_day"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-calendar"
+                                attrs="{'invisible': [('state', '!=', 'approved')]}"
+                                string="Chi tiết bài học"/>
+                    </div>
                     <group>
                         <group>
                             <field name="name" attrs="{'readonly': [('state','in',['approved','posted'])]}"/>
@@ -58,8 +66,8 @@
                                    'readonly': [('state','in',['approved','posted'])],
                                    'invisible': [('plan_type','!=','week')]
                                }"/>
-
-                            <field name="description"/>
+                            <field name="location" attrs="{'readonly': [('state','in',['approved','posted'])]}"/>
+                            <field name="description" attrs="{'readonly': [('state','in',['approved','posted'])]}"/>
                         </group>
 
                         <group>
@@ -112,13 +120,13 @@
                 <filter name="filter_cancel" string="Hủy" domain="[('state', '=', 'cancel')]"/>
 
                 <!-- Tìm kiếm theo năm -->
-<!--                <field name="year" string="Năm huấn luyện" filter_domain="[]"/>-->
+                <!--                <field name="year" string="Năm huấn luyện" filter_domain="[]"/>-->
 
                 <!-- Tìm kiếm theo loại kế hoạch -->
                 <!-- Tìm kiếm nâng cao: khoảng ngày -->
-<!--                <group expand="1" string="Ngày bắt đầu / kết thúc">-->
-<!--                    <filter string="Bắt đầu" domain="[]" context="{'group_by':'start_date'}"/>-->
-<!--                </group>-->
+                <!--                <group expand="1" string="Ngày bắt đầu / kết thúc">-->
+                <!--                    <filter string="Bắt đầu" domain="[]" context="{'group_by':'start_date'}"/>-->
+                <!--                </group>-->
             </search>
         </field>
     </record>

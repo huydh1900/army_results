@@ -30,6 +30,15 @@ class TrainingResult(models.Model):
     )
     note = fields.Text(string='Nhận xét', tracking=True)
     note_tmp = fields.Text(compute='_compute_note_tmp', store=True)
+    state = fields.Selection([
+        ('done', 'Hoàn thành'),
+        ('pending', 'Chưa hoàn thành')
+    ], string='Tình trạng hoàn thành', default='pending')
+
+    @api.constrains('score')
+    def _check_score(self):
+        if self.score:
+            self.state = 'done'
 
     @api.depends('day_comment_ids.comment')
     def _compute_note_tmp(self):

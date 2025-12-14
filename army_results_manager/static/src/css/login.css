@@ -8,13 +8,17 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
+.oe_login_form.clearfix {
+    display: none !important;
+}
+
 #about, #developer_tool {
     display: none !important;
 }
 
 .o_home_menu {
     position: relative;
-    overflow: hidden; /* Đảm bảo nền không tràn */
+    overflow: hidden;
 }
 
 .o_home_menu::before {

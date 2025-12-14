@@ -40,9 +40,10 @@ class TrainingDay(models.Model):
         related='mission_id.course_id.plan_id',
         store=True
     )
+    schedule_id = fields.Many2one(related='plan_id.schedule_id', store=True)
 
     plan_name = fields.Char(related='plan_id.name', store=True)
-    # type_plan = fields.Selection(related='plan_id.type', store=True)
+    camera_ids = fields.Many2many(related='mission_id.camera_ids')
     training_officer_ids = fields.Many2many(
         'hr.employee',
         'training_day_rel',
@@ -53,6 +54,27 @@ class TrainingDay(models.Model):
     )
     reason_modify = fields.Text(string='Lý do chỉnh sửa')
     approver_id = fields.Many2one(related='plan_id.approver_id', store=True)
+    camera_count = fields.Integer(compute='_compute_camera_count')
+
+
+    def action_open_camera(self):
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Camera",
+            "res_model": "camera.device",
+            "view_mode": "tree",
+            "domain": [('id', '=', self.camera_ids.ids)],
+            "target": "new",
+            'context': {
+                'create': False,
+                'delete': False,
+                'default_action': 'camera_device_view',
+            },
+        }
+
+    def _compute_camera_count(self):
+        for rec in self:
+            rec.camera_count = len(rec.camera_ids)
 
     @api.constrains('day', 'mission_id')
     @api.onchange('day', 'mission_id')

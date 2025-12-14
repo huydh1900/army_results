@@ -14,6 +14,7 @@ class SupportContact(models.Model):
     phone = fields.Char(string="Số điện thoại")
     email = fields.Char(string="Email")
     note = fields.Text(string="Ghi chú")
+    department = fields.Text(string='Đơn vị')
     zalo_qr = fields.Binary("Mã QR Zalo", compute="_compute_zalo_qr", store=True)
 
     @api.depends('phone')

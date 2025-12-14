@@ -8,7 +8,7 @@
         <record id="action_media_library" model="ir.actions.act_window">
             <field name="name">Hình ảnh, video</field>
             <field name="res_model">media.library</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">tree,form,kanban</field>
         </record>
 
         <menuitem id="base.menu_administration"
@@ -37,6 +37,7 @@
             <field name="name">Xây dựng Kế hoạch</field>
             <field name="res_model">training.schedule</field>
             <field name="view_mode">tree,form</field>
+            <field name="domain">[('state', 'not in', ['approved'])]</field>
             <field name="context">{'group_by': ['plan_type']}</field>
         </record>
 
@@ -57,7 +58,7 @@
         </record>
 
         <record id="action_training_subject_common" model="ir.actions.act_window">
-            <field name="name">Môn học (HL chung)</field>
+            <field name="name">Chuyên đề (HL chung)</field>
             <field name="res_model">training.subject</field>
             <field name="view_mode">tree,form</field>
             <field name="domain">[('type_training', '=', 'common_training')]</field>
@@ -65,7 +66,7 @@
         </record>
 
         <record id="action_training_subject_private" model="ir.actions.act_window">
-            <field name="name">Môn học (HL riêng)</field>
+            <field name="name">Chuyên đề (HL riêng)</field>
             <field name="res_model">training.subject</field>
             <field name="view_mode">tree,form</field>
             <field name="domain">[('type_training', '=', 'private_training')]</field>
@@ -344,7 +345,7 @@
         <menuitem id="menu_training_course_list_approved"
                   name="Kế hoạch đã duyệt"
                   parent="menu_training_course"
-                  groups="army_results_manager.group_admin,army_results_manager.group_training_commander,army_results_manager.group_data_entry_officer"
+                  groups="army_results_manager.group_admin,army_results_manager.group_training_commander,army_results_manager.group_data_entry_officer,army_results_manager.group_training_commander_assistant"
                   action="action_training_schedule_approved"
                   sequence="3"/>
 

@@ -24,7 +24,6 @@ class TrainingResource(models.Model):
     lesson_id = fields.Many2one(
         'training.lesson',
         string='Bài học',
-        required=True
     )
 
     type = fields.Selection([
@@ -36,4 +35,3 @@ class TrainingResource(models.Model):
     video = fields.Binary(string="Video", attachment=True)
     description = fields.Text("Mô tả")
     day_comment_id = fields.Many2one('training.day.comment')
-

@@ -7,6 +7,7 @@
             <tree string="Kết quả huấn luyện" create="false">
                 <field name="employee_id" options='{"no_open":True}'/>
                 <field name="score"/>
+                <field name="state"/>
                 <field name="result"/>
                 <field name="note"/>
                 <button name="action_generate_note_by_ai"
@@ -40,6 +41,7 @@
                         <field name="training_course_id" options='{"no_open":True}'/>
                         <field name="year"/>
                         <field name="employee_id" options='{"no_open":True}'/>
+                        <field name="state"/>
                     </group>
                     <group>
                         <field name="score"/>
@@ -90,9 +92,9 @@
                     <filter name="group_employee" string="Học viên" context="{'group_by': 'employee_id'}"/>
                     <filter name="group_course" string="Khóa huấn luyện" context="{'group_by': 'training_course_id'}"/>
                     <filter name="group_year" string="Năm" context="{'group_by': 'year'}"/>
-                    <filter name="group_result" string="Kết quả" context="{'group_by': 'result'}"/>
+                    <filter name="group_result" string="Xếp loại" context="{'group_by': 'result'}"/>
+                    <filter name="group_state" string="Tình trạng hoàn thành" context="{'group_by': 'state'}"/>
                 </group>
-
             </search>
         </field>
     </record>
