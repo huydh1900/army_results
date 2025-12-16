@@ -1,18 +1,6 @@
 # -*- coding: utf-8 -*-
 {
     'name': "Army Results Manager",
-
-    'summary': """
-        Short (1 phrase/line) summary of the module's purpose, used as
-        subtitle on modules listing or apps.openerp.com""",
-
-    'description': """
-        Long description of module's purpose
-    """,
-
-    'author': "My Company",
-    'website': "https://www.yourcompany.com",
-
     'version': '0.1',
 
     'depends': ['auth_signup', 'web', 'base', 'hr', 'web_unsplash', 'web_widget_video'],
@@ -24,6 +12,7 @@
         "security/training_mission_security.xml",
         "security/training_day_comment_security.xml",
         "security/training_course_security.xml",
+        "security/hr_employee_security.xml",
         "security/training_schedule_security.xml",
         "security/ir.model.access.csv",
         'views/remove_odoo_title.xml',

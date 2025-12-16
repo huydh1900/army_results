@@ -81,10 +81,10 @@ access_media_library,access_media_library,model_media_library,,1,1,1,1
 
 
 access_training_mission_student,access.training.mission.student,model_training_mission,group_training_student,1,0,0,0
-access_training_mission_manager,access.training.mission.manager,model_training_mission,group_training_commander_assistant,1,0,0,0
+access_training_mission_manager,access.training.mission.manager,model_training_mission,group_training_commander_assistant,1,1,0,0
 access_training_mission_officer,access_training_mission_officer,model_training_mission,group_data_entry_officer,1,1,1,1
 access_training_mission_admin,access_training_mission_admin,model_training_mission,group_admin,1,1,1,1
-access_training_mission_commander,access_training_mission_commander,model_training_mission,group_training_commander,1,0,0,0
+access_training_mission_commander,access_training_mission_commander,model_training_mission,group_training_commander,1,1,0,0
 
 
 access_hr_employee_commander,access_hr_employee_commander,hr.model_hr_employee,group_training_commander,1,0,0,0

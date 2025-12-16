@@ -96,29 +96,6 @@ class TrainingPlan(models.Model):
 
         return res
 
-    @api.model
-    def cron_generate_daily_warning(self):
-        today = date.today()
-        upcoming_days = 3  # số ngày trước khi bắt đầu mà bạn muốn cảnh báo
-        upcoming_date = today + timedelta(days=upcoming_days)
-
-        # Lọc các kế hoạch chưa duyệt và sắp bắt đầu
-        plans = self.search([
-            ("state", "in", ["draft", "posted", "to_modify"]),
-            ("start_date", "<=", upcoming_date),
-            ("start_date", ">=", today),
-        ])
-
-        if plans:
-            message = (
-                    "Các kế hoạch sắp đến ngày bắt đầu nhưng chưa được duyệt:\n" +
-                    "\n".join([f"- {plan.name} (ngày {plan.start_date})" for plan in plans])
-            )
-
-        # Ghi log lại
-        self.env["training.warning.log"].create({"message": message})
-        return True
-
     @api.depends('course_ids.total_hours')
     def _compute_total_hours(self):
         for rec in self:

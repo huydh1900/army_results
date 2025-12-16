@@ -5,6 +5,9 @@
         <menuitem id="menu_military_root" name="Quản lý huấn luyện bộ đội"
                   web_icon="army_results_manager,static/src/img/icon.png"/>
 
+        <menuitem id="mail.menu_root_discuss" active="False"/>
+        <menuitem id="hr.menu_hr_root" active="False"/>
+
         <record id="action_media_library" model="ir.actions.act_window">
             <field name="name">Hình ảnh, video</field>
             <field name="res_model">media.library</field>
@@ -243,6 +246,12 @@
                   parent="menu_military_root"
                   groups="army_results_manager.group_admin,army_results_manager.group_data_entry_officer,army_results_manager.group_training_commander,army_results_manager.group_training_commander_assistant"
                   sequence="2"/>
+
+         <menuitem id="menu_unit_management_student"
+                  name="Thông tin học viên"
+                  parent="menu_military_root"
+                  action="action_student" sequence="1"
+                  groups="army_results_manager.group_training_student,base.group_no_one"/>
 
         <!--        Menu camera-->
         <menuitem id="menu_camera_management"

@@ -2,7 +2,7 @@
     <data noupdate="1">
         <record id="ir_cron_training_daily_warning" model="ir.cron">
             <field name="name">Tạo cảnh báo hằng ngày</field>
-            <field name="model_id" ref="model_training_plan"/>
+            <field name="model_id" ref="model_training_schedule"/>
             <field name="state">code</field>
             <field name="code">model.cron_generate_daily_warning()</field>
             <field name="interval_number">1</field>

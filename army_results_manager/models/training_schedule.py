@@ -1,5 +1,6 @@
 from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
+from datetime import timedelta, date
 
 
 class TrainingSchedule(models.Model):
@@ -78,6 +79,37 @@ class TrainingSchedule(models.Model):
     reason_modify = fields.Text(string='Lý do chỉnh sửa', tracking=True, readonly=True)
     approver_id = fields.Many2one('hr.employee', string='Cán bộ phê duyệt', required=True,
                                   domain=[('role', '=', 'commanding_officer')])
+
+    @api.model
+    def cron_generate_daily_warning(self):
+        today = date.today()
+        upcoming_days = 3  # số ngày trước khi bắt đầu mà bạn muốn cảnh báo
+        upcoming_date = today + timedelta(days=upcoming_days)
+
+        # Lọc các kế hoạch chưa duyệt và sắp bắt đầu
+        schedules = self.search([
+            ("state", "in", ["posted", "to_modify"]),
+            ("start_date", "<=", upcoming_date),
+            ("start_date", ">=", today),
+        ])
+
+        for schedule in schedules:
+            if not schedule.approver_id:
+                continue  # nếu chưa có người duyệt, bỏ qua
+
+            days_left = (schedule.start_date - today).days
+            start_date_str = schedule.start_date.strftime("%d/%m/%Y")  # chuyển định dạng ngày
+            message = (
+                f"Kế hoạch '{schedule.name}' sẽ bắt đầu sau {days_left} ngày ({start_date_str}).\n"
+                f"Người duyệt: {schedule.approver_id.name}. Vui lòng duyệt kịp thời để không quá hạn!"
+            )
+
+            # Ghi log lại
+            self.env["training.warning.log"].create({
+                "message": message
+            })
+
+        return True
 
     def write(self, vals):
         for rec in self:
