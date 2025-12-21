@@ -39,7 +39,8 @@
                         <field name="type_training" invisible="1"/>
                         <field name="stage_ids" widget="many2many_tags"
                                attrs="{'invisible': [('type_training', '=', 'common_training')]}"/>
-                        <field name="attachment_ids" widget="many2many_binary"/>
+                        <field name="attachment_ids" widget="many2many_attachment_preview"/>
+                        <field name="attachment_ids" string=""/>
                     </group>
                     <notebook>
                         <page string="Bài học">

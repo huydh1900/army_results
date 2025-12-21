@@ -1,38 +1,39 @@
-from odoo import http
-from odoo.http import request
+import logging
 import json
+from odoo import http
+from odoo.http import request, Response
+from odoo.addons.web.controllers.dataset import DataSet  # Import Controller gốc
 
+_logger = logging.getLogger(__name__)
 
-class ExceptionController(http.Controller):
+# Ngưỡng chặn Integer 32-bit
+MAX_INT32 = 2147483647
+MIN_INT32 = -2147483648
 
-    @http.route('/web/dataset/call_kw/web_tour.tour/get_consumed_tours', type='json', auth='user', methods=['POST'],
-                csrf=True)
-    def get_consumed_tours(self, **kwargs):
+class ArmyDataSet(http.Controller): # Kế thừa lớp DataSet gốc của Odoo
+
+    @http.route(['/web/dataset/call_kw', '/web/dataset/call_kw/<path:path>'], type='json', auth="user")
+    def call_kw(self, model, method, args, kwargs, path=None):
+        """
+        Ghi đè hàm call_kw để kiểm tra tràn số trước khi thực thi
+        """
         try:
-            raw = request.httprequest.data
-            data = json.loads(raw)
+            # 1. Kiểm tra tràn số trong args (dạng list)
+            if args:
+                for arg in args:
+                    if isinstance(arg, int) and (arg > MAX_INT32 or arg < MIN_INT32):
+                        _logger.error(f"[Security] Tràn số phát hiện trong args: {arg} tại model {model}")
+                        return {"jsonrpc": "2.0", "error": "Integer Overflow Detected"}
 
-            # 1. Bổ sung kiểm tra loại dữ liệu (type) và giá trị của 'jsonrpc'
-            jsonrpc_val = data.get('jsonrpc')
+            # 2. Kiểm tra tràn số trong kwargs (dạng dict)
+            if kwargs:
+                for key, value in kwargs.items():
+                    if isinstance(value, int) and (value > MAX_INT32 or value < MIN_INT32):
+                        _logger.error(f"[Security] Tràn số phát hiện trong kwargs: {value} tại model {model}")
+                        return {"jsonrpc": "2.0", "error": "Integer Overflow Detected"}
 
-            # Đảm bảo 'jsonrpc' tồn tại, là kiểu chuỗi (string) VÀ có giá trị là '2.0'
-            # Nếu nó là một số nguyên lớn, hàm .get() sẽ nhận giá trị số và
-            # kiểm tra isinstance(jsonrpc_val, str) sẽ thất bại, dẫn đến trả về lỗi
-            if not (jsonrpc_val and isinstance(jsonrpc_val, str) and jsonrpc_val == '2.0'):
-                return {'success': False, 'error': 'Định dạng dữ liệu không hợp lệ.'}
+        except Exception as e:
+            _logger.error(f"Lỗi kiểm tra bảo mật: {str(e)}")
 
-        except Exception:
-            # Xử lý các lỗi khác như JSON không hợp lệ, lỗi IO, v.v.
-            return {'success': False, 'error': 'Có lỗi xảy ra, vui lòng thử lại'}
-
-    @http.route('/web/webclient/translations/<path:mods>', type='http', auth="none", methods=['GET'])
-    def translations_loader(self, mods=None, lang=None, mods_js=False, mods_xml=False):
-        try:
-            MAX_MODS_LENGTH = 1024
-            if mods and len(mods) > MAX_MODS_LENGTH:
-                # Trả về lỗi 400 mà không hiển thị traceback
-                return request.make_response("Bad Request.", status=400)
-
-        except Exception:
-            # Bắt bất kỳ lỗi nào khác và trả về lỗi 500 an toàn
-            return request.make_response("Internal Server Error.", status=500)
+        # 3. Nếu mọi thứ an toàn, gọi lại hàm gốc của Odoo
+        return super(ArmyDataSet, self).call_kw(model, method, args, kwargs, path=path)

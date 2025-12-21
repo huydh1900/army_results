@@ -28,6 +28,7 @@ class TrainingMission(models.Model):
     training_officer_ids_domain = fields.Binary(compute='_compute_training_officer_ids_domain')
 
     plan_id = fields.Many2one(related='course_id.plan_id', string='Khóa huấn luyện')
+    schedule_id = fields.Many2one(related='plan_id.schedule_id')
     training_officer_ids = fields.Many2many(
         'hr.employee',
         related='course_id.training_officer_ids',

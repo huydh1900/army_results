@@ -5,6 +5,9 @@ from odoo import models, fields
 from odoo.modules.module import get_module_resource
 import tempfile
 import os
+from docx2pdf import convert
+import pythoncom
+from odoo.exceptions import UserError
 
 
 class PrintScoreWizard(models.TransientModel):
@@ -42,7 +45,6 @@ class PrintScoreWizard(models.TransientModel):
                 'rank': rank_label,
                 'note': "",
             })
-
 
         # ==== 1. RENDER CÁC BIẾN TEXT BẰNG DOXCTPL ====
         tpl = DocxTemplate(template_path)
@@ -119,33 +121,40 @@ class PrintScoreWizard(models.TransientModel):
             row[4].text = str(st['rank'])
             row[5].text = st['note']
 
-        # Lưu file hoàn chỉnh
         final_path = tempfile.NamedTemporaryFile(delete=False, suffix=".docx").name
         doc.save(final_path)
 
-        # ==== 3. TRẢ FILE CHO TRÌNH DUYỆT ====
-        with open(final_path, 'rb') as f:
-            file_data = f.read()
+        final_docx_path = tempfile.NamedTemporaryFile(delete=False, suffix=".docx").name
+        doc.save(final_docx_path)
 
-        data_base64 = base64.b64encode(file_data).decode()
+        try:
+            pythoncom.CoInitialize()
+            pdf_path = final_docx_path.replace(".docx", ".pdf")
+            convert(final_docx_path, pdf_path)
 
-        report_name = f"Ket_qua_huan_luyen_{self.course_id.display_name}_{self.plan_id.name}.docx".replace(" ", "_")
+            with open(pdf_path, 'rb') as f:
+                pdf_content = f.read()
 
-        attachment = self.env["ir.attachment"].create({
-            "name": report_name,
-            "type": "binary",
-            "datas": data_base64,
-            "res_model": self._name,
-            "res_id": self.id,
-            "mimetype": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        })
+            # TẠO ATTACHMENT TẠM
+            attachment = self.env['ir.attachment'].create({
+                'name': f"Ket_qua_huan_luyen_{self.course_id.display_name}_{self.plan_id.name}.pdf",
+                'type': 'binary',
+                'datas': base64.b64encode(pdf_content),
+                'mimetype': 'application/pdf',
+            })
 
-        # Xóa file tạm
-        os.unlink(tmp_docx_path)
-        os.unlink(final_path)
+            # Dọn dẹp file cứng trên ổ đĩa
+            if os.path.exists(final_docx_path): os.unlink(final_docx_path)
+            if os.path.exists(pdf_path): os.unlink(pdf_path)
 
-        return {
-            "type": "ir.actions.act_url",
-            "url": f"/web/content/{attachment.id}?download=true",
-            "target": "new",
-        }
+            # TRẢ VỀ URL CHUẨN CỦA ODOO (Trình duyệt sẽ tự mở PDF viewer)
+            return {
+                "type": "ir.actions.act_url",
+                "url": f"/web/content/{attachment.id}?download=false",
+                "target": "new",
+            }
+
+        except Exception as e:
+            raise UserError(f"Lỗi: {str(e)}")
+        finally:
+            pythoncom.CoUninitialize()

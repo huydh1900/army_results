@@ -57,7 +57,7 @@
                             <field name="training_officer_ids" widget="many2many_tags"
                                     options="{'no_create':True}"/>
                             <field name="student_ids" widget="many2many_tags" readonly="0"/>
-                            <field name="attachment_ids" widget="many2many_binary"/>
+                            <field name="attachment_ids" widget="many2many_attachment_preview"/>
                         </group>
                     </group>
                     <notebook>

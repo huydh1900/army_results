@@ -58,6 +58,7 @@
                             <field name="measure" attrs="{'readonly': [('state', '=', 'approved')]}"/>
                             <field name="total_hours"/>
                             <field name="approver_id" readonly="1" options="{'no_open': True}"/>
+                            <field name="tinh_trang_hoan_thanh"/>
                         </group>
                     </group>
 
@@ -77,7 +78,7 @@
                             </field>
                         </page>
                         <page string="Tài liệu, bài tập huấn luyện mẫu">
-                            <field name="attachment_ids" widget="many2many_binary"  readonly="1"/>
+                            <field name="attachment_ids" widget="many2many_attachment_preview"  readonly="1"/>
                         </page>
                     </notebook>
                 </sheet>

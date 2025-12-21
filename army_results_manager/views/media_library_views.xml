@@ -27,7 +27,7 @@
                             <field name="name"/>
                             <field name="location_id"/>
                             <field name="camera_id"/>
-                            <field name="attachment_ids" widget="many2many_binary"/>
+                            <field name="attachment_ids" widget="many2many_attachment_preview"/>
                         </group>
                         <group>
                             <field name="description"/>

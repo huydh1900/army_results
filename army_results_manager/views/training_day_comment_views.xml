@@ -3,7 +3,7 @@
         <field name="name">training.day.comment.tree</field>
         <field name="model">training.day.comment</field>
         <field name="arch" type="xml">
-            <tree editable="bottom" create="0" delete="0">
+            <tree editable="bottom">
                 <field name="student_id" readonly="1" options="{'no_open': True}"/>
                 <field name="score"/>
                 <field name="comment"/>
@@ -30,13 +30,13 @@
         <field name="arch" type="xml">
             <form>
                 <group>
-                    <field name="student_id" readonly="True"/>
+                    <field name="plan_id" readonly="0"/>
+                    <field name="day_date"/>
+                    <field name="student_id"/>
                     <field name="score"/>
                     <field name="strength"/>
                     <field name="weakness"/>
                     <field name="proposal_solution"/>
-
-
                     <!--                    <field name="video" widget="video" filename="filename"/>-->
                 </group>
                 <notebook>

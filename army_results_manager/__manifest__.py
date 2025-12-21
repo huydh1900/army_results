@@ -24,7 +24,6 @@
         'wizard/approved_wizard.xml',
         'wizard/print_score_wizard.xml',
         'wizard/preview_report_pdf_wizard.xml',
-
         'views/ir_attachment_views.xml',
         'views/webclient_templates.xml',
         'views/support_contact_views.xml',

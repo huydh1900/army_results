@@ -64,7 +64,7 @@ class TrainingSchedule(models.Model):
 
     description = fields.Text(string="Nội dung huấn luyện")
     location = fields.Char(string="Địa điểm")
-
+    camera_ids = fields.Many2many('camera.device', string="Camera giám sát")
     duration_days = fields.Integer(
         string="Thời lượng (ngày)",
         compute="_compute_duration",
@@ -76,9 +76,38 @@ class TrainingSchedule(models.Model):
         "schedule_id",
         string="Các khóa huấn luyện"
     )
+    camera_count = fields.Integer(compute="_compute_camera_count")
     reason_modify = fields.Text(string='Lý do chỉnh sửa', tracking=True, readonly=True)
     approver_id = fields.Many2one('hr.employee', string='Cán bộ phê duyệt', required=True,
                                   domain=[('role', '=', 'commanding_officer')])
+
+    def _compute_camera_count(self):
+        for record in self:
+            missions = self.env['training.mission'].search([
+                ('schedule_id', '=', record.id),
+            ])
+            camera_ids = missions.mapped('camera_ids').ids
+            record.camera_count = len(camera_ids)
+
+    def action_open_camera(self):
+        self.ensure_one()
+
+        missions = self.env['training.mission'].search([
+            ('schedule_id', '=', self.id),
+        ])
+
+        camera_ids = missions.mapped('camera_ids').ids
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Cameras',
+            'res_model': 'camera.device',
+            'view_mode': 'tree,form',
+            'domain': [('id', 'in', camera_ids)],
+            "context": {
+                'default_action': 'camera_device_view',
+            },
+        }
 
     @api.model
     def cron_generate_daily_warning(self):

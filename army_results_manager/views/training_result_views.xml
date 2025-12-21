@@ -71,30 +71,76 @@
         <field name="arch" type="xml">
             <search string="Tìm kiếm kết quả huấn luyện">
 
-                <!-- Tìm theo học viên -->
+                <!-- Tìm kiếm nhanh -->
                 <field name="employee_id" string="Học viên"/>
-
-                <!-- Tìm theo khóa huấn luyện -->
-                <field name="training_course_id" string="Khóa huấn luyện"/>
-
-                <!-- Tìm theo năm -->
+                <field name="training_course_id" string="Môn học"/>
                 <field name="year" string="Năm"/>
+                <field name="plan_name" string="Tên kế hoạch"/>
+                <field name="score" string="Điểm số"/>
+
+                <separator/>
 
                 <!-- Bộ lọc theo kết quả -->
-                <filter name="filter_pass" string="Đạt" domain="[('result', '=', 'pass')]"/>
-                <filter name="filter_fail" string="Không đạt" domain="[('result', '=', 'fail')]"/>
-                <filter name="filter_excellent" string="Xuất sắc" domain="[('result', '=', 'excellent')]"/>
-                <filter name="filter_good" string="Khá" domain="[('result', '=', 'good')]"/>
-                <filter name="filter_average" string="Trung bình" domain="[('result', '=', 'average')]"/>
+                <filter name="filter_pass"
+                        string="Đạt"
+                        domain="[('result','=','pass')]"/>
 
-                <!-- Nhóm theo -->
+                <filter name="filter_fail"
+                        string="Không đạt"
+                        domain="[('result','=','fail')]"/>
+
+                <filter name="filter_excellent"
+                        string="Xuất sắc"
+                        domain="[('result','=','excellent')]"/>
+
+                <filter name="filter_good"
+                        string="Khá"
+                        domain="[('result','=','good')]"/>
+
+                <filter name="filter_average"
+                        string="Trung bình"
+                        domain="[('result','=','average')]"/>
+
+                <separator/>
+
+                <!-- Bộ lọc trạng thái -->
+                <filter name="filter_done"
+                        string="Hoàn thành"
+                        domain="[('state','=','done')]"/>
+
+                <filter name="filter_pending"
+                        string="Chưa hoàn thành"
+                        domain="[('state','=','pending')]"/>
+
+                <separator/>
+
+                <!-- Group By -->
                 <group expand="0" string="Nhóm theo">
-                    <filter name="group_employee" string="Học viên" context="{'group_by': 'employee_id'}"/>
-                    <filter name="group_course" string="Khóa huấn luyện" context="{'group_by': 'training_course_id'}"/>
-                    <filter name="group_year" string="Năm" context="{'group_by': 'year'}"/>
-                    <filter name="group_result" string="Xếp loại" context="{'group_by': 'result'}"/>
-                    <filter name="group_state" string="Tình trạng hoàn thành" context="{'group_by': 'state'}"/>
+                    <filter name="group_by_employee"
+                            string="Học viên"
+                            context="{'group_by':'employee_id'}"/>
+
+                    <filter name="group_by_course"
+                            string="Môn học"
+                            context="{'group_by':'training_course_id'}"/>
+
+                    <filter name="group_by_plan"
+                            string="Kế hoạch"
+                            context="{'group_by':'plan_id'}"/>
+
+                    <filter name="group_by_year"
+                            string="Năm"
+                            context="{'group_by':'year'}"/>
+
+                    <filter name="group_by_result"
+                            string="Xếp loại"
+                            context="{'group_by':'result'}"/>
+
+                    <filter name="group_by_state"
+                            string="Tình trạng"
+                            context="{'group_by':'state'}"/>
                 </group>
+
             </search>
         </field>
     </record>

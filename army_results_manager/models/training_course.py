@@ -53,6 +53,7 @@ class TrainingCourse(models.Model):
         'ir.attachment',
         string='Tài liệu mẫu',
     )
+    tinh_trang_hoan_thanh = fields.Char(string='Tình trạng hoàn thành')
 
     def name_get(self):
         result = []

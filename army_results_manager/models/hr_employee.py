@@ -14,9 +14,9 @@ class HrEmployeePrivate(models.Model):
         ('student', 'Học viên'),
     ], string="Vai trò", readonly=True)
     job_id = fields.Many2one(tracking=True, string='Chức vụ')
-    cap_bac = fields.Char(string='Cấp bậc')
-    ngay_sinh = fields.Date(string='Ngày sinh')
-    identification_id = fields.Char(string='Số hiệu sĩ quan', groups="hr.group_hr_user", tracking=True)
+    rank = fields.Char(string='Cấp bậc')
+    date_of_birth = fields.Date(string='Ngày sinh')
+    identification_id = fields.Char(string='Số hiệu sĩ quan', tracking=True)
     result_ids = fields.One2many('training.result', 'employee_id')
     day_comment_ids = fields.Many2many('training.day.comment')
     classification = fields.Selection(
@@ -31,6 +31,7 @@ class HrEmployeePrivate(models.Model):
     )
     message_main_attachment_id = fields.Many2one(groups="base.group_user")
     don_vi_cong_tac = fields.Text(string='Đơn vị công tác')
+    parent_id = fields.Many2one('hr.employee', domain="[('role', 'not in', ['student', False])]")
 
     @api.model
     def count_student_summary(self):

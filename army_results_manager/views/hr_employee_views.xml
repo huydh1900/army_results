@@ -123,8 +123,8 @@
             </field>
             <field name="mobile_phone" position="before">
                 <field name="identification_id" string="Số hiệu sĩ quan"/>
-                <field name="cap_bac"/>
-                <field name="ngay_sinh"/>
+                <field name="rank"/>
+                <field name="date_of_birth"/>
             </field>
             <field name="department_id" position="attributes">
                 <attribute name="invisible">1</attribute>
@@ -191,7 +191,7 @@
             </xpath>
 
             <xpath expr="//field[@name='work_email']" position="attributes">
-                <attribute name="string">Email cơ quan</attribute>
+                <attribute name="string">Email</attribute>
             </xpath>
 
             <xpath expr="//group[@name='active_group']" position="attributes">

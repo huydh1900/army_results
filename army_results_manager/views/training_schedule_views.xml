@@ -8,7 +8,6 @@
         <field name="arch" type="xml">
 
             <form string="Kế hoạch huấn luyện">
-
                 <header>
                     <field name="state" widget="statusbar"
                            statusbar_visible="draft,posted,to_modify,approved,cancel"/>
@@ -42,6 +41,15 @@
 
                 <sheet>
                     <div class="oe_button_box" name="button_box">
+                        <button name="action_open_camera"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-video-camera"
+                                attrs="{'invisible': [('camera_count', '=', 0)]}"
+                                string="Mở camera"
+                                >
+                            <field name="camera_count" widget="statinfo" string="Camera"/>
+                        </button>
                         <button name="action_open_training_day"
                                 type="object"
                                 class="oe_stat_button"
@@ -113,24 +121,71 @@
         <field name="model">training.schedule</field>
         <field name="arch" type="xml">
             <search string="Tìm kiếm kế hoạch huấn luyện">
-                <!-- Tìm kiếm theo trạng thái -->
-                <filter name="filter_draft" string="Soạn thảo" domain="[('state', '=', 'draft')]"/>
-                <filter name="filter_posted" string="Chờ duyệt" domain="[('state', '=', 'posted')]"/>
-                <filter name="filter_approved" string="Đã duyệt" domain="[('state', '=', 'approved')]"/>
-                <filter name="filter_cancel" string="Hủy" domain="[('state', '=', 'cancel')]"/>
 
-                <!-- Tìm kiếm theo năm -->
-                <!--                <field name="year" string="Năm huấn luyện" filter_domain="[]"/>-->
+                <!-- Tìm nhanh -->
+                <field name="name" string="Tên kế hoạch"/>
+                <field name="year" string="Năm"/>
+                <field name="month_number" string="Tháng"/>
+                <field name="week_number" string="Tuần"/>
+                <field name="location" string="Địa điểm"/>
+                <field name="start_date" string="Ngày bắt đầu"/>
+                <field name="end_date" string="Ngày kết thúc"/>
 
-                <!-- Tìm kiếm theo loại kế hoạch -->
-                <!-- Tìm kiếm nâng cao: khoảng ngày -->
-                <!--                <group expand="1" string="Ngày bắt đầu / kết thúc">-->
-                <!--                    <filter string="Bắt đầu" domain="[]" context="{'group_by':'start_date'}"/>-->
-                <!--                </group>-->
+                <!-- Bộ lọc nhanh -->
+                <filter name="filter_draft"
+                        string="Soạn thảo"
+                        domain="[('state','=','draft')]"/>
+
+                <filter name="filter_posted"
+                        string="Chờ duyệt"
+                        domain="[('state','=','posted')]"/>
+
+                <filter name="filter_approved"
+                        string="Đã duyệt"
+                        domain="[('state','=','approved')]"/>
+
+                <separator/>
+
+                <filter name="filter_week"
+                        string="Kế hoạch tuần"
+                        domain="[('plan_type','=','week')]"/>
+
+                <filter name="filter_month"
+                        string="Kế hoạch tháng"
+                        domain="[('plan_type','=','month')]"/>
+
+                <filter name="filter_year"
+                        string="Kế hoạch năm"
+                        domain="[('plan_type','=','year')]"/>
+
+                <separator/>
+
+                <!-- Group By -->
+                <group expand="0" string="Nhóm theo">
+                    <filter name="group_by_year"
+                            string="Năm"
+                            context="{'group_by':'year'}"/>
+
+                    <filter name="group_by_plan_type"
+                            string="Loại kế hoạch"
+                            context="{'group_by':'plan_type'}"/>
+
+                    <filter name="group_by_month"
+                            string="Tháng"
+                            context="{'group_by':'month_number'}"/>
+
+                    <filter name="group_by_week"
+                            string="Tuần"
+                            context="{'group_by':'week_number'}"/>
+
+                    <filter name="group_by_state"
+                            string="Trạng thái"
+                            context="{'group_by':'state'}"/>
+                </group>
+
             </search>
         </field>
     </record>
-
 
     <!-- TREE VIEW -->
     <record id="view_training_schedule_tree" model="ir.ui.view">

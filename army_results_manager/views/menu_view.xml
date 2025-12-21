@@ -7,6 +7,7 @@
 
         <menuitem id="mail.menu_root_discuss" active="False"/>
         <menuitem id="hr.menu_hr_root" active="False"/>
+        <menuitem id="hr.menu_config_plan_plan" active="False"/>
 
         <record id="action_media_library" model="ir.actions.act_window">
             <field name="name">Hình ảnh, video</field>
