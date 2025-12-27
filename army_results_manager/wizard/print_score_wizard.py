@@ -5,9 +5,8 @@ from odoo import models, fields
 from odoo.modules.module import get_module_resource
 import tempfile
 import os
-from docx2pdf import convert
-import pythoncom
 from odoo.exceptions import UserError
+import subprocess
 
 
 class PrintScoreWizard(models.TransientModel):
@@ -35,7 +34,6 @@ class PrintScoreWizard(models.TransientModel):
         students_list = []
         for index, rec in enumerate(result_records, start=1):
             student = rec.employee_id
-
             rank_label = dict(rec._fields['result'].selection).get(rec.result, "")
             students_list.append({
                 'id': index,
@@ -48,18 +46,8 @@ class PrintScoreWizard(models.TransientModel):
 
         # ==== 1. RENDER CÁC BIẾN TEXT BẰNG DOXCTPL ====
         tpl = DocxTemplate(template_path)
-
         result_map = dict(self.env['training.result']._fields['result'].selection)
-
-        # Khởi tạo bộ đếm
-        result_counter = {
-            "Không đạt": 0,
-            "Đạt": 0,
-            "Trung bình": 0,
-            "Khá": 0,
-            "Xuất sắc": 0,
-        }
-
+        result_counter = {label: 0 for label in result_map.values()}
         total = len(result_records) if result_records else 1
 
         for rec in result_records:
@@ -67,19 +55,13 @@ class PrintScoreWizard(models.TransientModel):
             if label in result_counter:
                 result_counter[label] += 1
 
-        # Tính %
-        result_percent = {
-            label: round((count / total) * 100, 2)
-            for label, count in result_counter.items()
-        }
-
-        # Ghép thành chuỗi để đưa vào Word
+        result_percent = {label: round((count / total) * 100, 2) for label, count in result_counter.items()}
         summary_result = (
-            f"Không đạt: {result_percent['Không đạt']}%, "
-            f"Đạt: {result_percent['Đạt']}%, "
-            f"TB: {result_percent['Trung bình']}%, "
-            f"Khá: {result_percent['Khá']}%, "
-            f"Giỏi: {result_percent['Xuất sắc']}%"
+            f"Không đạt: {result_percent.get('Không đạt',0)}%, "
+            f"Đạt: {result_percent.get('Đạt',0)}%, "
+            f"TB: {result_percent.get('Trung bình',0)}%, "
+            f"Khá: {result_percent.get('Khá',0)}%, "
+            f"Giỏi: {result_percent.get('Xuất sắc',0)}%"
         )
 
         context = {
@@ -94,14 +76,11 @@ class PrintScoreWizard(models.TransientModel):
 
         tpl.render(context)
 
-        # Lưu file tạm sau render biến text
         tmp_docx_path = tempfile.NamedTemporaryFile(delete=False, suffix=".docx").name
         tpl.save(tmp_docx_path)
 
         # ==== 2. MỞ LẠI FILE WORD → CHÈN BẢNG HỌC VIÊN ====
         doc = Document(tmp_docx_path)
-
-        # Tìm table chứa header "TT"
         table = None
         for tbl in doc.tables:
             if "TT" in tbl.rows[0].cells[0].text:
@@ -111,7 +90,6 @@ class PrintScoreWizard(models.TransientModel):
         if not table:
             raise UserError("Không tìm thấy bảng danh sách học viên trong file Word!")
 
-        # Thêm từng dòng vào bảng
         for st in students_list:
             row = table.add_row().cells
             row[0].text = str(st['id'])
@@ -121,16 +99,16 @@ class PrintScoreWizard(models.TransientModel):
             row[4].text = str(st['rank'])
             row[5].text = st['note']
 
-        final_path = tempfile.NamedTemporaryFile(delete=False, suffix=".docx").name
-        doc.save(final_path)
-
         final_docx_path = tempfile.NamedTemporaryFile(delete=False, suffix=".docx").name
         doc.save(final_docx_path)
 
+        # ==== 3. CONVERT DOCX → PDF BẰNG LIBREOFFICE (LINUX) ====
+        pdf_path = final_docx_path.replace(".docx", ".pdf")
         try:
-            pythoncom.CoInitialize()
-            pdf_path = final_docx_path.replace(".docx", ".pdf")
-            convert(final_docx_path, pdf_path)
+            subprocess.run([
+                "libreoffice", "--headless", "--convert-to", "pdf",
+                final_docx_path, "--outdir", os.path.dirname(pdf_path)
+            ], check=True)
 
             with open(pdf_path, 'rb') as f:
                 pdf_content = f.read()
@@ -143,18 +121,17 @@ class PrintScoreWizard(models.TransientModel):
                 'mimetype': 'application/pdf',
             })
 
-            # Dọn dẹp file cứng trên ổ đĩa
+            # Dọn dẹp file tạm
             if os.path.exists(final_docx_path): os.unlink(final_docx_path)
             if os.path.exists(pdf_path): os.unlink(pdf_path)
+            if os.path.exists(tmp_docx_path): os.unlink(tmp_docx_path)
 
-            # TRẢ VỀ URL CHUẨN CỦA ODOO (Trình duyệt sẽ tự mở PDF viewer)
+            # TRẢ VỀ URL CHUẨN ODOO (preview PDF)
             return {
                 "type": "ir.actions.act_url",
                 "url": f"/web/content/{attachment.id}?download=false",
                 "target": "new",
             }
 
-        except Exception as e:
-            raise UserError(f"Lỗi: {str(e)}")
-        finally:
-            pythoncom.CoUninitialize()
+        except subprocess.CalledProcessError as e:
+            raise UserError(f"Lỗi convert PDF trên server Linux: {str(e)}")
